@@ -1,10 +1,9 @@
 import { Component } from '@angular/core';
-import { NgxFuzzyTextComponent } from '@omnedia/ngx-fuzzy-text';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [NgxFuzzyTextComponent],
+  imports: [],
   template: `
     <nav class="fixed top-0 left-0 right-0 bg-gray-900/80 backdrop-blur-sm z-50 border-b border-gray-800/50">
       <div class="max-w-6xl mx-auto px-6 py-4">
