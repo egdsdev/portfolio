@@ -4,7 +4,7 @@
   "scripts": {
     "ng": "ng",
     "start": "ng serve",
-    "build": "ng build && copy public\\_redirects dist\\portfolio\\_redirects",
+    "build": "ng build && cp public/_redirects dist/portfolio/_redirects",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
