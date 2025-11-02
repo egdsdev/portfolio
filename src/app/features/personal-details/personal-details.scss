@@ -1,0 +1,19 @@
+.custom-glitch {
+  font-size: 5rem;
+  color: #ffffff !important;
+}
+
+.custom-glitch::before,
+.custom-glitch::after {
+  color: #ffffff !important;
+}
+
+.om-glitch {
+    color: white !important;
+}
+
+.custom-glitch {
+  > * {
+    color: white !important;
+  }
+}

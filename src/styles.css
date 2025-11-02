@@ -59,4 +59,9 @@ om-marquee {
 .timeline-content li:last-child {
   margin-bottom: 0;
 }
+
+.om-glitch {
+    color: white !important;
+}
+
 @import "tailwindcss";
