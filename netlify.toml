@@ -1,0 +1,3 @@
+[build]
+  command = "npm install --force && npm run build"
+  publish = "dist/portfolio" # <-- substitua pelo nome da pasta que o Angular gera
