@@ -34,7 +34,6 @@
     "@fortawesome/free-regular-svg-icons": "^7.1.0",
     "@fortawesome/free-solid-svg-icons": "^7.1.0",
     "@omnedia/ngx-fuzzy-text": "^3.0.0",
-    "@omnedia/ngx-glitch-text": "^2.0.0",
     "@omnedia/ngx-marquee": "^3.0.0",
     "@omnedia/ngx-starry-sky": "^3.0.3",
     "@omnedia/ngx-timeline": "^3.0.0",
