@@ -1,0 +1,285 @@
+<om-starry-sky
+  [shootingStarsConfig]="{ minDelay: 1000, maxDelay: 2000 }"
+  [starsBackgroundConfig]="{ starDensity: 0.001 }"
+  class="min-h-screen">
+  <div class="min-h-screen bg-transparent text-gray-100 relative">
+    <!-- Bolinha que segue o cursor -->
+    <div #cursorFollower class="pointer-events-none fixed w-2 h-2 bg-white/80 rounded-full z-50"></div>
+
+  <!-- Barra de Navegação -->
+  <nav class="fixed top-0 left-0 right-0 bg-gray-900/80 backdrop-blur-sm z-50 border-b border-gray-800/50">
+    <div class="max-w-6xl mx-auto px-6 py-4">
+      <ul class="flex justify-center space-x-8">
+        <li><a href="#detalhes" class="text-gray-300 hover:text-cyan-400 transition-colors">Detalhes Pessoais</a></li>
+        <li><a href="#escolaridade" class="text-gray-300 hover:text-cyan-400 transition-colors">Escolaridade</a></li>
+        <li><a href="#experiencia" class="text-gray-300 hover:text-cyan-400 transition-colors">Experiência</a></li>
+        <li><a href="#habilidades" class="text-gray-300 hover:text-cyan-400 transition-colors">Habilidades</a></li>
+        <li><a href="#certificacoes" class="text-gray-300 hover:text-cyan-400 transition-colors">Certificações</a></li>
+      </ul>
+    </div>
+  </nav>
+
+  <!-- Seção: Detalhes Pessoais -->
+  <section id="detalhes" class="min-h-screen pt-20 flex items-center justify-center relative overflow-hidden">
+    <!-- Círculos decorativos com blur -->
+    <div class="absolute top-20 left-20 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
+    <div class="absolute top-20 right-20 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
+    <div class="absolute -bottom-8 left-40 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
+    
+    <div class="relative z-10 text-center px-8">
+      <h1 class="text-6xl font-bold mb-6">
+        <om-fuzzy-text
+          [text]="'Elias Gomes da Silva'"
+          [baseIntensity]="0.05"
+          [hoverIntensity]="0.3"
+          [enableHover]="true"
+          [fuzzRange]="20"
+          styleClass="inline-block transform hover:scale-105 transition-transform duration-300"
+        ></om-fuzzy-text>
+      </h1>
+      <div class="space-y-4 mb-8">
+        <p class="text-2xl text-gray-300 opacity-90">Desenvolvedor Full Stack</p>
+        <div class="mt-6 w-screen -mx-8 overflow-hidden">
+          <om-marquee>
+            <ng-template>
+              <div class="flex items-center gap-8 px-6">
+                <!-- Primeira metade dos ícones -->
+                <fa-icon [icon]="phpIcon" class="text-3xl text-indigo-400 hover:scale-125 transition-transform cursor-pointer" title="PHP"></fa-icon>
+                <fa-icon [icon]="laravelIcon" class="text-3xl text-red-500 hover:scale-125 transition-transform cursor-pointer" title="Laravel"></fa-icon>
+                <fa-icon [icon]="pythonIcon" class="text-3xl text-yellow-400 hover:scale-125 transition-transform cursor-pointer" title="Python"></fa-icon>
+                <fa-icon [icon]="nodeJsIcon" class="text-3xl text-green-500 hover:scale-125 transition-transform cursor-pointer" title="Node.js"></fa-icon>
+                <fa-icon [icon]="jsIcon" class="text-3xl text-yellow-300 hover:scale-125 transition-transform cursor-pointer" title="JavaScript"></fa-icon>
+                <fa-icon [icon]="typescriptIcon" class="text-3xl text-blue-500 hover:scale-125 transition-transform cursor-pointer" title="TypeScript"></fa-icon>
+                <fa-icon [icon]="vueIcon" class="text-3xl text-green-400 hover:scale-125 transition-transform cursor-pointer" title="Vue.js"></fa-icon>
+                <fa-icon [icon]="reactIcon" class="text-3xl text-cyan-400 hover:scale-125 transition-transform cursor-pointer" title="React"></fa-icon>
+                <fa-icon [icon]="angularIcon" class="text-3xl text-red-600 hover:scale-125 transition-transform cursor-pointer" title="Angular"></fa-icon>
+                <fa-icon [icon]="html5Icon" class="text-3xl text-orange-500 hover:scale-125 transition-transform cursor-pointer" title="HTML5"></fa-icon>
+                <fa-icon [icon]="css3Icon" class="text-3xl text-blue-500 hover:scale-125 transition-transform cursor-pointer" title="CSS3"></fa-icon>
+              </div>
+            </ng-template>
+          </om-marquee>
+
+          <om-marquee [reverse]="true">
+            <ng-template>
+              <div class="flex items-center gap-8 px-6">
+                <!-- Segunda metade dos ícones -->
+                <fa-icon [icon]="mongoIcon" class="text-3xl text-green-500 hover:scale-125 transition-transform cursor-pointer" title="MongoDB"></fa-icon>
+                <fa-icon [icon]="postgresIcon" class="text-3xl text-blue-400 hover:scale-125 transition-transform cursor-pointer" title="PostgreSQL"></fa-icon>
+                <fa-icon [icon]="sqlServerIcon" class="text-3xl text-red-400 hover:scale-125 transition-transform cursor-pointer" title="SQL Server"></fa-icon>
+                <fa-icon [icon]="awsIcon" class="text-3xl text-yellow-500 hover:scale-125 transition-transform cursor-pointer" title="AWS"></fa-icon>
+                <fa-icon [icon]="azureIcon" class="text-3xl text-blue-500 hover:scale-125 transition-transform cursor-pointer" title="Azure"></fa-icon>
+                <fa-icon [icon]="dockerIcon" class="text-3xl text-blue-400 hover:scale-125 transition-transform cursor-pointer" title="Docker"></fa-icon>
+                <fa-icon [icon]="gitIcon" class="text-3xl text-orange-600 hover:scale-125 transition-transform cursor-pointer" title="Git"></fa-icon>
+                <fa-icon [icon]="powerbiIcon" class="text-3xl text-yellow-500 hover:scale-125 transition-transform cursor-pointer" title="Power BI"></fa-icon>
+                <fa-icon [icon]="jiraIcon" class="text-3xl text-blue-500 hover:scale-125 transition-transform cursor-pointer" title="Jira"></fa-icon>
+                <fa-icon [icon]="pentahoIcon" class="text-3xl text-orange-500 hover:scale-125 transition-transform cursor-pointer" title="Pentaho"></fa-icon>
+              </div>
+            </ng-template>
+          </om-marquee>
+
+        </div>
+      </div>
+      <a href="#contato" 
+         class="inline-block px-8 py-3 bg-linear-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-full 
+                transform hover:scale-105 transition-all duration-300 hover:shadow-lg hover:shadow-cyan-500/50">
+        Entre em Contato
+      </a>
+    </div>
+  </section>
+
+  <!-- Seção: Escolaridade -->
+  <section id="escolaridade" class="py-20 px-8">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-4xl font-bold text-center mb-16 bg-linear-to-r from-blue-400 to-cyan-400 text-transparent bg-clip-text">
+        Formação Acadêmica
+      </h2>
+      <div class="space-y-8">
+        <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 hover:bg-gray-800/60 transition-all duration-300
+                    border border-gray-700/50 hover:border-cyan-500/30 shadow-lg">
+          <div class="flex items-start space-x-4">
+            <span class="text-cyan-400 text-xl">🎓</span>
+            <div>
+              <h3 class="text-xl font-semibold text-white mb-2">Pós-Graduação</h3>
+              <p class="text-gray-300">Qualidade, Teste e Desenvolvimento de Software com Metodologia Ágil</p>
+              <p class="text-gray-400 mt-2">UNIMAIS (2020-2022)</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 hover:bg-gray-800/60 transition-all duration-300
+                    border border-gray-700/50 hover:border-cyan-500/30 shadow-lg">
+          <div class="flex items-start space-x-4">
+            <span class="text-cyan-400 text-xl">🎓</span>
+            <div>
+              <h3 class="text-xl font-semibold text-white mb-2">Graduação em Engenharia da Computação</h3>
+              <p class="text-gray-300">PUC Goiás</p>
+              <p class="text-gray-400 mt-2">2015-2019</p>
+              <ul class="mt-4 space-y-2 text-gray-300">
+                <li class="flex items-start">
+                  <span class="text-cyan-400 mr-2">▹</span>
+                  Diretor do Centro Acadêmico
+                </li>
+                <li class="flex items-start">
+                  <span class="text-cyan-400 mr-2">▹</span>
+                  TCC na Área de Segurança da Informação (Redes IEEE 802.11)
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Seção: Experiência Profissional -->
+  <section id="experiencia" class="py-20 px-8">
+    <div class="max-w-6xl mx-auto">
+      <h2 class="text-4xl font-bold text-center mb-16 bg-linear-to-r from-blue-400 to-cyan-400 text-transparent bg-clip-text">
+        Experiência Profissional
+      </h2>
+      <om-timeline
+        [data]="timelineData"
+        [orientation]="'switch'"
+        [entryGap]="'2rem'"
+        [titleGap]="'1rem'"
+        [titleMaxWidth]="'20rem'"
+        [pathColor]="'#1e293b'"
+        [gradientColors]="['#60a5fa', '#22d3ee']"
+        styleClass="experiencia-timeline"
+      ></om-timeline>
+    </div>
+  </section>
+
+  <!-- Seção: Habilidades -->
+  <section id="habilidades" class="py-20 px-8">
+    <div class="max-w-6xl mx-auto">
+      <h2 class="text-4xl font-bold text-center mb-16 bg-linear-to-r from-blue-400 to-cyan-400 text-transparent bg-clip-text">
+        Habilidades e Competências
+      </h2>
+      <div class="flex flex-wrap justify-center items-center gap-6 mx-auto max-w-6xl">
+        <div class="p-6 bg-gray-800/50 rounded-xl hover:bg-gray-800/70 transition-all duration-300 backdrop-blur-sm
+                    border border-gray-700/50 hover:border-cyan-500/30 group w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-1.5rem)] flex flex-col items-center">
+          <h3 class="text-xl font-semibold text-cyan-400 mb-4">Backend</h3>
+          <div class="flex flex-wrap gap-2 justify-center">
+            <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">PHP</span>
+            <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">Laravel</span>
+            <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">Python</span>
+            <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">Node.js</span>
+          </div>
+        </div>
+
+        <div class="p-6 bg-gray-800/50 rounded-xl hover:bg-gray-800/70 transition-all duration-300 backdrop-blur-sm
+                    border border-gray-700/50 hover:border-cyan-500/30 group w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-1.5rem)] flex flex-col items-center">
+          <h3 class="text-xl font-semibold text-cyan-400 mb-4">Frontend</h3>
+          <div class="flex flex-wrap gap-2 justify-center">
+            <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">Vue.js</span>
+            <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">React</span>
+            <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">TypeScript</span>
+            <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">JavaScript</span>
+          </div>
+        </div>
+
+        <div class="p-6 bg-gray-800/50 rounded-xl hover:bg-gray-800/70 transition-all duration-300 backdrop-blur-sm
+                    border border-gray-700/50 hover:border-cyan-500/30 group w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-1.5rem)] flex flex-col items-center">
+          <h3 class="text-xl font-semibold text-cyan-400 mb-4">Banco de Dados</h3>
+          <div class="flex flex-wrap gap-2 justify-center">
+            <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">MongoDB</span>
+            <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">MySQL</span>
+            <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">PostgreSQL</span>
+            <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">SQL Server</span>
+          </div>
+        </div>
+
+        <div class="p-6 bg-gray-800/50 rounded-xl hover:bg-gray-800/70 transition-all duration-300 backdrop-blur-sm
+                    border border-gray-700/50 hover:border-cyan-500/30 group w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-1.5rem)] flex flex-col items-center">
+          <h3 class="text-xl font-semibold text-cyan-400 mb-4">Ferramentas e Outros</h3>
+          <div class="flex flex-wrap gap-2 justify-center">
+            <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">Azure</span>
+            <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">Power BI</span>
+            <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">Pentaho</span>
+            <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">Electron</span>
+            <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">CI/CD</span>
+            <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">Scrum</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Seção: Certificações -->
+  <section id="certificacoes" class="py-20 px-8">
+    <div class="max-w-4xl mx-auto">
+      <h2 class="text-4xl font-bold text-center mb-16 bg-linear-to-r from-blue-400 to-cyan-400 text-transparent bg-clip-text">
+        Certificações & Licenças
+      </h2>
+      <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 hover:bg-gray-800/60 transition-all duration-300
+                  border border-gray-700/50 hover:border-cyan-500/30 shadow-lg">
+        <div class="space-y-4 text-gray-300">
+          <div class="flex items-start space-x-4">
+            <span class="text-cyan-400 text-xl">🏆</span>
+            <div>
+              <h3 class="text-xl font-semibold text-white mb-2">Certificado de Mérito no TCC</h3>
+              <p class="text-gray-400">V Congresso de Ciência e Tecnologia da PUCGO (2019)</p>
+              <p class="text-gray-300 mt-2">"REDES IEEE 802.11 PROTOCOLOS DE SEGURANÇA, VULNERABILIDADES E PROTEÇÃO" - Apresentação Oral</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Seção: Contato -->
+  <section id="contato" class="py-20 px-8">
+    <div class="max-w-4xl mx-auto text-center">
+      <h2 class="text-4xl font-bold mb-16 bg-linear-to-r from-blue-400 to-cyan-400 text-transparent bg-clip-text">
+        Vamos Conversar?
+      </h2>
+      <div class="grid md:grid-cols-3 gap-8">
+        <a href="mailto:egds.dev@gmail.com" 
+           class="group p-6 bg-gray-800/50 rounded-2xl hover:bg-gray-800/70 transition-all duration-300
+                  transform hover:scale-105 backdrop-blur-sm border border-gray-700/50 hover:border-cyan-500/30">
+          <div class="text-cyan-400 text-3xl mb-4 group-hover:scale-110 transition-transform">
+            ✉️
+          </div>
+          <h3 class="text-lg font-semibold text-gray-200 mb-2">Email</h3>
+          <p class="text-gray-400">egds.dev@gmail.com</p>
+        </a>
+
+        <a href="https://wa.me/5564992726932"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="group p-6 bg-gray-800/50 rounded-2xl hover:bg-gray-800/70 transition-all duration-300
+                  transform hover:scale-105 backdrop-blur-sm border border-gray-700/50 hover:border-cyan-500/30">
+          <div class="text-green-500 text-3xl mb-4 group-hover:scale-110 transition-transform">
+            <fa-icon [icon]="whatsappIcon" class="text-4xl"></fa-icon>
+          </div>
+          <h3 class="text-lg font-semibold text-gray-200 mb-2">WhatsApp</h3>
+          <p class="text-gray-400">+55 64 99272-6932</p>
+        </a>
+
+        <div class="group p-6 bg-gray-800/50 rounded-2xl hover:bg-gray-800/70 transition-all duration-300
+                    transform hover:scale-105 backdrop-blur-sm border border-gray-700/50 hover:border-cyan-500/30">
+          <div class="text-cyan-400 text-3xl mb-4 group-hover:scale-110 transition-transform">
+            📍
+          </div>
+          <h3 class="text-lg font-semibold text-gray-200 mb-2">Localização</h3>
+          <p class="text-gray-400">Piracanjuba, GO</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Rodapé com copyright -->
+  <footer class="py-12 relative overflow-hidden group">
+    <div class="absolute inset-0 bg-linear-to-r from-blue-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+    <div class="max-w-7xl mx-auto text-center relative z-10">
+      <div class="flex flex-col items-center space-y-6">
+        <p class="text-gray-400 text-lg">
+          Desenvolvido com <span class="text-cyan-400">❤</span> por Elias Gomes da Silva
+        </p>
+        <p class="text-gray-500 text-sm">© 2025. Todos os direitos reservados.</p>
+      </div>
+    </div>
+  </footer>
+  </div>
+</om-starry-sky>
