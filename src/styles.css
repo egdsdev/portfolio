@@ -378,6 +378,13 @@ html.light .devmatch-input {
 }
 html.light .devmatch-input::placeholder { color: #a78bfa !important; opacity: 0.6; }
 html.light .devmatch-input:focus { border-color: #7c3aed !important; }
+html.light .devmatch-calc-btn {
+  background: linear-gradient(135deg, #7c3aed, #a855f7) !important;
+  box-shadow: 0 4px 20px rgba(124,58,237,0.3) !important;
+}
+html.light .devmatch-calc-btn:hover {
+  box-shadow: 0 8px 28px rgba(124,58,237,0.45) !important;
+}
 
 /* ---- Timeline path/gradient (light) ---- */
 html.light .experiencia-timeline {
