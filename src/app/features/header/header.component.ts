@@ -13,6 +13,7 @@ import { NgxThemeToggleComponent, OmDarkIcon, OmLightIcon } from '@omnedia/ngx-t
           <li><a href="#escolaridade" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">Formação</a></li>
           <li><a href="#experiencia" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">Experiência</a></li>
           <li><a href="#habilidades" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">Skills</a></li>
+          <li><a href="#dev-match" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">Match</a></li>
           <li><a href="#certificacoes" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">Certificações</a></li>
           <li><a href="#contato" class="px-4 py-1.5 rounded-full border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 transition-all text-sm tracking-wide">Contato</a></li>
           <li class="flex items-center">

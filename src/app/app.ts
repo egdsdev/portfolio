@@ -4,6 +4,7 @@ import { PersonalDetailsComponent } from './features/personal-details/personal-d
 import { EducationComponent } from './features/education/education.component';
 import { ExperienceComponent } from './features/experience/experience.component';
 import { SkillsComponent } from './features/skills/skills.component';
+import { DevMatchComponent } from './features/dev-match/dev-match.component';
 import { CertificationsComponent } from './features/certifications/certifications.component';
 import { ContactComponent } from './features/contact/contact.component';
 import { FooterComponent } from './shared/components/footer/footer.component';
@@ -17,6 +18,7 @@ import { FooterComponent } from './shared/components/footer/footer.component';
     EducationComponent,
     ExperienceComponent,
     SkillsComponent,
+    DevMatchComponent,
     CertificationsComponent,
     ContactComponent,
     FooterComponent
@@ -33,6 +35,7 @@ import { FooterComponent } from './shared/components/footer/footer.component';
       <app-education></app-education>
       <app-experience></app-experience>
       <app-skills></app-skills>
+      <app-dev-match></app-dev-match>
       <app-certifications></app-certifications>
       <app-contact></app-contact>
       <app-footer></app-footer>

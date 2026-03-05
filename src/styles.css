@@ -328,6 +328,50 @@ html.light .text-gradient-name {
   -webkit-text-fill-color: transparent !important;
 }
 
+/* ---- DevMatch (light) ---- */
+html.light .devmatch-card {
+  background: #ffffff !important;
+  border-color: #ede9fe !important;
+  box-shadow: 0 2px 12px rgba(109,40,217,0.07) !important;
+}
+html.light .devmatch-card-title { color: #2d1b69 !important; }
+html.light .devmatch-title {
+  background: linear-gradient(90deg, #7c3aed, #a855f7) !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+html.light .devmatch-slider { background: #ede9fe !important; }
+html.light .toggle-inactive {
+  background: #f5f3ff !important;
+  border-color: #ddd6fe !important;
+  color: #6b7280 !important;
+}
+html.light .toggle-inactive:hover {
+  border-color: #7c3aed !important;
+  color: #5b21b6 !important;
+  background: #ede9fe !important;
+}
+html.light .toggle-match {
+  background: rgba(34,197,94,0.08) !important;
+  border-color: rgba(34,197,94,0.4) !important;
+  color: #15803d !important;
+}
+html.light .toggle-miss {
+  background: rgba(239,68,68,0.06) !important;
+  border-color: rgba(239,68,68,0.3) !important;
+  color: #b91c1c !important;
+}
+html.light .devmatch-cta {
+  border-color: rgba(124,58,237,0.3) !important;
+  background: rgba(124,58,237,0.05) !important;
+}
+html.light .devmatch-cta p { color: #7c3aed !important; }
+html.light .devmatch-cta-btn {
+  background-image: linear-gradient(to right, #7c3aed, #a855f7) !important;
+  color: #ffffff !important;
+}
+
 /* ---- Timeline path/gradient (light) ---- */
 html.light .experiencia-timeline {
   --om-timeline-circle-border-color: #7c3aed !important;
