@@ -4,15 +4,13 @@ import { Component } from '@angular/core';
   selector: 'app-footer',
   standalone: true,
   template: `
-    <footer class="py-12 relative overflow-hidden group">
-      <div class="absolute inset-0 bg-linear-to-r from-blue-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
-      <div class="max-w-7xl mx-auto text-center relative z-10">
-        <div class="flex flex-col items-center space-y-6">
-          <p class="text-gray-400 text-lg">
-            Desenvolvido com <span class="text-cyan-400">❤</span> por Elias Gomes da Silva
-          </p>
-          <p class="text-gray-500 text-sm">© 2025. Todos os direitos reservados.</p>
-        </div>
+    <footer class="py-10 border-t border-gray-800/50">
+      <div class="max-w-7xl mx-auto text-center">
+        <p class="text-cyan-500/50 font-mono text-sm font-bold tracking-widest mb-2">&lt;EG /&gt;</p>
+        <p class="text-gray-500 text-sm mb-1">
+          Desenvolvido com <span class="text-cyan-400">❤</span> por Elias Gomes da Silva
+        </p>
+        <p class="text-gray-600 text-xs">© 2026. Todos os direitos reservados.</p>
       </div>
     </footer>
   `

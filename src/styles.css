@@ -64,4 +64,66 @@ om-marquee {
     color: white !important;
 }
 
+/* Gradient name */
+.text-gradient-name {
+  background: linear-gradient(90deg, #60a5fa, #22d3ee, #60a5fa);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: shimmerGrad 4s linear infinite;
+}
+@keyframes shimmerGrad {
+  0% { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: #0f172a; }
+::-webkit-scrollbar-thumb { background: rgba(34,211,238,0.25); border-radius: 2px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(34,211,238,0.5); }
+
+/* Nav link underline animation */
+.nav-link { position: relative; }
+.nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -2px;
+  left: 0;
+  width: 0;
+  height: 1px;
+  background: #22d3ee;
+  transition: width 0.3s;
+}
+.nav-link:hover::after { width: 100%; }
+
+/* Skill pills */
+.skill-pill {
+  padding: 0.2rem 0.65rem;
+  font-size: 0.75rem;
+  border-radius: 9999px;
+  background: rgba(55,65,81,0.5);
+  color: #d1d5db;
+  transition: all 0.2s;
+  display: inline-flex;
+}
+
+/* Avatar float + glow */
+.avatar-ring {
+  box-shadow: 0 0 24px rgba(34,211,238,0.15), 0 0 48px rgba(34,211,238,0.05);
+  animation: avatarFloat 4s ease-in-out infinite;
+}
+@keyframes avatarFloat {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* Scroll dot bounce */
+@keyframes scrollBounce {
+  0%, 100% { transform: translateY(0); opacity: 1; }
+  50% { transform: translateY(8px); opacity: 0.3; }
+}
+.scroll-dot { animation: scrollBounce 1.5s ease-in-out infinite; }
+
 @import "tailwindcss";

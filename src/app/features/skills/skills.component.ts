@@ -4,55 +4,74 @@ import { Component } from '@angular/core';
   selector: 'app-skills',
   standalone: true,
   template: `
-    <section id="habilidades" class="py-20 px-8">
+    <section id="habilidades" class="py-24 px-8">
       <div class="max-w-6xl mx-auto">
-        <h2 class="text-4xl font-bold text-center mb-16 bg-linear-to-r from-blue-400 to-cyan-400 text-transparent bg-clip-text">
-          Habilidades e Competências
-        </h2>
-        <div class="flex flex-wrap justify-center items-center gap-6 mx-auto max-w-6xl">
-          <div class="p-6 bg-gray-800/50 rounded-xl hover:bg-gray-800/70 transition-all duration-300 backdrop-blur-sm
-                      border border-gray-700/50 hover:border-cyan-500/30 group w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-1.5rem)] flex flex-col items-center">
-            <h3 class="text-xl font-semibold text-cyan-400 mb-4">Backend</h3>
+        <div class="text-center mb-16">
+          <h2 class="text-4xl font-bold bg-linear-to-r from-blue-400 to-cyan-400 text-transparent bg-clip-text inline-block">
+            Habilidades e Competências
+          </h2>
+          <div class="mt-3 mx-auto w-16 h-px bg-linear-to-r from-blue-400 to-cyan-400 rounded-full"></div>
+        </div>
+        <div class="flex flex-wrap justify-center items-stretch gap-6 mx-auto max-w-6xl">
+          <!-- Backend -->
+          <div class="group p-6 bg-gray-800/50 rounded-2xl border border-gray-700/50 hover:border-blue-500/40 transition-all duration-300
+                      backdrop-blur-sm w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-1.5rem)] flex flex-col items-center hover:-translate-y-1">
+            <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center mb-4 group-hover:bg-blue-500/20 transition-colors">
+              <span class="text-xl">⚙️</span>
+            </div>
+            <h3 class="text-lg font-semibold text-blue-400 mb-4">Backend</h3>
             <div class="flex flex-wrap gap-2 justify-center">
-              <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">PHP</span>
-              <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">Laravel</span>
-              <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">Python</span>
-              <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">Node.js</span>
+              <span class="skill-pill border border-gray-600/50 hover:border-blue-500/50 hover:text-blue-300">PHP</span>
+              <span class="skill-pill border border-gray-600/50 hover:border-blue-500/50 hover:text-blue-300">Laravel</span>
+              <span class="skill-pill border border-gray-600/50 hover:border-blue-500/50 hover:text-blue-300">Python</span>
+              <span class="skill-pill border border-gray-600/50 hover:border-blue-500/50 hover:text-blue-300">Node.js</span>
             </div>
           </div>
 
-          <div class="p-6 bg-gray-800/50 rounded-xl hover:bg-gray-800/70 transition-all duration-300 backdrop-blur-sm
-                      border border-gray-700/50 hover:border-cyan-500/30 group w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-1.5rem)] flex flex-col items-center">
-            <h3 class="text-xl font-semibold text-cyan-400 mb-4">Frontend</h3>
+          <!-- Frontend -->
+          <div class="group p-6 bg-gray-800/50 rounded-2xl border border-gray-700/50 hover:border-cyan-500/40 transition-all duration-300
+                      backdrop-blur-sm w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-1.5rem)] flex flex-col items-center hover:-translate-y-1">
+            <div class="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center mb-4 group-hover:bg-cyan-500/20 transition-colors">
+              <span class="text-xl">🖥️</span>
+            </div>
+            <h3 class="text-lg font-semibold text-cyan-400 mb-4">Frontend</h3>
             <div class="flex flex-wrap gap-2 justify-center">
-              <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">Vue.js</span>
-              <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">React</span>
-              <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">TypeScript</span>
-              <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">JavaScript</span>
+              <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">Vue.js</span>
+              <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">React</span>
+              <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">Angular</span>
+              <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">TypeScript</span>
             </div>
           </div>
 
-          <div class="p-6 bg-gray-800/50 rounded-xl hover:bg-gray-800/70 transition-all duration-300 backdrop-blur-sm
-                      border border-gray-700/50 hover:border-cyan-500/30 group w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-1.5rem)] flex flex-col items-center">
-            <h3 class="text-xl font-semibold text-cyan-400 mb-4">Banco de Dados</h3>
+          <!-- Banco de Dados -->
+          <div class="group p-6 bg-gray-800/50 rounded-2xl border border-gray-700/50 hover:border-purple-500/40 transition-all duration-300
+                      backdrop-blur-sm w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-1.5rem)] flex flex-col items-center hover:-translate-y-1">
+            <div class="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center mb-4 group-hover:bg-purple-500/20 transition-colors">
+              <span class="text-xl">🗄️</span>
+            </div>
+            <h3 class="text-lg font-semibold text-purple-400 mb-4">Banco de Dados</h3>
             <div class="flex flex-wrap gap-2 justify-center">
-              <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">MongoDB</span>
-              <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">MySQL</span>
-              <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">PostgreSQL</span>
-              <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">SQL Server</span>
+              <span class="skill-pill border border-gray-600/50 hover:border-purple-500/50 hover:text-purple-300">MongoDB</span>
+              <span class="skill-pill border border-gray-600/50 hover:border-purple-500/50 hover:text-purple-300">MySQL</span>
+              <span class="skill-pill border border-gray-600/50 hover:border-purple-500/50 hover:text-purple-300">PostgreSQL</span>
+              <span class="skill-pill border border-gray-600/50 hover:border-purple-500/50 hover:text-purple-300">SQL Server</span>
             </div>
           </div>
 
-          <div class="p-6 bg-gray-800/50 rounded-xl hover:bg-gray-800/70 transition-all duration-300 backdrop-blur-sm
-                      border border-gray-700/50 hover:border-cyan-500/30 group w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-1.5rem)] flex flex-col items-center">
-            <h3 class="text-xl font-semibold text-cyan-400 mb-4">Ferramentas e Outros</h3>
+          <!-- Ferramentas -->
+          <div class="group p-6 bg-gray-800/50 rounded-2xl border border-gray-700/50 hover:border-orange-500/40 transition-all duration-300
+                      backdrop-blur-sm w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-1.5rem)] flex flex-col items-center hover:-translate-y-1">
+            <div class="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center mb-4 group-hover:bg-orange-500/20 transition-colors">
+              <span class="text-xl">🛠️</span>
+            </div>
+            <h3 class="text-lg font-semibold text-orange-400 mb-4">Ferramentas e Outros</h3>
             <div class="flex flex-wrap gap-2 justify-center">
-              <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">Azure</span>
-              <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">Power BI</span>
-              <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">Pentaho</span>
-              <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">Electron</span>
-              <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">CI/CD</span>
-              <span class="px-3 py-1 text-sm bg-gray-700/50 text-gray-300 rounded-full hover:bg-cyan-500/20 transition-colors">Scrum</span>
+              <span class="skill-pill border border-gray-600/50 hover:border-orange-500/50 hover:text-orange-300">Azure</span>
+              <span class="skill-pill border border-gray-600/50 hover:border-orange-500/50 hover:text-orange-300">Power BI</span>
+              <span class="skill-pill border border-gray-600/50 hover:border-orange-500/50 hover:text-orange-300">Pentaho</span>
+              <span class="skill-pill border border-gray-600/50 hover:border-orange-500/50 hover:text-orange-300">Electron</span>
+              <span class="skill-pill border border-gray-600/50 hover:border-orange-500/50 hover:text-orange-300">CI/CD</span>
+              <span class="skill-pill border border-gray-600/50 hover:border-orange-500/50 hover:text-orange-300">Scrum</span>
             </div>
           </div>
         </div>

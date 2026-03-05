@@ -7,41 +7,44 @@ import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
   standalone: true,
   imports: [FontAwesomeModule],
   template: `
-    <section id="contato" class="py-20 px-8">
+    <section id="contato" class="py-24 px-8">
       <div class="max-w-4xl mx-auto text-center">
-        <h2 class="text-4xl font-bold mb-16 bg-linear-to-r from-blue-400 to-cyan-400 text-transparent bg-clip-text">
-          Vamos Conversar?
-        </h2>
-        <div class="grid md:grid-cols-3 gap-8">
-          <a href="mailto:egds.dev@gmail.com" 
+        <div class="mb-16">
+          <h2 class="text-4xl font-bold bg-linear-to-r from-blue-400 to-cyan-400 text-transparent bg-clip-text inline-block">
+            Vamos Conversar?
+          </h2>
+          <div class="mt-3 mx-auto w-16 h-px bg-linear-to-r from-blue-400 to-cyan-400 rounded-full"></div>
+        </div>
+        <div class="grid md:grid-cols-3 gap-6">
+          <a href="mailto:egds.dev@gmail.com"
              class="group p-6 bg-gray-800/50 rounded-2xl hover:bg-gray-800/70 transition-all duration-300
-                    transform hover:scale-105 backdrop-blur-sm border border-gray-700/50 hover:border-cyan-500/30">
-            <div class="text-cyan-400 text-3xl mb-4 group-hover:scale-110 transition-transform">
-              ✉️
+                    backdrop-blur-sm border border-gray-700/50 hover:border-cyan-500/30 hover:-translate-y-1">
+            <div class="w-14 h-14 rounded-xl bg-cyan-500/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-cyan-500/20 transition-colors">
+              <span class="text-2xl">✉️</span>
             </div>
-            <h3 class="text-lg font-semibold text-gray-200 mb-2">Email</h3>
-            <p class="text-gray-400">egds.dev@gmail.com</p>
+            <h3 class="text-base font-semibold text-gray-200 mb-1">Email</h3>
+            <p class="text-gray-400 text-sm">egds.dev&#64;gmail.com</p>
           </a>
 
           <a href="https://wa.me/5568984190157"
              target="_blank"
              rel="noopener noreferrer"
              class="group p-6 bg-gray-800/50 rounded-2xl hover:bg-gray-800/70 transition-all duration-300
-                    transform hover:scale-105 backdrop-blur-sm border border-gray-700/50 hover:border-cyan-500/30">
-            <div class="text-green-500 text-3xl mb-4 group-hover:scale-110 transition-transform">
-              <fa-icon [icon]="whatsappIcon" class="text-4xl"></fa-icon>
+                    backdrop-blur-sm border border-gray-700/50 hover:border-green-500/30 hover:-translate-y-1">
+            <div class="w-14 h-14 rounded-xl bg-green-500/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-green-500/20 transition-colors">
+              <fa-icon [icon]="whatsappIcon" class="text-2xl text-green-500"></fa-icon>
             </div>
-            <h3 class="text-lg font-semibold text-gray-200 mb-2">WhatsApp</h3>
-            <p class="text-gray-400">+55 68 98419-0157</p>
+            <h3 class="text-base font-semibold text-gray-200 mb-1">WhatsApp</h3>
+            <p class="text-gray-400 text-sm">+55 68 98419-0157</p>
           </a>
 
           <div class="group p-6 bg-gray-800/50 rounded-2xl hover:bg-gray-800/70 transition-all duration-300
-                      transform hover:scale-105 backdrop-blur-sm border border-gray-700/50 hover:border-cyan-500/30">
-            <div class="text-cyan-400 text-3xl mb-4 group-hover:scale-110 transition-transform">
-              📍
+                      backdrop-blur-sm border border-gray-700/50 hover:border-blue-500/30 hover:-translate-y-1 cursor-default">
+            <div class="w-14 h-14 rounded-xl bg-blue-500/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-500/20 transition-colors">
+              <span class="text-2xl">📍</span>
             </div>
-            <h3 class="text-lg font-semibold text-gray-200 mb-2">Localização</h3>
-            <p class="text-gray-400">Piracanjuba, GO</p>
+            <h3 class="text-base font-semibold text-gray-200 mb-1">Localização</h3>
+            <p class="text-gray-400 text-sm">Piracanjuba, GO</p>
           </div>
         </div>
       </div>
