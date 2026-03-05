@@ -103,7 +103,7 @@ interface ToggleItem {
                     <input type="range" min="0" max="100" step="10"
                            [(ngModel)]="area.importance"
                            (change)="saveState()"
-                           class="devmatch-slider w-full rounded-full outline-none cursor-pointer"
+                           class="devmatch-slider w-full outline-none cursor-pointer"
                            [style.accent-color]="area.color">
                     @if (area.importance > 0 && area.techs.length > 0) {
                       <div class="flex flex-wrap gap-1 mt-2 animate-fade-in">
@@ -150,7 +150,7 @@ interface ToggleItem {
                       </div>
                       <input type="range" min="0" max="100" step="5"
                              [(ngModel)]="newAreaScore"
-                             class="devmatch-slider w-full rounded-full outline-none cursor-pointer"
+                             class="devmatch-slider w-full outline-none cursor-pointer"
                              style="accent-color: #60a5fa">
                       <p class="text-xs text-gray-600 mt-1.5">0 = não tem &nbsp;·&nbsp; 50 = não sei &nbsp;·&nbsp; 100 = especialista</p>
                     </div>
@@ -239,12 +239,6 @@ interface ToggleItem {
               </div>
             </div>
 
-            <!-- Botão Calcular -->
-            <button (click)="calculate()"
-                    class="devmatch-calc-btn w-full py-4 rounded-2xl text-white font-bold text-lg tracking-wide transition-all duration-300">
-              {{ calculated ? '🔄 Recalcular Match' : '🔍 Calcular Match' }}
-            </button>
-
           </div>
 
           <!-- RIGHT: Resultado -->
@@ -253,7 +247,7 @@ interface ToggleItem {
             <!-- Score principal -->
             <div class="devmatch-card bg-gray-800/50 rounded-2xl border border-gray-700/50 p-6 backdrop-blur-sm text-center relative overflow-hidden">
               <div class="absolute inset-0 pointer-events-none transition-all duration-700"
-                   [style.background]="calculated ? ('radial-gradient(circle at 50% 65%, ' + matchColor + '18 0%, transparent 65%)') : 'none'"></div>
+                   [style.background]="hasAny ? ('radial-gradient(circle at 50% 65%, ' + matchColor + '18 0%, transparent 65%)') : 'none'"></div>
 
               <p class="text-gray-500 text-xs uppercase tracking-widest font-mono mb-4">Compatibilidade</p>
 
@@ -271,8 +265,8 @@ interface ToggleItem {
                           style="transition: stroke-dashoffset 0.8s ease, stroke 0.5s ease"/>
                 </svg>
                 <div class="absolute text-center">
-                  @if (calculated) {
-                    <div class="text-4xl font-bold text-white leading-none">{{ resultMatch }}</div>
+                  @if (hasAny) {
+                    <div class="text-4xl font-bold text-white leading-none">{{ overallMatch }}</div>
                     <div class="text-gray-400 text-sm">%</div>
                   } @else {
                     <div class="text-3xl font-bold text-gray-600">?</div>
@@ -283,6 +277,14 @@ interface ToggleItem {
               <p class="font-semibold text-base transition-all duration-500" [style.color]="matchColor">{{ matchLabel }}</p>
               <p class="text-gray-500 text-xs mt-1">{{ matchSub }}</p>
             </div>
+
+            <!-- Botão Ver Resultado -->
+            @if (hasAny) {
+              <button (click)="calculate()"
+                      class="devmatch-calc-btn w-full py-4 rounded-2xl text-white font-bold text-lg tracking-wide transition-all duration-300">
+                {{ calculated ? '🔄 Ver Resultado Novamente' : '🔍 Ver Resultado' }}
+              </button>
+            }
 
             <!-- Detalhamento por área -->
             @if (calculated && resultActiveAreas.length > 0) {
@@ -307,7 +309,7 @@ interface ToggleItem {
               </div>
             }
 
-            <!-- CTA ao atingir bom match -->
+            <!-- Match suficiente: CTA -->
             @if (calculated && resultMatch >= 70) {
               <div class="devmatch-cta rounded-2xl border border-cyan-500/30 bg-cyan-500/5 p-5 text-center animate-fade-in">
                 <p class="text-cyan-300 font-semibold text-sm mb-3">
@@ -317,6 +319,41 @@ interface ToggleItem {
                    class="devmatch-cta-btn inline-block px-6 py-2.5 bg-linear-to-r from-blue-500 to-cyan-500 text-white text-sm font-semibold rounded-full hover:scale-105 transition-transform">
                   Entrar em Contato
                 </a>
+              </div>
+            }
+
+            <!-- Match insuficiente: card surpresa -->
+            @if (calculated && resultMatch < 70) {
+              <div class="devmatch-surprise rounded-2xl p-5 animate-fade-in">
+                <div class="text-center mb-3">
+                  <span class="text-3xl">🌱</span>
+                </div>
+                <p class="text-amber-300 font-bold text-sm text-center mb-2">Espera — tem mais nessa história!</p>
+                <p class="text-gray-300 text-xs leading-relaxed text-center mb-4">
+                  Essas notas mostram <em>onde estou hoje</em>. Mas o que me define como dev
+                  não é o que já sei: é a velocidade com que aprendo qualquer coisa nova.
+                </p>
+                <div class="space-y-2 mb-4">
+                  <div class="flex items-start gap-2 text-xs text-gray-400">
+                    <span class="text-amber-400 shrink-0">★</span>
+                    <span>Aprendi Angular do zero e entreguei em produção em semanas</span>
+                  </div>
+                  <div class="flex items-start gap-2 text-xs text-gray-400">
+                    <span class="text-amber-400 shrink-0">★</span>
+                    <span>Integrei LLMs ao meu fluxo de trabalho sem nunca ter feito isso antes</span>
+                  </div>
+                  <div class="flex items-start gap-2 text-xs text-gray-400">
+                    <span class="text-amber-400 shrink-0">★</span>
+                    <span>Domínio em sistemas sem documentação — aprendi lendo código legado</span>
+                  </div>
+                </div>
+                <p class="text-amber-400/70 text-xs text-center italic mb-4">"É melhor contratar quem aprende tudo<br>do que quem sabe só o que já viveu."</p>
+                <div class="text-center">
+                  <a href="#contato"
+                     class="devmatch-surprise-btn inline-block px-6 py-2.5 text-white text-sm font-semibold rounded-full hover:scale-105 transition-transform">
+                    Vamos conversar mesmo assim?
+                  </a>
+                </div>
               </div>
             }
 
@@ -330,6 +367,20 @@ interface ToggleItem {
       -webkit-appearance: none;
       appearance: none;
       height: 6px;
+      background: transparent;
+      overflow: visible;
+      padding: 8px 0;
+      margin: -8px 0;
+      box-sizing: content-box;
+    }
+    .devmatch-slider::-webkit-slider-runnable-track {
+      height: 6px;
+      border-radius: 9999px;
+      background: #1e293b;
+    }
+    .devmatch-slider::-moz-range-track {
+      height: 6px;
+      border-radius: 9999px;
       background: #1e293b;
     }
     .devmatch-slider::-webkit-slider-thumb {
@@ -338,6 +389,15 @@ interface ToggleItem {
       width: 18px;
       height: 18px;
       border-radius: 50%;
+      cursor: pointer;
+      margin-top: -6px;
+      box-shadow: 0 0 6px currentColor;
+    }
+    .devmatch-slider::-moz-range-thumb {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: none;
       cursor: pointer;
       box-shadow: 0 0 6px currentColor;
     }
@@ -383,6 +443,11 @@ interface ToggleItem {
       box-shadow: 0 8px 28px rgba(6,182,212,0.4);
     }
     .devmatch-calc-btn:active { transform: translateY(0); }
+
+    .devmatch-surprise {
+      background: linear-gradient(135deg, rgba(180,83,9,0.12), rgba(217,119,6,0.08));
+      border: 1px solid rgba(251,191,36,0.25);
+    }
 
     @keyframes devMatchFadeIn {
       from { opacity: 0; transform: translateY(6px); }
@@ -463,6 +528,30 @@ export class DevMatchComponent implements OnInit {
     return [...this.toggles, ...this.customToggles];
   }
 
+  // ---- Computed (live, para o anel) ----
+  get hasAny(): boolean {
+    return this.allAreas.some(a => a.importance > 0) || this.allToggles.some(t => t.active);
+  }
+
+  get overallMatch(): number {
+    const hasSliders = this.allAreas.some(a => a.importance > 0);
+    const hasToggles = this.allToggles.some(t => t.active);
+    if (!hasSliders && !hasToggles) return 0;
+
+    const totalImportance = this.allAreas.reduce((s, a) => s + a.importance, 0);
+    const sliderMatch = totalImportance > 0
+      ? Math.round(this.allAreas.reduce((s, a) => s + a.importance * a.eliasScore, 0) / totalImportance)
+      : 0;
+    const activeToggles = this.allToggles.filter(t => t.active);
+    const toggleMatch = activeToggles.length > 0
+      ? Math.round(activeToggles.filter(t => t.eliasHas).length / activeToggles.length * 100)
+      : 100;
+
+    if (hasSliders && hasToggles) return Math.round(sliderMatch * 0.65 + toggleMatch * 0.35);
+    if (hasSliders) return sliderMatch;
+    return toggleMatch;
+  }
+
   importanceLabel(v: number): string {
     if (v === 0)  return 'ignorar';
     if (v <= 30)  return 'baixa';
@@ -471,73 +560,44 @@ export class DevMatchComponent implements OnInit {
     return 'essencial';
   }
 
-  // ---- Calcular (manual) ----
+  // ---- Calcular (revela os cards de resultado) ----
   calculate(): void {
-    const hasSliders = this.allAreas.some(a => a.importance > 0);
-    const hasToggles = this.allToggles.some(t => t.active);
-
-    if (!hasSliders && !hasToggles) {
-      this.resultMatch = 0;
-      this.resultActiveAreas = [];
-      this.calculated = true;
-      this.saveState();
-      return;
-    }
-
-    const totalImportance = this.allAreas.reduce((s, a) => s + a.importance, 0);
-    const sliderMatch = totalImportance > 0
-      ? Math.round(this.allAreas.reduce((s, a) => s + a.importance * a.eliasScore, 0) / totalImportance)
-      : 0;
-
-    const activeToggles = this.allToggles.filter(t => t.active);
-    const toggleMatch = activeToggles.length > 0
-      ? Math.round(activeToggles.filter(t => t.eliasHas).length / activeToggles.length * 100)
-      : 100;
-
-    if (hasSliders && hasToggles) {
-      this.resultMatch = Math.round(sliderMatch * 0.65 + toggleMatch * 0.35);
-    } else if (hasSliders) {
-      this.resultMatch = sliderMatch;
-    } else {
-      this.resultMatch = toggleMatch;
-    }
-
+    this.resultMatch = this.overallMatch;
     this.resultActiveAreas = this.allAreas.filter(a => a.importance > 0);
     this.calculated = true;
     this.saveState();
   }
 
-  // ---- Display (baseado no resultado congelado) ----
+  // ---- Display (live) ----
   get matchColor(): string {
-    if (!this.calculated) return '#334155';
-    const m = this.resultMatch;
-    if (m < 50) return '#f87171';
-    if (m < 70) return '#fbbf24';
-    if (m < 85) return '#22d3ee';
+    const m = this.overallMatch;
+    if (m === 0)  return '#334155';
+    if (m < 50)   return '#f87171';
+    if (m < 70)   return '#fbbf24';
+    if (m < 85)   return '#22d3ee';
     return '#4ade80';
   }
 
   get matchLabel(): string {
-    if (!this.calculated) return 'Configure e calcule ↓';
-    const m = this.resultMatch;
-    if (m < 50) return '🔍 Encaixe parcial';
-    if (m < 70) return '💡 Bom potencial';
-    if (m < 85) return '🎯 Ótimo alinhamento!';
+    const m = this.overallMatch;
+    if (m === 0)  return 'Configure acima ↑';
+    if (m < 50)   return '🔍 Encaixe parcial';
+    if (m < 70)   return '💡 Bom potencial';
+    if (m < 85)   return '🎯 Ótimo alinhamento!';
     return '🚀 Match perfeito!';
   }
 
   get matchSub(): string {
-    if (!this.calculated) return 'Defina suas métricas e clique em "Calcular Match"';
-    const m = this.resultMatch;
-    if (m < 50) return 'Elias cobre parte das suas necessidades';
-    if (m < 70) return 'Elias atende a maioria do que você procura';
-    if (m < 85) return 'Elias é uma excelente escolha para seu time';
+    if (!this.hasAny) return 'Configure os sliders e requisitos';
+    const m = this.overallMatch;
+    if (m < 50)   return 'Elias cobre parte das suas necessidades';
+    if (m < 70)   return 'Elias atende a maioria do que você procura';
+    if (m < 85)   return 'Elias é uma excelente escolha para seu time';
     return 'Você encontrou o desenvolvedor certo!';
   }
 
   get dashOffset(): number {
-    if (!this.calculated) return this.circumference;
-    return this.circumference * (1 - this.resultMatch / 100);
+    return this.circumference * (1 - this.overallMatch / 100);
   }
 
   // ---- Áreas (custom) ----

@@ -341,7 +341,8 @@ html.light .devmatch-title {
   background-clip: text !important;
   -webkit-text-fill-color: transparent !important;
 }
-html.light .devmatch-slider { background: #ede9fe !important; }
+html.light .devmatch-slider::-webkit-slider-runnable-track { background: #ddd6fe !important; }
+html.light .devmatch-slider::-moz-range-track { background: #ddd6fe !important; }
 html.light .toggle-inactive {
   background: #f5f3ff !important;
   border-color: #ddd6fe !important;
