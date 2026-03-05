@@ -42,15 +42,15 @@ import { TechMarqueeComponent } from '../../shared/components/tech-marquee/tech-
 
         <a href="#contato"
            class="mt-10 inline-block px-10 py-3.5 bg-linear-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-full
-                  transform hover:scale-105 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/40 text-sm tracking-wide">
+                  transform hover:scale-105 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/40 text-sm tracking-wide contact-btn">
           Entre em Contato
         </a>
       </div>
 
       <!-- Scroll indicator -->
-      <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-gray-600 z-10">
+      <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-gray-500 scroll-indicator z-10">
         <span class="text-xs tracking-widest uppercase font-mono">scroll</span>
-        <div class="w-5 h-8 border border-gray-600 rounded-full flex justify-center pt-1.5">
+        <div class="w-5 h-8 border border-gray-500 rounded-full flex justify-center pt-1.5 scroll-mouse">
           <div class="scroll-dot w-1 h-2 bg-cyan-400 rounded-full"></div>
         </div>
       </div>

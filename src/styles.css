@@ -77,15 +77,15 @@ om-marquee {
 /* Gradient name */
 .text-gradient-name {
   background: linear-gradient(90deg, #60a5fa, #22d3ee, #60a5fa);
-  background-size: 200% auto;
+  background-size: 300% auto;
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  animation: shimmerGrad 4s linear infinite;
+  animation: shimmerGrad 5s linear infinite;
 }
 @keyframes shimmerGrad {
   0% { background-position: 0% center; }
-  100% { background-position: 200% center; }
+  100% { background-position: 300% center; }
 }
 
 /* Custom scrollbar */
@@ -127,6 +127,218 @@ om-marquee {
 @keyframes avatarFloat {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-8px); }
+}
+
+/* ============================================================
+   TEMA CLARO — paleta roxo/violeta
+   Accent:  #7c3aed (violet-600)
+   Deep:    #5b21b6 (violet-800)
+   Soft:    #8b5cf6 (violet-500)
+   ============================================================ */
+html.light {
+  color-scheme: light;
+}
+
+/* Fundo raiz — branco com leve toque de violeta */
+html.light body,
+html.light app-root {
+  background: #faf8ff !important;
+}
+
+/* Esconde o starfield */
+html.light .starfield { display: none; }
+
+html.light .min-h-screen { color: #3b3558 !important; }
+
+/* ---- Navbar ---- */
+html.light nav {
+  background-color: rgba(255, 255, 255, 0.95) !important;
+  border-bottom-color: #ede9fe !important;
+}
+html.light nav a { color: #6b7280 !important; }
+html.light nav a:hover { color: #7c3aed !important; }
+html.light nav a.text-cyan-400,
+html.light nav .text-cyan-400 { color: #7c3aed !important; }
+html.light nav a[class*="border-cyan"] {
+  color: #7c3aed !important;
+  border-color: rgba(124, 58, 237, 0.45) !important;
+}
+html.light nav a[class*="border-cyan"]:hover {
+  background: rgba(124, 58, 237, 0.08) !important;
+}
+
+/* ---- Override Tailwind blue/cyan no tema claro ---- */
+html.light .text-blue-400  { color: #7c3aed !important; }
+html.light .text-cyan-400  { color: #7c3aed !important; }
+html.light .text-cyan-300  { color: #8b5cf6 !important; }
+html.light .text-cyan-200  { color: #a78bfa !important; }
+html.light .text-blue-300  { color: #8b5cf6 !important; }
+html.light .text-purple-400 { color: #7c3aed !important; }
+html.light .text-indigo-400 { color: #6d28d9 !important; }
+
+/* Gradientes de seção */
+html.light .from-blue-400 { --tw-gradient-from: #7c3aed !important; }
+html.light .to-cyan-400   { --tw-gradient-to:   #a855f7 !important; }
+html.light .from-purple-400 { --tw-gradient-from: #7c3aed !important; }
+html.light .to-pink-400   { --tw-gradient-to:   #a855f7 !important; }
+
+/* ---- Texto geral ---- */
+html.light .text-gray-100  { color: #2d2546 !important; }
+html.light .text-gray-200  { color: #3b3558 !important; }
+html.light .text-gray-300  { color: #4b4570 !important; }
+html.light .text-gray-400  { color: #6b7280 !important; }
+html.light .text-white     { color: #2d2546 !important; }
+html.light .text-slate-300 { color: #4b4570 !important; }
+html.light .text-slate-400 { color: #6b7280 !important; }
+
+html.light section { background: transparent; }
+
+/* ---- Cards ---- */
+html.light [class*="bg-gray-800"],
+html.light [class*="bg-gray-900"] {
+  background-color: #ffffff !important;
+  border-color: #ede9fe !important;
+  box-shadow: 0 2px 8px rgba(109, 40, 217, 0.06) !important;
+}
+html.light [class*="bg-gray-800"]:hover,
+html.light [class*="bg-gray-900"]:hover {
+  border-color: rgba(124, 58, 237, 0.3) !important;
+}
+
+/* Hover borders dos cards de skill */
+html.light [class*="hover:border-blue-500"],
+html.light [class*="hover:border-cyan-500"],
+html.light [class*="hover:border-purple-500"],
+html.light [class*="hover:border-green-500"],
+html.light [class*="hover:border-orange-500"],
+html.light [class*="hover:border-rose-500"] {
+  --hover-accent: rgba(124, 58, 237, 0.35);
+}
+
+/* Ícone de fundo dos cards */
+html.light [class*="bg-blue-500\/10"]   { background-color: rgba(124,58,237,0.08) !important; }
+html.light [class*="bg-cyan-500\/10"]   { background-color: rgba(124,58,237,0.08) !important; }
+html.light [class*="bg-purple-500\/10"] { background-color: rgba(124,58,237,0.08) !important; }
+html.light [class*="bg-green-500\/10"]  { background-color: rgba(109,40,217,0.08) !important; }
+html.light [class*="bg-orange-500\/10"] { background-color: rgba(139,92,246,0.08) !important; }
+html.light [class*="bg-rose-500\/10"]   { background-color: rgba(168,85,247,0.08) !important; }
+
+/* Títulos dos cards de skill */
+html.light h3.text-blue-400,
+html.light h3.text-cyan-400,
+html.light h3.text-purple-400,
+html.light h3.text-green-400,
+html.light h3.text-orange-400,
+html.light h3.text-rose-400 { color: #7c3aed !important; }
+
+/* ---- Timeline ---- */
+html.light .experiencia-timeline {
+  --om-timeline-circle-bg: #f5f3ff !important;
+  --om-timeline-circle-border-color: #7c3aed !important;
+}
+html.light .timeline-content {
+  background: #ffffff !important;
+  border-color: #ede9fe !important;
+  box-shadow: 0 2px 8px rgba(109,40,217,0.07) !important;
+}
+html.light .timeline-content:hover {
+  background: #faf5ff !important;
+  border-color: rgba(124, 58, 237, 0.35) !important;
+}
+html.light .timeline-content li { color: #4b4570 !important; }
+html.light .timeline-content li::before { color: #7c3aed !important; }
+html.light .timeline-content strong { color: #2d2546 !important; }
+html.light .timeline-title { color: #2d2546 !important; }
+/* Company e date (conteúdo em innerHTML, não sofre scoping) */
+html.light .timeline-title .date    { color: #8b5cf6 !important; }
+html.light .timeline-title .company { color: #5b21b6 !important; }
+/* Fallback caso estejam no topo do DOM */
+html.light .date    { color: #8b5cf6 !important; }
+html.light .company { color: #5b21b6 !important; }
+
+/* ---- Skills pills ---- */
+html.light .skill-pill {
+  background: #f5f3ff !important;
+  color: #4b4570 !important;
+  border-color: #ddd6fe !important;
+}
+html.light .skill-pill:hover { color: #7c3aed !important; border-color: #7c3aed !important; }
+
+/* ---- Tech Marquee ---- */
+html.light .tech-pill {
+  background: #ffffff !important;
+  border-color: #ede9fe !important;
+  box-shadow: 0 1px 3px rgba(109,40,217,0.08);
+}
+html.light .tech-pill span { color: #6b7280 !important; }
+/* Ícones coloridos ficam ok no light, só ajusta o wrapper */
+html.light .marquee-wrapper { background: transparent; }
+
+/* ---- Seção de detalhes pessoais (blob circles) ---- */
+html.light .bg-blue-500   { background-color: #7c3aed !important; }
+html.light .bg-cyan-500   { background-color: #a855f7 !important; }
+html.light .bg-purple-500 { background-color: #7c3aed !important; }
+
+/* ---- Avatar border ---- */
+html.light .border-cyan-400\/40 { border-color: rgba(124,58,237,0.3) !important; }
+html.light .border-cyan-500\/30 { border-color: rgba(124,58,237,0.25) !important; }
+html.light .bg-cyan-500\/5  { background-color: rgba(124,58,237,0.05) !important; }
+html.light .text-cyan-300   { color: #8b5cf6 !important; }
+
+/* Nav link underline no light */
+html.light .nav-link::after { background: #7c3aed; }
+
+/* ---- Scrollbar ---- */
+html.light ::-webkit-scrollbar-track { background: #f5f3ff; }
+html.light ::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.3); }
+html.light ::-webkit-scrollbar-thumb:hover { background: rgba(124,58,237,0.6); }
+
+/* ---- Footer brand <EG /> (light) ---- */
+html.light .footer-brand {
+  color: #7c3aed !important;
+  opacity: 0.7;
+}
+
+/* ---- Certificações: texto do congresso (light) ---- */
+html.light .cert-year {
+  color: #7c3aed !important;
+}
+
+/* ---- Botão Entre em Contato (light) ---- */
+html.light .contact-btn {
+  background-image: linear-gradient(to right, #7c3aed, #a855f7) !important;
+  color: #ffffff !important;
+  box-shadow: 0 4px 15px rgba(124,58,237,0.3);
+}
+html.light .contact-btn:hover {
+  box-shadow: 0 6px 20px rgba(124,58,237,0.45) !important;
+}
+
+/* ---- Scroll indicator (light) ---- */
+html.light .scroll-indicator { color: #8b5cf6 !important; }
+html.light .scroll-mouse { border-color: #8b5cf6 !important; }
+html.light .scroll-dot { background-color: #7c3aed !important; }
+
+/* ---- Nome gradiente (light) ---- */
+html.light .text-gradient-name {
+  background: linear-gradient(90deg, #7c3aed, #a855f7, #7c3aed) !important;
+  background-size: 300% auto !important;
+  -webkit-background-clip: text !important;
+  background-clip: text !important;
+  -webkit-text-fill-color: transparent !important;
+}
+
+/* ---- Timeline path/gradient (light) ---- */
+html.light .experiencia-timeline {
+  --om-timeline-circle-border-color: #7c3aed !important;
+  --om-timeline-circle-bg: #f5f3ff !important;
+}
+
+/* ---- Theme toggle alinhamento ---- */
+om-theme-toggle {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
 }
 
 /* Scroll dot bounce */

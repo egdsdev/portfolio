@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, OnDestroy } from '@angular/core';
 import { HeaderComponent } from './features/header/header.component';
 import { PersonalDetailsComponent } from './features/personal-details/personal-details.component';
 import { EducationComponent } from './features/education/education.component';
@@ -40,4 +40,23 @@ import { FooterComponent } from './shared/components/footer/footer.component';
   `,
   styleUrl: './app.css'
 })
-export class App {}
+export class App implements OnInit, OnDestroy {
+  private themeObserver?: MutationObserver;
+
+  ngOnInit() {
+    this.themeObserver = new MutationObserver(() => {
+      const html = document.documentElement;
+      const theme = html.classList.contains('light') ? 'light' : 'dark';
+      localStorage.setItem('portfolio-theme', theme);
+    });
+
+    this.themeObserver.observe(document.documentElement, {
+      attributes: true,
+      attributeFilter: ['class']
+    });
+  }
+
+  ngOnDestroy() {
+    this.themeObserver?.disconnect();
+  }
+}

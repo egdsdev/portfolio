@@ -2,7 +2,7 @@
   position: relative;
   z-index: 10;
   padding: 1rem;
-  
+
   &::before {
     content: '';
     position: absolute;
@@ -22,7 +22,7 @@
     font-weight: normal;
     margin-bottom: 0.25rem;
   }
-  
+
   .company {
     font-size: 1.5rem;
     color: #60a5fa;
@@ -38,7 +38,7 @@
   background: rgba(30, 41, 59, 0.5);
   border-radius: 0.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-  
+
   ul {
     padding: 1rem 0 0 1rem;
     list-style-type: disc;
@@ -49,4 +49,19 @@
     margin-bottom: 0.5rem;
     line-height: 1.6;
   }
+}
+
+/* ---- Tema claro: sobrescreve linha e gradiente da timeline ---- */
+:host-context(html.light) ::ng-deep .om-timeline-path {
+  stroke: #7c3aed !important;
+}
+:host-context(html.light) ::ng-deep .om-timeline-path-gradient stop:first-child {
+  stop-color: #7c3aed !important;
+}
+:host-context(html.light) ::ng-deep .om-timeline-path-gradient stop:last-child {
+  stop-color: #a855f7 !important;
+}
+:host-context(html.light) ::ng-deep .om-timeline-circle {
+  stroke: #7c3aed !important;
+  fill: #f5f3ff !important;
 }

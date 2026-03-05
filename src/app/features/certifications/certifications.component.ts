@@ -20,7 +20,7 @@ import { Component } from '@angular/core';
               <span class="text-2xl">🏆</span>
             </div>
             <div>
-              <p class="text-yellow-400 text-xs font-mono tracking-wide mb-1 uppercase">2019 · V Congresso de Ciência e Tecnologia da PUCGO</p>
+              <p class="text-yellow-400 text-xs font-mono tracking-wide mb-1 uppercase cert-year">2019 · V Congresso de Ciência e Tecnologia da PUCGO</p>
               <h3 class="text-xl font-semibold text-white mb-2">Certificado de Mérito no TCC</h3>
               <p class="text-gray-300 text-sm leading-relaxed">"REDES IEEE 802.11 PROTOCOLOS DE SEGURANÇA, VULNERABILIDADES E PROTEÇÃO" — Apresentação Oral</p>
             </div>
