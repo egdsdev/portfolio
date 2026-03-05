@@ -1,61 +1,160 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component } from '@angular/core';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { NgxMarqueeComponent } from '@omnedia/ngx-marquee';
-import { faPhp, faLaravel, faPython, faNodeJs, faJs, faVuejs, faReact, faAngular, faHtml5, faCss3Alt, faGithub, faDocker, faAws, faGitAlt, faJira } from '@fortawesome/free-brands-svg-icons';
-import { faDatabase, faChartBar, faServer, faGears, faCode, faCloud } from '@fortawesome/free-solid-svg-icons';
+import { faPhp, faLaravel, faPython, faNodeJs, faJs, faVuejs, faReact, faAngular, faHtml5, faCss3Alt, faGithub, faDocker, faAws, faGitAlt, faJira, faLinux } from '@fortawesome/free-brands-svg-icons';
+import { faDatabase, faChartBar, faGears, faCode, faCloud, faFire } from '@fortawesome/free-solid-svg-icons';
 
 @Component({
   selector: 'app-tech-marquee',
   standalone: true,
-  imports: [FontAwesomeModule, NgxMarqueeComponent],
-  schemas: [CUSTOM_ELEMENTS_SCHEMA],
+  imports: [FontAwesomeModule],
   template: `
-    <div class="w-screen -mx-8 overflow-hidden">
-      <om-marquee>
-        <ng-template>
-          <div class="flex items-center gap-8 px-6">
-            <fa-icon [icon]="phpIcon" class="text-3xl text-indigo-400 hover:scale-125 transition-transform cursor-pointer" title="PHP"></fa-icon>
-            <fa-icon [icon]="laravelIcon" class="text-3xl text-red-500 hover:scale-125 transition-transform cursor-pointer" title="Laravel"></fa-icon>
-            <fa-icon [icon]="pythonIcon" class="text-3xl text-yellow-400 hover:scale-125 transition-transform cursor-pointer" title="Python"></fa-icon>
-            <fa-icon [icon]="nodeJsIcon" class="text-3xl text-green-500 hover:scale-125 transition-transform cursor-pointer" title="Node.js"></fa-icon>
-            <fa-icon [icon]="jsIcon" class="text-3xl text-yellow-300 hover:scale-125 transition-transform cursor-pointer" title="JavaScript"></fa-icon>
-            <fa-icon [icon]="codeIcon" class="text-3xl text-blue-500 hover:scale-125 transition-transform cursor-pointer" title="TypeScript"></fa-icon>
-            <fa-icon [icon]="vueIcon" class="text-3xl text-green-400 hover:scale-125 transition-transform cursor-pointer" title="Vue.js"></fa-icon>
-            <fa-icon [icon]="reactIcon" class="text-3xl text-cyan-400 hover:scale-125 transition-transform cursor-pointer" title="React"></fa-icon>
-            <fa-icon [icon]="angularIcon" class="text-3xl text-red-600 hover:scale-125 transition-transform cursor-pointer" title="Angular"></fa-icon>
-            <fa-icon [icon]="html5Icon" class="text-3xl text-orange-500 hover:scale-125 transition-transform cursor-pointer" title="HTML5"></fa-icon>
-            <fa-icon [icon]="css3Icon" class="text-3xl text-blue-500 hover:scale-125 transition-transform cursor-pointer" title="CSS3"></fa-icon>
-          </div>
-        </ng-template>
-      </om-marquee>
+    <div class="marquee-wrapper">
 
-      <om-marquee [reverse]="true">
-        <ng-template>
-          <div class="flex items-center gap-8 px-6">
-            <fa-icon [icon]="databaseIcon" class="text-3xl text-green-500 hover:scale-125 transition-transform cursor-pointer" title="MongoDB"></fa-icon>
-            <fa-icon [icon]="databaseIcon" class="text-3xl text-blue-400 hover:scale-125 transition-transform cursor-pointer" title="PostgreSQL"></fa-icon>
-            <fa-icon [icon]="databaseIcon" class="text-3xl text-red-400 hover:scale-125 transition-transform cursor-pointer" title="SQL Server"></fa-icon>
-            <fa-icon [icon]="awsIcon" class="text-3xl text-yellow-500 hover:scale-125 transition-transform cursor-pointer" title="AWS"></fa-icon>
-            <fa-icon [icon]="cloudIcon" class="text-3xl text-blue-500 hover:scale-125 transition-transform cursor-pointer" title="Azure"></fa-icon>
-            <fa-icon [icon]="dockerIcon" class="text-3xl text-blue-400 hover:scale-125 transition-transform cursor-pointer" title="Docker"></fa-icon>
-            <fa-icon [icon]="gitIcon" class="text-3xl text-orange-600 hover:scale-125 transition-transform cursor-pointer" title="Git"></fa-icon>
-            <fa-icon [icon]="chartIcon" class="text-3xl text-yellow-500 hover:scale-125 transition-transform cursor-pointer" title="Power BI"></fa-icon>
-            <fa-icon [icon]="jiraIcon" class="text-3xl text-blue-500 hover:scale-125 transition-transform cursor-pointer" title="Jira"></fa-icon>
-            <fa-icon [icon]="gearsIcon" class="text-3xl text-orange-500 hover:scale-125 transition-transform cursor-pointer" title="Pentaho"></fa-icon>
-          </div>
-        </ng-template>
-      </om-marquee>
+      <!-- Linha 1 -->
+      <div class="marquee-track">
+        <div class="marquee-content">
+          <div class="tech-pill indigo"><fa-icon [icon]="phpIcon"></fa-icon><span>PHP</span></div>
+          <div class="tech-pill red"><fa-icon [icon]="laravelIcon"></fa-icon><span>Laravel</span></div>
+          <div class="tech-pill yellow"><fa-icon [icon]="pythonIcon"></fa-icon><span>Python</span></div>
+          <div class="tech-pill green"><fa-icon [icon]="nodeJsIcon"></fa-icon><span>Node.js</span></div>
+          <div class="tech-pill amber"><fa-icon [icon]="jsIcon"></fa-icon><span>JavaScript</span></div>
+          <div class="tech-pill blue"><fa-icon [icon]="codeIcon"></fa-icon><span>TypeScript</span></div>
+          <div class="tech-pill emerald"><fa-icon [icon]="vueIcon"></fa-icon><span>Vue.js</span></div>
+          <div class="tech-pill cyan"><fa-icon [icon]="reactIcon"></fa-icon><span>React</span></div>
+          <div class="tech-pill rose"><fa-icon [icon]="angularIcon"></fa-icon><span>Angular</span></div>
+          <div class="tech-pill orange"><fa-icon [icon]="html5Icon"></fa-icon><span>HTML5</span></div>
+          <div class="tech-pill sky"><fa-icon [icon]="css3Icon"></fa-icon><span>CSS3</span></div>
+          <div class="tech-pill slate"><fa-icon [icon]="githubIcon"></fa-icon><span>GitHub</span></div>
+        </div>
+        <!-- duplicado para loop contínuo -->
+        <div class="marquee-content" aria-hidden="true">
+          <div class="tech-pill indigo"><fa-icon [icon]="phpIcon"></fa-icon><span>PHP</span></div>
+          <div class="tech-pill red"><fa-icon [icon]="laravelIcon"></fa-icon><span>Laravel</span></div>
+          <div class="tech-pill yellow"><fa-icon [icon]="pythonIcon"></fa-icon><span>Python</span></div>
+          <div class="tech-pill green"><fa-icon [icon]="nodeJsIcon"></fa-icon><span>Node.js</span></div>
+          <div class="tech-pill amber"><fa-icon [icon]="jsIcon"></fa-icon><span>JavaScript</span></div>
+          <div class="tech-pill blue"><fa-icon [icon]="codeIcon"></fa-icon><span>TypeScript</span></div>
+          <div class="tech-pill emerald"><fa-icon [icon]="vueIcon"></fa-icon><span>Vue.js</span></div>
+          <div class="tech-pill cyan"><fa-icon [icon]="reactIcon"></fa-icon><span>React</span></div>
+          <div class="tech-pill rose"><fa-icon [icon]="angularIcon"></fa-icon><span>Angular</span></div>
+          <div class="tech-pill orange"><fa-icon [icon]="html5Icon"></fa-icon><span>HTML5</span></div>
+          <div class="tech-pill sky"><fa-icon [icon]="css3Icon"></fa-icon><span>CSS3</span></div>
+          <div class="tech-pill slate"><fa-icon [icon]="githubIcon"></fa-icon><span>GitHub</span></div>
+        </div>
+      </div>
+
+      <!-- Linha 2 (reversa) -->
+      <div class="marquee-track reverse">
+        <div class="marquee-content">
+          <div class="tech-pill green"><fa-icon [icon]="databaseIcon"></fa-icon><span>MongoDB</span></div>
+          <div class="tech-pill blue"><fa-icon [icon]="databaseIcon"></fa-icon><span>PostgreSQL</span></div>
+          <div class="tech-pill red"><fa-icon [icon]="databaseIcon"></fa-icon><span>SQL Server</span></div>
+          <div class="tech-pill yellow"><fa-icon [icon]="awsIcon"></fa-icon><span>AWS</span></div>
+          <div class="tech-pill sky"><fa-icon [icon]="cloudIcon"></fa-icon><span>Azure</span></div>
+          <div class="tech-pill sky"><fa-icon [icon]="dockerIcon"></fa-icon><span>Docker</span></div>
+          <div class="tech-pill orange"><fa-icon [icon]="gitIcon"></fa-icon><span>Git</span></div>
+          <div class="tech-pill amber"><fa-icon [icon]="chartIcon"></fa-icon><span>Power BI</span></div>
+          <div class="tech-pill blue"><fa-icon [icon]="jiraIcon"></fa-icon><span>Jira</span></div>
+          <div class="tech-pill orange"><fa-icon [icon]="gearsIcon"></fa-icon><span>Pentaho</span></div>
+          <div class="tech-pill slate"><fa-icon [icon]="linuxIcon"></fa-icon><span>Linux</span></div>
+          <div class="tech-pill amber"><fa-icon [icon]="fireIcon"></fa-icon><span>Firebase</span></div>
+        </div>
+        <div class="marquee-content" aria-hidden="true">
+          <div class="tech-pill green"><fa-icon [icon]="databaseIcon"></fa-icon><span>MongoDB</span></div>
+          <div class="tech-pill blue"><fa-icon [icon]="databaseIcon"></fa-icon><span>PostgreSQL</span></div>
+          <div class="tech-pill red"><fa-icon [icon]="databaseIcon"></fa-icon><span>SQL Server</span></div>
+          <div class="tech-pill yellow"><fa-icon [icon]="awsIcon"></fa-icon><span>AWS</span></div>
+          <div class="tech-pill sky"><fa-icon [icon]="cloudIcon"></fa-icon><span>Azure</span></div>
+          <div class="tech-pill sky"><fa-icon [icon]="dockerIcon"></fa-icon><span>Docker</span></div>
+          <div class="tech-pill orange"><fa-icon [icon]="gitIcon"></fa-icon><span>Git</span></div>
+          <div class="tech-pill amber"><fa-icon [icon]="chartIcon"></fa-icon><span>Power BI</span></div>
+          <div class="tech-pill blue"><fa-icon [icon]="jiraIcon"></fa-icon><span>Jira</span></div>
+          <div class="tech-pill orange"><fa-icon [icon]="gearsIcon"></fa-icon><span>Pentaho</span></div>
+          <div class="tech-pill slate"><fa-icon [icon]="linuxIcon"></fa-icon><span>Linux</span></div>
+          <div class="tech-pill amber"><fa-icon [icon]="fireIcon"></fa-icon><span>Firebase</span></div>
+        </div>
+      </div>
+
     </div>
-  `
+  `,
+  styles: [`
+    .marquee-wrapper {
+      width: 100vw;
+      margin-left: calc(-50vw + 50%);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      padding: 0.5rem 0;
+    }
+
+    .marquee-track {
+      display: flex;
+      width: max-content;
+      animation: scroll-right 35s linear infinite;
+    }
+    .marquee-track.reverse {
+      animation: scroll-left 35s linear infinite;
+    }
+    .marquee-track:hover {
+      animation-play-state: paused;
+    }
+
+    .marquee-content {
+      display: flex;
+      align-items: center;
+      flex-shrink: 0;
+    }
+
+    @keyframes scroll-right {
+      0%   { transform: translateX(-50%); }
+      100% { transform: translateX(0); }
+    }
+    @keyframes scroll-left {
+      0%   { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
+    }
+
+    .tech-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 500;
+      white-space: nowrap;
+      margin: 0 0.35rem;
+      background: rgba(255,255,255,0.04);
+      border: 1px solid rgba(255,255,255,0.07);
+      transition: transform 0.2s, background 0.2s;
+      cursor: default;
+    }
+    .tech-pill:hover {
+      transform: translateY(-2px) scale(1.06);
+      background: rgba(255,255,255,0.08);
+    }
+    .tech-pill span { color: #94a3b8; font-family: monospace; }
+
+    .indigo { color: #818cf8; }
+    .red     { color: #f87171; }
+    .yellow  { color: #fde68a; }
+    .green   { color: #4ade80; }
+    .amber   { color: #fbbf24; }
+    .blue    { color: #60a5fa; }
+    .emerald { color: #34d399; }
+    .cyan    { color: #22d3ee; }
+    .rose    { color: #fb7185; }
+    .orange  { color: #fb923c; }
+    .sky     { color: #38bdf8; }
+    .slate   { color: #94a3b8; }
+  `]
 })
 export class TechMarqueeComponent {
-  // Backend icons
   phpIcon = faPhp;
-  pythonIcon = faPython;
   laravelIcon = faLaravel;
+  pythonIcon = faPython;
   nodeJsIcon = faNodeJs;
-  
-  // Frontend icons
   jsIcon = faJs;
   codeIcon = faCode;
   vueIcon = faVuejs;
@@ -63,8 +162,7 @@ export class TechMarqueeComponent {
   angularIcon = faAngular;
   html5Icon = faHtml5;
   css3Icon = faCss3Alt;
-  
-  // Database and tools icons
+  githubIcon = faGithub;
   databaseIcon = faDatabase;
   chartIcon = faChartBar;
   gearsIcon = faGears;
@@ -73,4 +171,8 @@ export class TechMarqueeComponent {
   gitIcon = faGitAlt;
   jiraIcon = faJira;
   awsIcon = faAws;
+  linuxIcon = faLinux;
+  fireIcon = faFire;
 }
+
+

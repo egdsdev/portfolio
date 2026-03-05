@@ -1,3 +1,5 @@
+@import "tailwindcss";
+
 /* You can add global styles to this file, and also import other style files */
 
 /* Estilos do Marquee */
@@ -58,6 +60,14 @@ om-marquee {
 
 .timeline-content li:last-child {
   margin-bottom: 0;
+}
+
+/* Força animação do marquee independente de IntersectionObserver */
+.om-marquee.marquee-running {
+  --om-marquee-pause: running;
+}
+.om-marquee .om-marquee-content.outOfView > .om-marquee-item-wrapper {
+  animation-play-state: running !important;
 }
 
 .om-glitch {
@@ -125,5 +135,3 @@ om-marquee {
   50% { transform: translateY(8px); opacity: 0.3; }
 }
 .scroll-dot { animation: scrollBounce 1.5s ease-in-out infinite; }
-
-@import "tailwindcss";

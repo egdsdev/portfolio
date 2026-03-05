@@ -4,7 +4,6 @@
   background: radial-gradient(ellipse at 20% 50%, #0c1929 0%, #06090f 70%);
   min-height: 100vh;
   position: relative;
-  overflow-x: hidden;
 }
 
 .starfield {
