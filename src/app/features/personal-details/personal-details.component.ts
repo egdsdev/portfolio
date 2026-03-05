@@ -18,7 +18,7 @@ import { TechMarqueeComponent } from '../../shared/components/tech-marquee/tech-
         <!-- Avatar -->
         <div class="relative inline-flex items-center justify-center mb-5">
           <div class="avatar-ring w-32 h-32 rounded-full border-2 border-cyan-400/40 overflow-hidden">
-            <img src="/profile.jpg" alt="Elias Gomes" class="w-full h-full object-cover object-top">
+            <img src="profile.jpg" alt="Elias Gomes" class="w-full h-full object-cover object-top">
           </div>
           <span class="absolute top-1 right-1 flex h-4 w-4">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
