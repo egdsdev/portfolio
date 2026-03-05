@@ -371,6 +371,13 @@ html.light .devmatch-cta-btn {
   background-image: linear-gradient(to right, #7c3aed, #a855f7) !important;
   color: #ffffff !important;
 }
+html.light .devmatch-input {
+  background: #f5f3ff !important;
+  border-color: #ddd6fe !important;
+  color: #2d1b69 !important;
+}
+html.light .devmatch-input::placeholder { color: #a78bfa !important; opacity: 0.6; }
+html.light .devmatch-input:focus { border-color: #7c3aed !important; }
 
 /* ---- Timeline path/gradient (light) ---- */
 html.light .experiencia-timeline {

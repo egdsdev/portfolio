@@ -9,6 +9,7 @@ interface SkillArea {
   importance: number;
   color: string;
   techs: string[];
+  custom?: boolean;
 }
 
 interface ToggleItem {
@@ -46,29 +47,102 @@ interface ToggleItem {
             <!-- Sliders -->
             <div class="devmatch-card bg-gray-800/50 rounded-2xl border border-gray-700/50 p-6 backdrop-blur-sm">
               <h3 class="devmatch-card-title text-white font-semibold mb-1">⚡ Áreas de atuação</h3>
-              <p class="text-gray-500 text-xs mb-5">Arraste para indicar a importância de cada área</p>
-              <div class="space-y-5">
-                @for (area of areas; track area.id) {
-                  <div>
+              <p class="text-gray-500 text-xs mb-5">Arraste para definir a importância. O badge mostra o quanto Elias cobre cada área.</p>
+
+              <!-- Lista com scroll -->
+              <div class="areas-scroll-list max-h-[480px] overflow-y-auto pr-2 space-y-5">
+                @for (area of allAreas; track area.id) {
+                  <div class="group">
                     <div class="flex items-center justify-between mb-2">
-                      <span class="text-sm text-gray-300">{{ area.icon }} {{ area.label }}</span>
-                      <span class="text-xs font-mono px-2 py-0.5 rounded-full transition-all duration-300"
-                            [style.background]="area.importance > 0 ? area.color + '20' : 'transparent'"
-                            [style.color]="area.importance > 0 ? area.color : '#6b7280'">
-                        {{ importanceLabel(area.importance) }}
-                      </span>
+                      <div class="flex items-center gap-2 min-w-0">
+                        <span class="text-sm text-gray-300 truncate">{{ area.icon }} {{ area.label }}</span>
+                        @if (area.custom) {
+                          <span class="text-xs px-1.5 py-0.5 rounded bg-gray-700/60 text-gray-500 leading-none shrink-0">custom</span>
+                        }
+                        @if (area.importance > 0) {
+                          <span class="text-xs px-1.5 py-0.5 rounded-full leading-none shrink-0 transition-all duration-300"
+                                [style.background]="area.eliasScore >= 70 ? '#16a34a22' : area.eliasScore >= 40 ? '#d9770622' : '#dc262622'"
+                                [style.color]="area.eliasScore >= 70 ? '#4ade80' : area.eliasScore >= 40 ? '#fb923c' : '#f87171'">
+                            {{ area.eliasScore >= 70 ? '✓' : area.eliasScore >= 40 ? '~' : '✗' }} {{ area.eliasScore }}%
+                          </span>
+                        }
+                      </div>
+                      <div class="flex items-center gap-2 shrink-0">
+                        <span class="text-xs font-mono px-2 py-0.5 rounded-full transition-all duration-300"
+                              [style.background]="area.importance > 0 ? area.color + '20' : 'transparent'"
+                              [style.color]="area.importance > 0 ? area.color : '#6b7280'">
+                          {{ importanceLabel(area.importance) }}
+                        </span>
+                        @if (area.custom) {
+                          <button (click)="removeCustomArea(area.id)"
+                                  class="text-gray-600 hover:text-red-400 transition-colors text-xs opacity-0 group-hover:opacity-100 leading-none">✕</button>
+                        }
+                      </div>
                     </div>
                     <input type="range" min="0" max="100" step="10"
                            [(ngModel)]="area.importance"
                            class="devmatch-slider w-full rounded-full outline-none cursor-pointer"
                            [style.accent-color]="area.color">
-                    @if (area.importance > 0) {
+                    @if (area.importance > 0 && area.techs.length > 0) {
                       <div class="flex flex-wrap gap-1 mt-2 animate-fade-in">
                         @for (tech of area.techs; track tech) {
                           <span class="text-xs px-2 py-0.5 rounded-full bg-gray-700/50 text-gray-400 border border-gray-600/30">{{ tech }}</span>
                         }
                       </div>
                     }
+                    @if (area.custom && area.importance > 0) {
+                      <p class="text-xs mt-1.5 text-gray-500">
+                        Nota que você deu:
+                        <span class="font-mono font-semibold"
+                              [style.color]="area.eliasScore >= 70 ? '#4ade80' : area.eliasScore >= 40 ? '#fb923c' : '#f87171'">
+                          {{ area.eliasScore }}%
+                        </span>
+                      </p>
+                    }
+                  </div>
+                }
+              </div>
+
+              <!-- Adicionar área personalizada -->
+              <div class="mt-5 pt-5 border-t border-gray-700/40">
+                @if (!showCustomForm) {
+                  <button (click)="showCustomForm = true"
+                          class="w-full py-2 rounded-xl border border-dashed border-gray-700 text-gray-500 hover:border-blue-500/50 hover:text-blue-400 transition-all text-sm">
+                    + Adicionar área personalizada
+                  </button>
+                } @else {
+                  <div class="space-y-4 animate-fade-in">
+                    <p class="devmatch-card-title text-white text-sm font-semibold">Nova área personalizada</p>
+                    <input type="text"
+                           [(ngModel)]="newAreaLabel"
+                           placeholder="Ex: Automação RPA, Sistemas embarcados..."
+                           maxlength="40"
+                           class="devmatch-input w-full bg-gray-900/60 border border-gray-700/60 rounded-xl px-3 py-2 text-sm text-gray-200 placeholder-gray-600 outline-none focus:border-blue-500/60 transition-colors">
+                    <div>
+                      <div class="flex justify-between text-xs mb-2">
+                        <span class="text-gray-400">Nota que você dá para Elias nessa área</span>
+                        <span class="font-mono font-bold"
+                              [style.color]="newAreaScore >= 70 ? '#4ade80' : newAreaScore >= 40 ? '#fb923c' : '#f87171'">
+                          {{ newAreaScore }}%
+                        </span>
+                      </div>
+                      <input type="range" min="0" max="100" step="5"
+                             [(ngModel)]="newAreaScore"
+                             class="devmatch-slider w-full rounded-full outline-none cursor-pointer"
+                             style="accent-color: #60a5fa">
+                      <p class="text-xs text-gray-600 mt-1.5">0 = não tem &nbsp;·&nbsp; 50 = não sei &nbsp;·&nbsp; 100 = especialista</p>
+                    </div>
+                    <div class="flex gap-2">
+                      <button (click)="addCustomArea()"
+                              [disabled]="!newAreaLabel.trim()"
+                              class="flex-1 py-2 rounded-xl bg-blue-500/20 border border-blue-500/40 text-blue-300 hover:bg-blue-500/30 transition-all text-sm disabled:opacity-40 disabled:cursor-not-allowed">
+                        Adicionar
+                      </button>
+                      <button (click)="cancelCustomForm()"
+                              class="px-4 py-2 rounded-xl border border-gray-700 text-gray-500 hover:text-gray-300 transition-all text-sm">
+                        Cancelar
+                      </button>
+                    </div>
                   </div>
                 }
               </div>
@@ -216,6 +290,13 @@ interface ToggleItem {
       animation: devMatchFadeIn 0.3s ease;
     }
 
+    .areas-scroll-list::-webkit-scrollbar { width: 4px; }
+    .areas-scroll-list::-webkit-scrollbar-track { background: transparent; }
+    .areas-scroll-list::-webkit-scrollbar-thumb { background: rgba(100,116,139,0.3); border-radius: 4px; }
+    .areas-scroll-list::-webkit-scrollbar-thumb:hover { background: rgba(100,116,139,0.55); }
+
+    .devmatch-input:focus { box-shadow: 0 0 0 2px rgba(96,165,250,0.2); }
+
     @keyframes devMatchFadeIn {
       from { opacity: 0; transform: translateY(6px); }
       to   { opacity: 1; transform: translateY(0); }
@@ -226,12 +307,35 @@ export class DevMatchComponent {
   readonly circumference = 2 * Math.PI * 72; // ~452.4
 
   areas: SkillArea[] = [
-    { id: 'backend',  label: 'Backend & APIs',    icon: '⚙️', eliasScore: 95, importance: 0, color: '#60a5fa', techs: ['PHP', 'Laravel', 'Python', 'Node.js', 'REST', 'SOAP'] },
-    { id: 'frontend', label: 'Frontend & UI',     icon: '🖥️', eliasScore: 85, importance: 0, color: '#22d3ee', techs: ['Vue.js', 'React', 'Angular', 'TypeScript', 'Tailwind'] },
-    { id: 'database', label: 'Banco de Dados',    icon: '🗄️', eliasScore: 92, importance: 0, color: '#a78bfa', techs: ['PostgreSQL', 'MySQL', 'SQL Server', 'MongoDB', 'Procedures'] },
-    { id: 'devops',   label: 'Cloud & DevOps',    icon: '☁️', eliasScore: 78, importance: 0, color: '#34d399', techs: ['Docker', 'GitHub Actions', 'Azure', 'AWS', 'CI/CD'] },
-    { id: 'bi',       label: 'BI & Analytics',    icon: '📊', eliasScore: 88, importance: 0, color: '#fb923c', techs: ['Power BI', 'DAX', 'Pentaho', 'SQL Analítico'] },
-    { id: 'ai',       label: 'Integração com IA', icon: '🤖', eliasScore: 75, importance: 0, color: '#f472b6', techs: ['OpenAI', 'Gemini', 'APIs LLM', 'Automação inteligente'] },
+    // --- Áreas fortes de Elias ---
+    { id: 'backend',    label: 'Backend & APIs',          icon: '⚙️',  eliasScore: 95, importance: 0, color: '#60a5fa', techs: ['PHP', 'Laravel', 'Python', 'Node.js', 'REST', 'SOAP'] },
+    { id: 'frontend',   label: 'Frontend & UI',           icon: '🖥️',  eliasScore: 85, importance: 0, color: '#22d3ee', techs: ['Vue.js', 'React', 'Angular', 'TypeScript', 'Tailwind'] },
+    { id: 'database',   label: 'Banco de Dados',          icon: '🗄️',  eliasScore: 92, importance: 0, color: '#a78bfa', techs: ['PostgreSQL', 'MySQL', 'SQL Server', 'MongoDB', 'Procedures'] },
+    { id: 'devops',     label: 'Cloud & DevOps',          icon: '☁️',  eliasScore: 78, importance: 0, color: '#34d399', techs: ['Docker', 'GitHub Actions', 'Azure', 'AWS', 'CI/CD'] },
+    { id: 'bi',         label: 'BI & Analytics',          icon: '📊',  eliasScore: 88, importance: 0, color: '#fb923c', techs: ['Power BI', 'DAX', 'Pentaho', 'SQL Analítico'] },
+    { id: 'ai',         label: 'Integração com IA',       icon: '🤖',  eliasScore: 75, importance: 0, color: '#f472b6', techs: ['OpenAI', 'Gemini', 'APIs LLM', 'Automação inteligente'] },
+    { id: 'arch',       label: 'Arquitetura de Software', icon: '🏗️',  eliasScore: 68, importance: 0, color: '#fbbf24', techs: ['DDD', 'Clean Arch', 'Microserviços', 'CQRS', 'Event Sourcing'] },
+    // --- Áreas que Elias não domina (resultado mais justo) ---
+    { id: 'mobile',     label: 'Mobile nativo / cross',   icon: '📱',  eliasScore: 25, importance: 0, color: '#38bdf8', techs: ['Swift', 'Kotlin', 'Flutter', 'React Native', 'Expo'] },
+    { id: 'ml',         label: 'Machine Learning',        icon: '🧠',  eliasScore: 35, importance: 0, color: '#818cf8', techs: ['Python ML', 'TensorFlow', 'scikit-learn', 'Pandas', 'Jupyter'] },
+    { id: 'qa',         label: 'QA / Testes automatizados', icon: '🧪', eliasScore: 50, importance: 0, color: '#4ade80', techs: ['Jest', 'Cypress', 'Playwright', 'PHPUnit', 'Selenium'] },
+    { id: 'security',   label: 'Segurança / Pentest',     icon: '🔐',  eliasScore: 30, importance: 0, color: '#f87171', techs: ['OWASP', 'Pentest', 'SAST', 'Análise de vulnerabilidades'] },
+    { id: 'ux',         label: 'UX / Design de Produto',  icon: '🎨',  eliasScore: 40, importance: 0, color: '#e879f9', techs: ['Figma', 'Prototipagem', 'Design System', 'User Research'] },
+    { id: 'infra',      label: 'Infra / K8s / Terraform', icon: '🛠️',  eliasScore: 38, importance: 0, color: '#94a3b8', techs: ['Kubernetes', 'Terraform', 'Ansible', 'Helm', 'Linux Admin'] },
+    { id: 'blockchain', label: 'Blockchain / Web3',       icon: '⛓️',  eliasScore: 10, importance: 0, color: '#c084fc', techs: ['Solidity', 'Ethereum', 'Smart Contracts', 'Web3.js'] },
+    { id: 'gamedev',    label: 'Game Development',        icon: '🎮',  eliasScore: 8,  importance: 0, color: '#fdba74', techs: ['Unity', 'Unreal', 'Godot', 'C#', 'C++'] },
+    { id: 'embedded',   label: 'Embarcados / IoT',        icon: '📡',  eliasScore: 12, importance: 0, color: '#bef264', techs: ['Arduino', 'ESP32', 'MQTT', 'C/C++', 'Raspberry Pi'] },
+  ];
+
+  customAreas: SkillArea[] = [];
+  showCustomForm = false;
+  newAreaLabel = '';
+  newAreaScore = 50;
+
+  private readonly customColors = [
+    '#38bdf8','#c084fc','#4ade80','#fb7185',
+    '#a3e635','#fbbf24','#67e8f9','#f9a8d4',
+    '#86efac','#fcd34d'
   ];
 
   toggles: ToggleItem[] = [
@@ -245,6 +349,36 @@ export class DevMatchComponent {
     { id: 'legacy',      label: 'Migração de sistemas legados',  icon: '🔧', eliasHas: true,  active: false },
   ];
 
+  addCustomArea(): void {
+    if (!this.newAreaLabel.trim()) return;
+    const color = this.customColors[this.customAreas.length % this.customColors.length];
+    this.customAreas.push({
+      id: 'custom_' + Date.now(),
+      label: this.newAreaLabel.trim(),
+      icon: '✦',
+      eliasScore: this.newAreaScore,
+      importance: 0,
+      color,
+      techs: [],
+      custom: true,
+    });
+    this.cancelCustomForm();
+  }
+
+  removeCustomArea(id: string): void {
+    this.customAreas = this.customAreas.filter(a => a.id !== id);
+  }
+
+  cancelCustomForm(): void {
+    this.newAreaLabel = '';
+    this.newAreaScore = 50;
+    this.showCustomForm = false;
+  }
+
+  get allAreas(): SkillArea[] {
+    return [...this.areas, ...this.customAreas];
+  }
+
   importanceLabel(v: number): string {
     if (v === 0)   return 'ignorar';
     if (v <= 30)   return 'baixa';
@@ -254,7 +388,7 @@ export class DevMatchComponent {
   }
 
   get activeAreas(): SkillArea[] {
-    return this.areas.filter(a => a.importance > 0);
+    return this.allAreas.filter(a => a.importance > 0);
   }
 
   get hasAny(): boolean {
@@ -262,9 +396,9 @@ export class DevMatchComponent {
   }
 
   get sliderMatch(): number {
-    const total = this.areas.reduce((s, a) => s + a.importance, 0);
+    const total = this.allAreas.reduce((s, a) => s + a.importance, 0);
     if (total === 0) return 0;
-    return Math.round(this.areas.reduce((s, a) => s + a.importance * a.eliasScore, 0) / total);
+    return Math.round(this.allAreas.reduce((s, a) => s + a.importance * a.eliasScore, 0) / total);
   }
 
   get toggleMatch(): number {
