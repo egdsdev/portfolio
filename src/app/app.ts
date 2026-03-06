@@ -1,5 +1,6 @@
-import { Component, OnInit, OnDestroy, inject } from '@angular/core';
-import { RouterOutlet, Router } from '@angular/router';
+import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
+import { filter } from 'rxjs';
 import { AnalyticsService } from './core/services/analytics.service';
 import { HeaderComponent } from './features/header/header.component';
 import { PersonalDetailsComponent } from './features/personal-details/personal-details.component';
@@ -32,21 +33,23 @@ import { FooterComponent } from './shared/components/footer/footer.component';
       <div class="stars stars-md"></div>
       <div class="stars stars-lg"></div>
     </div>
-    <app-header></app-header>
-    @if (isAdminRoute()) {
-      <router-outlet></router-outlet>
-    } @else {
-      <div class="min-h-screen text-gray-100 relative">
-        <app-personal-details></app-personal-details>
-        <app-education></app-education>
-        <app-experience></app-experience>
-        <app-skills></app-skills>
-        <app-dev-match></app-dev-match>
-        <app-certifications></app-certifications>
-        <app-contact></app-contact>
-        <app-footer></app-footer>
-      </div>
-      <router-outlet></router-outlet>
+    @if (routerResolved()) {
+      <app-header></app-header>
+      @if (isAdminRoute()) {
+        <router-outlet></router-outlet>
+      } @else {
+        <div class="min-h-screen text-gray-100 relative">
+          <app-personal-details></app-personal-details>
+          <app-education></app-education>
+          <app-experience></app-experience>
+          <app-skills></app-skills>
+          <app-dev-match></app-dev-match>
+          <app-certifications></app-certifications>
+          <app-contact></app-contact>
+          <app-footer></app-footer>
+        </div>
+        <router-outlet></router-outlet>
+      }
     }
   `,
   styleUrl: './app.css'
@@ -56,14 +59,27 @@ export class App implements OnInit, OnDestroy {
   private router = inject(Router);
   private analytics = inject(AnalyticsService);
 
+  routerResolved = signal(false);
+  isAdmin = signal(false);
+
   isAdminRoute(): boolean {
-    return this.router.url.startsWith('/admin');
+    return this.isAdmin();
   }
 
   ngOnInit() {
-    if (!this.isAdminRoute()) {
-      this.analytics.trackVisit();
-    }
+    this.router.events.pipe(
+      filter(e => e instanceof NavigationEnd),
+    ).subscribe((e) => {
+      const url = (e as NavigationEnd).urlAfterRedirects;
+      const admin = url.startsWith('/admin');
+      this.isAdmin.set(admin);
+      if (!this.routerResolved()) {
+        this.routerResolved.set(true);
+        if (!admin) {
+          this.analytics.trackVisit();
+        }
+      }
+    });
 
     this.themeObserver = new MutationObserver(() => {
       const html = document.documentElement;

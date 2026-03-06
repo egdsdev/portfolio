@@ -138,13 +138,13 @@ interface AccessRecord {
 
           <!-- Gráfico de linha (Chart.js) -->
           <div class="admin-card border rounded-xl p-5">
-            <p class="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">📈 Acessos — Últimos 7 dias</p>
+            <p class="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">Acessos — Últimos 7 dias</p>
             <canvas #chartCanvas style="width:100%;max-height:220px"></canvas>
           </div>
 
           <!-- Mapa Leaflet -->
           <div class="admin-card border rounded-xl p-5">
-            <p class="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">🌍 Localização dos Acessos</p>
+            <p class="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">Localização dos Acessos</p>
             @if (loading) {
               <div class="h-64 flex items-center justify-center text-gray-600 text-sm animate-pulse">Carregando mapa...</div>
             } @else if (!hasMapCoords) {
@@ -188,31 +188,29 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   hasMapCoords = false;
 
   async ngOnInit(): Promise<void> {
-    try {
-      const [aiMatches, devMatches, visitors] = await Promise.all([
-        this.firebase.getAiMatches(),
-        this.firebase.getDevMatches(),
-        this.firebase.getVisitors(),
-      ]);
-      this.aiMatches = aiMatches;
-      this.devMatches = devMatches;
-      this.visitors = visitors;
-      this.visitorMap = new Map(visitors.filter(v => v.id).map(v => [v.id!, v]));
-      this.uniqueCountries = new Set(visitors.map(v => v.country).filter(Boolean)).size;
-      this.mobileCount = visitors.filter(v => this.isMobile(v.userAgent)).length;
-      this.hasMapCoords = visitors.some(v => v.lat != null && v.lng != null);
-    } catch {
-      this.aiMatches = [];
-      this.devMatches = [];
-      this.visitors = [];
-    } finally {
-      this.loading = false;
-      this.cdr.detectChanges();
-      setTimeout(() => {
-        this.initLineChart();
-        this.initMap();
-      }, 50);
-    }
+    const settle = <T>(p: Promise<T>, fallback: T) =>
+      p.catch((err: unknown) => { console.error('[Dashboard]', err); return fallback; });
+
+    const [aiMatches, devMatches, visitors] = await Promise.all([
+      settle(this.firebase.getAiMatches(), [] as AiMatchRecord[]),
+      settle(this.firebase.getDevMatches(), [] as DevMatchRecord[]),
+      settle(this.firebase.getVisitors(), [] as VisitorRecord[]),
+    ]);
+
+    this.aiMatches = aiMatches;
+    this.devMatches = devMatches;
+    this.visitors = visitors;
+    this.visitorMap = new Map(visitors.filter(v => v.id).map(v => [v.id!, v]));
+    this.uniqueCountries = new Set(visitors.map(v => v.country).filter(Boolean)).size;
+    this.mobileCount = visitors.filter(v => this.isMobile(v.userAgent)).length;
+    this.hasMapCoords = visitors.some(v => v.lat != null && v.lng != null);
+
+    this.loading = false;
+    this.cdr.detectChanges();
+    setTimeout(() => {
+      this.initLineChart();
+      this.initMap();
+    }, 50);
   }
 
   ngAfterViewInit(): void {}
