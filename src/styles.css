@@ -188,6 +188,7 @@ html.light .text-gray-200  { color: #3b3558 !important; }
 html.light .text-gray-300  { color: #4b4570 !important; }
 html.light .text-gray-400  { color: #6b7280 !important; }
 html.light .text-white     { color: #2d2546 !important; }
+html.light nav button.bg-red-600 { color: #ffffff !important; }
 html.light .text-slate-300 { color: #4b4570 !important; }
 html.light .text-slate-400 { color: #6b7280 !important; }
 
