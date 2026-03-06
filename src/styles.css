@@ -485,8 +485,8 @@ html.light om-theme-toggle span {
   color: #6b7280 !important;
 }
 
-/* Dashboard link: blue in dark, purple in light */
-.admin-dashboard-link { color: #3b82f6 !important; }
-.admin-dashboard-link:hover { color: #60a5fa !important; }
+/* Dashboard link: cyan in dark, purple in light */
+.admin-dashboard-link { color: #22d3ee !important; }
+.admin-dashboard-link:hover { color: #67e8f9 !important; }
 html.light .admin-dashboard-link { color: #7c3aed !important; }
 html.light .admin-dashboard-link:hover { color: #6d28d9 !important; }

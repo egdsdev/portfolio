@@ -20,8 +20,11 @@ import { FirebaseService } from '../../core/services/firebase.service';
           <li><a href="#certificacoes" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">Certificações</a></li>
           <li><a href="#contato" class="px-4 py-1.5 rounded-full border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 transition-all text-sm tracking-wide">Contato</a></li>
           @if (loggedIn()) {
-            <li><a routerLink="/admin" class="admin-dashboard-link nav-link text-blue-400 hover:text-blue-300 transition-colors text-sm tracking-wide font-semibold">Dashboard</a></li>
-            <li><button (click)="logout()" class="text-gray-500 hover:text-red-400 transition-colors text-sm tracking-wide">Sair</button></li>
+            <li class="flex items-center gap-4">
+              <a routerLink="/admin" class="admin-dashboard-link nav-link text-cyan-400 hover:text-cyan-300 transition-colors text-sm tracking-wide">Dashboard</a>
+              <span class="text-gray-700 select-none">|</span>
+              <button (click)="logout()" class="text-gray-400 hover:text-red-400 transition-colors text-sm tracking-wide">Sair</button>
+            </li>
           } @else {
             <li><a routerLink="/admin/login" class="text-gray-600 hover:text-gray-400 transition-colors" title="Admin"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg></a></li>
           }
@@ -92,8 +95,8 @@ import { FirebaseService } from '../../core/services/firebase.service';
         <a href="#certificacoes" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm tracking-wide py-1 border-b border-gray-800/30" (click)="closeMenu()">Certificações</a>
         <a href="#contato" class="mt-2 px-4 py-2 rounded-full border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 transition-all text-sm tracking-wide text-center" (click)="closeMenu()">Contato</a>
         @if (loggedIn()) {
-          <a routerLink="/admin" class="admin-dashboard-link text-blue-400 hover:text-blue-300 transition-colors text-sm flex items-center gap-1.5 mt-4 pt-4 border-t border-gray-800/30 font-semibold" (click)="closeMenu()">📊 Dashboard</a>
-          <button (click)="logout(); closeMenu()" class="text-gray-500 hover:text-red-400 transition-colors text-xs text-left">Sair</button>
+          <a routerLink="/admin" class="admin-dashboard-link text-cyan-400 hover:text-cyan-300 transition-colors text-sm flex items-center gap-1.5 mt-4 pt-4 border-t border-gray-800/30" (click)="closeMenu()">📊 Dashboard</a>
+          <button (click)="logout(); closeMenu()" class="text-gray-400 hover:text-red-400 transition-colors text-sm text-left py-1 border-t border-gray-800/30">↩ Sair</button>
         } @else {
           <a routerLink="/admin/login" class="text-gray-600 hover:text-gray-400 transition-colors text-xs flex items-center gap-1.5 mt-4 pt-4 border-t border-gray-800/30" (click)="closeMenu()"><svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg> Admin</a>
         }
