@@ -480,11 +480,11 @@ html.light .admin-input {
 html.light .admin-input::placeholder { color: #9ca3af !important; }
 html.light .admin-input:focus { border-color: rgba(124,58,237,0.5) !important; }
 
-/* Theme toggle icon: gray matching header text */
+/* Theme toggle icon: white in dark, gray in light */
 .header-theme-icon {
   width: 1.1rem;
   height: 1.1rem;
-  color: #9ca3af;
+  color: #ffffff;
 }
 html.light .header-theme-icon {
   color: #6b7280 !important;
@@ -500,3 +500,32 @@ html.light om-theme-toggle span {
 .admin-dashboard-link:hover { color: #67e8f9 !important; }
 html.light .admin-dashboard-link { color: #7c3aed !important; }
 html.light .admin-dashboard-link:hover { color: #6d28d9 !important; }
+
+/* ---- Admin Dashboard SVGs: light theme (ciano → violeta) ---- */
+
+/* Fundo do mapa */
+.admin-map { background: #05080f; }
+html.light .admin-map { background: #f0edff !important; }
+
+/* Linhas de grade do mapa */
+html.light .admin-map line { stroke: #ddd6fe !important; }
+
+/* Labels lat/lng do mapa */
+html.light .admin-map text { fill: #c4b5fd !important; }
+
+/* Pontos e halos do mapa */
+html.light .admin-page circle[fill="#22d3ee"] { fill: #7c3aed !important; }
+html.light .admin-page circle[stroke="#22d3ee"] { stroke: #7c3aed !important; }
+
+/* Linha e poliline do gráfico */
+html.light .admin-chart polyline { stroke: #7c3aed !important; }
+
+/* Border dos pontos do gráfico (era quase preto, vira branco) */
+html.light .admin-chart circle[stroke="#0a0f1a"] { stroke: #ffffff !important; }
+
+/* Linhas de grade do gráfico */
+html.light .admin-chart line { stroke: #e9d5ff !important; }
+
+/* Gradiente de área do gráfico */
+html.light #areaGrad stop:nth-child(1) { stop-color: rgba(124,58,237,0.22) !important; }
+html.light #areaGrad stop:nth-child(2) { stop-color: rgba(124,58,237,0) !important; }

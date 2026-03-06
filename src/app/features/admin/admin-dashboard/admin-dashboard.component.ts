@@ -148,7 +148,7 @@ interface AccessRecord {
           @let chart = lineChart;
           <div class="admin-card border rounded-xl p-5">
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">📈 Acessos — Últimos 7 dias</p>
-            <svg [attr.viewBox]="chart.vb" class="w-full" style="overflow:visible">
+            <svg [attr.viewBox]="chart.vb" class="w-full admin-chart" style="overflow:visible">
               <defs>
                 <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
                   <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.25"/>
@@ -182,7 +182,7 @@ interface AccessRecord {
           @let dots = mapDots;
           <div class="admin-card border rounded-xl p-5">
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">🌍 Localização dos Acessos</p>
-            <svg viewBox="0 0 480 240" class="w-full rounded-lg" style="background:#05080f">
+            <svg viewBox="0 0 480 240" class="w-full rounded-lg admin-map">
               <line x1="0" x2="480" y1="40"  y2="40"  stroke="#0d1f2d" stroke-width="1" stroke-dasharray="3,4"/>
               <line x1="0" x2="480" y1="80"  y2="80"  stroke="#0d1f2d" stroke-width="1" stroke-dasharray="3,4"/>
               <line x1="0" x2="480" y1="120" y2="120" stroke="#162333" stroke-width="1"/>
