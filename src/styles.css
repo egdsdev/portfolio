@@ -492,6 +492,10 @@ html.light .header-theme-icon {
   color: #6b7280 !important;
 }
 
+/* Força cor branca nos ícones padrão da lib (currentColor) */
+.om-theme-toggle { color: #ffffff !important; }
+html.light .om-theme-toggle { color: #6b7280 !important; }
+
 /* Light theme sun icon */
 html.light om-theme-toggle span {
   color: #6b7280 !important;
