@@ -1,4 +1,4 @@
-import { Component, inject, OnInit, ChangeDetectorRef, signal } from '@angular/core';
+﻿import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FirebaseService, AiMatchRecord, VisitorRecord, DevMatchRecord } from '../../../core/services/firebase.service';
 
@@ -13,6 +13,12 @@ interface LineChartData {
   vb: string;
   bottomY: number;
   padL: number;
+}
+interface AccessRecord {
+  date: Date;
+  visitor?: VisitorRecord;
+  aiMatch?: AiMatchRecord;
+  devMatch?: DevMatchRecord;
 }
 
 @Component({
@@ -49,166 +55,91 @@ interface LineChartData {
           </div>
         </div>
 
-        <!-- Abas -->
-        <div class="flex gap-1 border-b border-gray-800">
-          <button (click)="activeTab.set('ai')"
-                  class="px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px"
-                  [class.border-cyan-400]="activeTab() === 'ai'"
-                  [class.text-cyan-400]="activeTab() === 'ai'"
-                  [class.border-transparent]="activeTab() !== 'ai'"
-                  [class.text-gray-500]="activeTab() !== 'ai'">
-            Análises IA ({{ aiMatches.length }})
-          </button>
-          <button (click)="activeTab.set('dev')"
-                  class="px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px"
-                  [class.border-cyan-400]="activeTab() === 'dev'"
-                  [class.text-cyan-400]="activeTab() === 'dev'"
-                  [class.border-transparent]="activeTab() !== 'dev'"
-                  [class.text-gray-500]="activeTab() !== 'dev'">
-            Dev Match ({{ devMatches.length }})
-          </button>
-
-        </div>
-
-        <!-- Tabela IA -->
-        @if (activeTab() === 'ai') {
-          <div class="admin-card border rounded-xl overflow-hidden">
-            @if (loading) {
-              <div class="p-10 text-center text-gray-500 text-sm animate-pulse">Carregando...</div>
-            } @else if (aiMatches.length === 0) {
-              <div class="p-10 text-center text-gray-600 text-sm">Nenhuma análise registrada ainda.</div>
-            } @else {
-              <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                  <thead>
-                    <tr class="text-xs text-gray-500 uppercase tracking-wider border-b border-gray-800">
-                      <th class="text-left px-5 py-3 whitespace-nowrap">Data</th>
-                      <th class="text-left px-5 py-3">Match</th>
-                      <th class="text-left px-5 py-3">O que escreveu</th>
-                      <th class="text-left px-5 py-3">Resposta da IA</th>
-                      <th class="text-left px-5 py-3">Localização</th>
-                      <th class="text-left px-5 py-3">Dispositivo</th>
-                      <th class="text-left px-5 py-3">IP</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (m of aiMatches; track m.id) {
-                      <tr class="border-b border-gray-800/40 hover:bg-gray-800/20 transition-colors">
-                        <td class="px-5 py-3 text-xs text-gray-400 whitespace-nowrap">{{ m.createdAt | date:'dd/MM/yy HH:mm' }}</td>
-                        <td class="px-5 py-3 whitespace-nowrap">
-                          <span class="text-xs font-bold px-2.5 py-1 rounded-full"
-                                [class.bg-green-500/15]="m.matchPercentage >= 70" [class.text-green-400]="m.matchPercentage >= 70"
-                                [class.bg-yellow-500/15]="m.matchPercentage >= 50 && m.matchPercentage < 70" [class.text-yellow-400]="m.matchPercentage >= 50 && m.matchPercentage < 70"
-                                [class.bg-red-500/15]="m.matchPercentage < 50" [class.text-red-400]="m.matchPercentage < 50">
-                            {{ m.matchPercentage }}%
+        <!-- Tabela unificada de acessos -->
+        <div class="admin-card border rounded-xl overflow-hidden">
+          @if (loading) {
+            <div class="p-10 text-center text-gray-500 text-sm animate-pulse">Carregando...</div>
+          } @else if (accessRecords.length === 0) {
+            <div class="p-10 text-center text-gray-600 text-sm">Nenhum acesso registrado ainda.</div>
+          } @else {
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-xs text-gray-500 uppercase tracking-wider border-b border-gray-800">
+                    <th class="text-left px-4 py-3 whitespace-nowrap">Data</th>
+                    <th class="text-left px-4 py-3">Localizacao</th>
+                    <th class="text-left px-4 py-3">Dispositivo</th>
+                    <th class="text-left px-4 py-3">IP</th>
+                    <th class="text-left px-4 py-3 border-l border-gray-800/60">Match IA</th>
+                    <th class="text-left px-4 py-3">Resposta IA</th>
+                    <th class="text-left px-4 py-3 border-l border-gray-800/60">Match Dev</th>
+                    <th class="text-left px-4 py-3">Areas Dev</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (r of accessRecords; track r.date.getTime()) {
+                    <tr class="border-b border-gray-800/40 hover:bg-gray-800/20 transition-colors">
+                      <td class="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">{{ r.date | date:'dd/MM/yy HH:mm' }}</td>
+                      <td class="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
+                        @if (r.visitor) {
+                          {{ r.visitor.city }}{{ r.visitor.city && r.visitor.country ? ', ' : '' }}{{ r.visitor.country }}
+                        } @else { <span class="text-gray-600">-</span> }
+                      </td>
+                      <td class="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
+                        @if (r.visitor) {
+                          {{ isMobile(r.visitor.userAgent) ? '&#x1F4F1;' : '&#x1F5A5;' }}
+                          <span class="text-gray-600"> {{ r.visitor.screenWidth }}x{{ r.visitor.screenHeight }}</span>
+                        } @else { <span class="text-gray-600">-</span> }
+                      </td>
+                      <td class="px-4 py-3 text-xs text-gray-600 font-mono whitespace-nowrap">{{ r.visitor?.ip ?? '-' }}</td>
+                      <td class="px-4 py-3 whitespace-nowrap border-l border-gray-800/40">
+                        @if (r.aiMatch) {
+                          <span class="text-xs font-bold px-2 py-1 rounded-full"
+                                [class.bg-green-500/15]="r.aiMatch.matchPercentage >= 70"
+                                [class.text-green-400]="r.aiMatch.matchPercentage >= 70"
+                                [class.bg-yellow-500/15]="r.aiMatch.matchPercentage >= 50 && r.aiMatch.matchPercentage < 70"
+                                [class.text-yellow-400]="r.aiMatch.matchPercentage >= 50 && r.aiMatch.matchPercentage < 70"
+                                [class.bg-red-500/15]="r.aiMatch.matchPercentage < 50"
+                                [class.text-red-400]="r.aiMatch.matchPercentage < 50">
+                            {{ r.aiMatch.matchPercentage }}%
                           </span>
-                        </td>
-                        <td class="px-5 py-3 text-xs text-gray-400 max-w-xs"><div class="line-clamp-2" [title]="m.jobDescription">{{ m.jobDescription }}</div></td>
-                        <td class="px-5 py-3 text-xs text-gray-400 max-w-xs"><div class="line-clamp-2" [title]="m.aiResponse">{{ m.aiResponse }}</div></td>
-                        <td class="px-5 py-3 text-xs text-gray-400 whitespace-nowrap">
-                          @if (getVisitor(m.visitorId); as v) {
-                            {{ v.city }}{{ v.city && v.country ? ', ' : '' }}{{ v.country }}
-                          } @else {
-                            <span class="text-gray-600">—</span>
-                          }
-                        </td>
-                        <td class="px-5 py-3 text-xs text-gray-400 whitespace-nowrap">
-                          @if (getVisitor(m.visitorId); as v) {
-                            {{ isMobile(v.userAgent) ? '📱' : '🖥️' }}
-                            <span class="text-gray-600"> {{ v.screenWidth }}×{{ v.screenHeight }}</span>
-                          } @else {
-                            <span class="text-gray-600">—</span>
-                          }
-                        </td>
-                        <td class="px-5 py-3 text-xs text-gray-600 font-mono whitespace-nowrap">
-                          {{ getVisitor(m.visitorId)?.ip ?? '—' }}
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
-            }
-          </div>
-        }
-
-        <!-- Tabela Dev Match -->
-        @if (activeTab() === 'dev') {
-          <div class="admin-card border rounded-xl overflow-hidden">
-            @if (loading) {
-              <div class="p-10 text-center text-gray-500 text-sm animate-pulse">Carregando...</div>
-            } @else if (devMatches.length === 0) {
-              <div class="p-10 text-center text-gray-600 text-sm">Nenhum match manual registrado ainda.</div>
-            } @else {
-              <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                  <thead>
-                    <tr class="text-xs text-gray-500 uppercase tracking-wider border-b border-gray-800">
-                      <th class="text-left px-5 py-3 whitespace-nowrap">Data</th>
-                      <th class="text-left px-5 py-3">Match</th>
-                      <th class="text-left px-5 py-3">Áreas de Atuação</th>
-                      <th class="text-left px-5 py-3">Requisitos Específicos</th>
-                      <th class="text-left px-5 py-3">Localização</th>
-                      <th class="text-left px-5 py-3">Dispositivo</th>
-                      <th class="text-left px-5 py-3">IP</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (d of devMatches; track d.id) {
-                      <tr class="border-b border-gray-800/40 hover:bg-gray-800/20 transition-colors">
-                        <td class="px-5 py-3 text-xs text-gray-400 whitespace-nowrap">{{ d.createdAt | date:'dd/MM/yy HH:mm' }}</td>
-                        <td class="px-5 py-3 whitespace-nowrap">
-                          <span class="text-xs font-bold px-2.5 py-1 rounded-full"
-                                [class.bg-green-500/15]="d.matchPercentage >= 70" [class.text-green-400]="d.matchPercentage >= 70"
-                                [class.bg-yellow-500/15]="d.matchPercentage >= 50 && d.matchPercentage < 70" [class.text-yellow-400]="d.matchPercentage >= 50 && d.matchPercentage < 70"
-                                [class.bg-red-500/15]="d.matchPercentage < 50" [class.text-red-400]="d.matchPercentage < 50">
-                            {{ d.matchPercentage }}%
+                        } @else { <span class="text-gray-700">-</span> }
+                      </td>
+                      <td class="px-4 py-3 text-xs text-gray-400 max-w-[160px]">
+                        @if (r.aiMatch) {
+                          <div class="line-clamp-2" [title]="r.aiMatch.aiResponse">{{ r.aiMatch.aiResponse }}</div>
+                        } @else { <span class="text-gray-700">-</span> }
+                      </td>
+                      <td class="px-4 py-3 whitespace-nowrap border-l border-gray-800/40">
+                        @if (r.devMatch) {
+                          <span class="text-xs font-bold px-2 py-1 rounded-full"
+                                [class.bg-green-500/15]="r.devMatch.matchPercentage >= 70"
+                                [class.text-green-400]="r.devMatch.matchPercentage >= 70"
+                                [class.bg-yellow-500/15]="r.devMatch.matchPercentage >= 50 && r.devMatch.matchPercentage < 70"
+                                [class.text-yellow-400]="r.devMatch.matchPercentage >= 50 && r.devMatch.matchPercentage < 70"
+                                [class.bg-red-500/15]="r.devMatch.matchPercentage < 50"
+                                [class.text-red-400]="r.devMatch.matchPercentage < 50">
+                            {{ r.devMatch.matchPercentage }}%
                           </span>
-                        </td>
-                        <td class="px-5 py-3 text-xs text-gray-400 max-w-xs">
+                        } @else { <span class="text-gray-700">-</span> }
+                      </td>
+                      <td class="px-4 py-3 text-xs text-gray-400 max-w-[160px]">
+                        @if (r.devMatch) {
                           <div class="flex flex-wrap gap-1">
-                            @for (a of d.areas; track a) {
+                            @for (a of r.devMatch.areas; track a) {
                               <span class="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-300 text-xs">{{ a }}</span>
                             }
                           </div>
-                        </td>
-                        <td class="px-5 py-3 text-xs text-gray-400 max-w-xs">
-                          @if (d.requirements.length === 0) {
-                            <span class="text-gray-600">—</span>
-                          } @else {
-                            <div class="flex flex-wrap gap-1">
-                              @for (r of d.requirements; track r) {
-                                <span class="px-1.5 py-0.5 rounded bg-purple-500/10 text-purple-300 text-xs">{{ r }}</span>
-                              }
-                            </div>
-                          }
-                        </td>
-                        <td class="px-5 py-3 text-xs text-gray-400 whitespace-nowrap">
-                          @if (getVisitor(d.visitorId); as v) {
-                            {{ v.city }}{{ v.city && v.country ? ', ' : '' }}{{ v.country }}
-                          } @else {
-                            <span class="text-gray-600">—</span>
-                          }
-                        </td>
-                        <td class="px-5 py-3 text-xs text-gray-400 whitespace-nowrap">
-                          @if (getVisitor(d.visitorId); as v) {
-                            {{ isMobile(v.userAgent) ? '📱' : '🖥️' }}
-                            <span class="text-gray-600"> {{ v.screenWidth }}×{{ v.screenHeight }}</span>
-                          } @else {
-                            <span class="text-gray-600">—</span>
-                          }
-                        </td>
-                        <td class="px-5 py-3 text-xs text-gray-600 font-mono whitespace-nowrap">
-                          {{ getVisitor(d.visitorId)?.ip ?? '—' }}
-                        </td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
-            }
-          </div>
-        }
+                        } @else { <span class="text-gray-700">-</span> }
+                      </td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          }
+        </div>
+
 
         <!-- Gráficos -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -335,7 +266,6 @@ export class AdminDashboardComponent implements OnInit {
   uniqueCountries = 0;
   mobileCount = 0;
   today = new Date();
-  activeTab = signal<'ai' | 'dev'>('ai');
 
   async ngOnInit(): Promise<void> {
     try {
@@ -362,6 +292,37 @@ export class AdminDashboardComponent implements OnInit {
 
   getVisitor(visitorId?: string): VisitorRecord | undefined {
     return visitorId ? this.visitorMap.get(visitorId) : undefined;
+  }
+
+  get accessRecords(): AccessRecord[] {
+    const seenVisitors = new Set<string>();
+    const records: AccessRecord[] = [];
+
+    for (const visitor of this.visitors) {
+      if (!visitor.id) continue;
+      seenVisitors.add(visitor.id);
+      const aiMatch = this.aiMatches
+        .filter(m => m.visitorId === visitor.id)
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+      const devMatch = this.devMatches
+        .filter(m => m.visitorId === visitor.id)
+        .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())[0];
+      records.push({ date: new Date(visitor.lastSeen), visitor, aiMatch, devMatch });
+    }
+
+    // matches sem visitante associado (dados antigos sem visitorId)
+    for (const m of this.aiMatches) {
+      if (!m.visitorId || !seenVisitors.has(m.visitorId)) {
+        records.push({ date: new Date(m.createdAt), aiMatch: m });
+      }
+    }
+    for (const m of this.devMatches) {
+      if (!m.visitorId || !seenVisitors.has(m.visitorId)) {
+        records.push({ date: new Date(m.createdAt), devMatch: m });
+      }
+    }
+
+    return records.sort((a, b) => b.date.getTime() - a.date.getTime());
   }
 
   get lineChart(): LineChartData {
