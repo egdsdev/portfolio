@@ -15,19 +15,18 @@ export class AnalyticsService {
 
       let geo: Record<string, unknown> = {};
       try {
-        const res = await fetch('https://ipwho.is/');
-        const data = await res.json();
-        if (data?.success) {
-          geo = {
-            ip: data['ip'],
-            city: data['city'],
-            country: data['country'],
-            region: data['region'],
-            lat: data['latitude'],
-            lng: data['longitude'],
-            timezone: data['timezone']?.['id'],
-          };
-        }
+        // ipinfo.io: gratuito, CORS habilitado, sem API key
+        const data = await fetch('https://ipinfo.io/json').then(r => r.json());
+        const [lat, lng] = (data['loc'] ?? ',').split(',').map(Number);
+        geo = {
+          ip: data['ip'],
+          city: data['city'],
+          country: data['country'],
+          region: data['region'],
+          lat: isNaN(lat) ? undefined : lat,
+          lng: isNaN(lng) ? undefined : lng,
+          timezone: data['timezone'],
+        };
       } catch {
         // geo opcional — continua sem ele
       }
