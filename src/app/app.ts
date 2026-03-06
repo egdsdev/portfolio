@@ -1,5 +1,6 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { RouterOutlet, Router } from '@angular/router';
+import { AnalyticsService } from './core/services/analytics.service';
 import { HeaderComponent } from './features/header/header.component';
 import { PersonalDetailsComponent } from './features/personal-details/personal-details.component';
 import { EducationComponent } from './features/education/education.component';
@@ -53,12 +54,17 @@ import { FooterComponent } from './shared/components/footer/footer.component';
 export class App implements OnInit, OnDestroy {
   private themeObserver?: MutationObserver;
   private router = inject(Router);
+  private analytics = inject(AnalyticsService);
 
   isAdminRoute(): boolean {
     return this.router.url.startsWith('/admin');
   }
 
   ngOnInit() {
+    if (!this.isAdminRoute()) {
+      this.analytics.trackVisit();
+    }
+
     this.themeObserver = new MutationObserver(() => {
       const html = document.documentElement;
       const theme = html.classList.contains('light') ? 'light' : 'dark';

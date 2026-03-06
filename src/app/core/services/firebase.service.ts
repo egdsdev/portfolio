@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { initializeApp, FirebaseApp } from 'firebase/app';
 import {
   getFirestore, Firestore, collection, addDoc, getDocs,
-  query, orderBy, Timestamp,
+  query, orderBy, Timestamp, doc, getDoc, setDoc, updateDoc, increment,
 } from 'firebase/firestore';
 import {
   getAuth, Auth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
@@ -90,27 +90,46 @@ export class FirebaseService {
   async getVisitors(): Promise<VisitorRecord[]> {
     const q = query(collection(this.db, 'visitors'), orderBy('lastSeen', 'desc'));
     const snap = await getDocs(q);
-    return snap.docs.map(doc => {
-      const d = doc.data();
+    return snap.docs.map(d => {
+      const data = d.data();
       return {
-        id: doc.id,
-        ip: d['ip'] ?? '',
-        city: d['city'],
-        country: d['country'],
-        region: d['region'],
-        language: d['language'],
-        timezone: d['timezone'],
-        lat: d['lat'],
-        lng: d['lng'],
-        referrer: d['referrer'],
-        userAgent: d['userAgent'],
-        screenWidth: d['screenWidth'],
-        screenHeight: d['screenHeight'],
-        preciseLocation: d['preciseLocation'],
-        visitCount: d['visitCount'] ?? 1,
-        firstSeen: d['firstSeen']?.toDate() ?? new Date(),
-        lastSeen: d['lastSeen']?.toDate() ?? new Date(),
+        id: d.id,
+        ip: data['ip'] ?? '',
+        city: data['city'],
+        country: data['country'],
+        region: data['region'],
+        language: data['language'],
+        timezone: data['timezone'],
+        lat: data['lat'],
+        lng: data['lng'],
+        referrer: data['referrer'],
+        userAgent: data['userAgent'],
+        screenWidth: data['screenWidth'],
+        screenHeight: data['screenHeight'],
+        preciseLocation: data['preciseLocation'],
+        visitCount: data['visitCount'] ?? 1,
+        firstSeen: data['firstSeen']?.toDate() ?? new Date(),
+        lastSeen: data['lastSeen']?.toDate() ?? new Date(),
       };
     });
+  }
+
+  async trackVisitor(visitorId: string, data: Omit<VisitorRecord, 'id' | 'visitCount' | 'firstSeen' | 'lastSeen'>): Promise<void> {
+    const ref = doc(this.db, 'visitors', visitorId);
+    const snap = await getDoc(ref);
+    if (snap.exists()) {
+      await updateDoc(ref, {
+        ...data,
+        visitCount: increment(1),
+        lastSeen: Timestamp.now(),
+      });
+    } else {
+      await setDoc(ref, {
+        ...data,
+        visitCount: 1,
+        firstSeen: Timestamp.now(),
+        lastSeen: Timestamp.now(),
+      });
+    }
   }
 }
