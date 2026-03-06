@@ -382,10 +382,37 @@ html.light .devmatch-input:focus { border-color: #7c3aed !important; }
 html.light .devmatch-calc-btn {
   background: linear-gradient(135deg, #7c3aed, #a855f7) !important;
   box-shadow: 0 4px 20px rgba(124,58,237,0.3) !important;
+  color: #ffffff !important;
 }
 html.light .devmatch-calc-btn:hover {
   box-shadow: 0 8px 28px rgba(124,58,237,0.45) !important;
 }
+html.light .devmatch-area-name { color: #2d1b69 !important; }
+html.light .devmatch-score-green  { background: rgba(22,163,74,0.18)  !important; color: #15803d !important; }
+html.light .devmatch-score-orange { background: rgba(217,119,6,0.18)  !important; color: #b45309 !important; }
+html.light .devmatch-score-red    { background: rgba(220,38,38,0.18)   !important; color: #b91c1c !important; }
+html.light .devmatch-tech-tag {
+  background: #ede9fe !important;
+  color: #5b21b6 !important;
+  border-color: #c4b5fd !important;
+}
+html.light .devmatch-reset-btn {
+  background: #dc2626 !important;
+  border-color: #b91c1c !important;
+  color: #ffffff !important;
+}
+html.light .devmatch-reset-btn:hover {
+  background: #b91c1c !important;
+  border-color: #991b1b !important;
+}
+html.light .devmatch-surprise {
+  background: linear-gradient(135deg, rgba(180,83,9,0.22), rgba(217,119,6,0.16)) !important;
+  border-color: rgba(180,83,9,0.5) !important;
+}
+html.light .devmatch-surprise-title  { color: #92400e !important; }
+html.light .devmatch-surprise-body   { color: #1c1917 !important; }
+html.light .devmatch-surprise-item   { color: #292524 !important; }
+html.light .devmatch-surprise-quote  { color: #92400e !important; opacity: 1 !important; }
 
 /* ---- Timeline path/gradient (light) ---- */
 html.light .experiencia-timeline {
