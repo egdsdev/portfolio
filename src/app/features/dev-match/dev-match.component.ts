@@ -935,6 +935,11 @@ export class DevMatchComponent implements OnInit {
       this.resultMatch,
       this.resultActiveAreas.map(a => a.label),
     );
+    this.firebaseService.saveDevMatch({
+      areas: this.resultActiveAreas.map(a => a.label),
+      requirements: this.allToggles.filter(t => t.active).map(t => t.label),
+      matchPercentage: this.resultMatch,
+    }).catch(() => {});
   }
 
   // ---- Display (live) ----
@@ -1211,7 +1216,7 @@ export class DevMatchComponent implements OnInit {
         // Salvar no Firestore
         this.firebaseService.saveAiMatch({
           jobDescription: this.aiJobDescription.trim(),
-          aiResponse: text,
+          aiResponse: parsed.recommendation ?? text,
           matchPercentage: parsed.matchPercentage,
         }).catch(() => { /* silently ignore save errors */ });
 

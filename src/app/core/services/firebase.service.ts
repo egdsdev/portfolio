@@ -17,6 +17,14 @@ export interface AiMatchRecord {
   createdAt: Date;
 }
 
+export interface DevMatchRecord {
+  id?: string;
+  areas: string[];
+  requirements: string[];
+  matchPercentage: number;
+  createdAt: Date;
+}
+
 export interface VisitorRecord {
   id?: string;
   ip: string;
@@ -82,6 +90,28 @@ export class FirebaseService {
         jobDescription: d['jobDescription'],
         aiResponse: d['aiResponse'],
         matchPercentage: d['matchPercentage'],
+        createdAt: d['createdAt']?.toDate() ?? new Date(),
+      };
+    });
+  }
+
+  async saveDevMatch(data: Omit<DevMatchRecord, 'id' | 'createdAt'>): Promise<void> {
+    await addDoc(collection(this.db, 'dev_matches'), {
+      ...data,
+      createdAt: Timestamp.now(),
+    });
+  }
+
+  async getDevMatches(): Promise<DevMatchRecord[]> {
+    const q = query(collection(this.db, 'dev_matches'), orderBy('createdAt', 'desc'));
+    const snap = await getDocs(q);
+    return snap.docs.map(doc => {
+      const d = doc.data();
+      return {
+        id: doc.id,
+        areas: d['areas'] ?? [],
+        requirements: d['requirements'] ?? [],
+        matchPercentage: d['matchPercentage'] ?? 0,
         createdAt: d['createdAt']?.toDate() ?? new Date(),
       };
     });
