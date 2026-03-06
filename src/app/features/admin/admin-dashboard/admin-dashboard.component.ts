@@ -1,19 +1,11 @@
-﻿import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+﻿import { Component, inject, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef, ElementRef, ViewChild } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FirebaseService, AiMatchRecord, VisitorRecord, DevMatchRecord } from '../../../core/services/firebase.service';
+import * as L from 'leaflet';
+import { Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip } from 'chart.js';
 
-interface ChartPoint { x: number; y: number; count: number; label: string; }
-interface MapDot { cx: number; cy: number; count: number; }
-interface LineChartData {
-  pts: ChartPoint[];
-  area: string;
-  line: string;
-  yLabels: { val: number; y: number }[];
-  gridY: number[];
-  vb: string;
-  bottomY: number;
-  padL: number;
-}
+Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip);
+
 interface AccessRecord {
   date: Date;
   visitor?: VisitorRecord;
@@ -144,96 +136,22 @@ interface AccessRecord {
         <!-- Gráficos -->
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
-          <!-- Gráfico de linha -->
-          @let chart = lineChart;
+          <!-- Gráfico de linha (Chart.js) -->
           <div class="admin-card border rounded-xl p-5">
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">📈 Acessos — Últimos 7 dias</p>
-            <svg [attr.viewBox]="chart.vb" class="w-full admin-chart" style="overflow:visible">
-              <defs>
-                <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.25"/>
-                  <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
-                </linearGradient>
-              </defs>
-              @for (gy of chart.gridY; track gy) {
-                <line [attr.x1]="chart.padL" x2="492" [attr.y1]="gy" [attr.y2]="gy"
-                      stroke="#1f2937" stroke-width="1"/>
-              }
-              <path [attr.d]="chart.area" fill="url(#areaGrad)"/>
-              <polyline [attr.points]="chart.line"
-                        fill="none" stroke="#22d3ee" stroke-width="2"
-                        stroke-linejoin="round" stroke-linecap="round"/>
-              @for (pt of chart.pts; track pt.label) {
-                <circle [attr.cx]="pt.x" [attr.cy]="pt.y" r="4"
-                        fill="#22d3ee" stroke="#0a0f1a" stroke-width="2"/>
-              }
-              @for (pt of chart.pts; track pt.label) {
-                <text [attr.x]="pt.x" [attr.y]="chart.bottomY + 18"
-                      text-anchor="middle" class="chart-lbl">{{ pt.label }}</text>
-              }
-              @for (l of chart.yLabels; track l.val) {
-                <text [attr.x]="chart.padL - 6" [attr.y]="l.y + 4"
-                      text-anchor="end" class="chart-lbl">{{ l.val }}</text>
-              }
-            </svg>
+            <canvas #chartCanvas style="width:100%;max-height:220px"></canvas>
           </div>
 
-          <!-- Mapa de pontos -->
-          @let dots = mapDots;
+          <!-- Mapa Leaflet -->
           <div class="admin-card border rounded-xl p-5">
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">🌍 Localização dos Acessos</p>
-            <svg viewBox="0 0 480 240" class="w-full rounded-lg admin-map">
-              <line x1="0" x2="480" y1="40"  y2="40"  stroke="#0d1f2d" stroke-width="1" stroke-dasharray="3,4"/>
-              <line x1="0" x2="480" y1="80"  y2="80"  stroke="#0d1f2d" stroke-width="1" stroke-dasharray="3,4"/>
-              <line x1="0" x2="480" y1="120" y2="120" stroke="#162333" stroke-width="1"/>
-              <line x1="0" x2="480" y1="160" y2="160" stroke="#0d1f2d" stroke-width="1" stroke-dasharray="3,4"/>
-              <line x1="0" x2="480" y1="200" y2="200" stroke="#0d1f2d" stroke-width="1" stroke-dasharray="3,4"/>
-              <line x1="80"  x2="80"  y1="0" y2="240" stroke="#0d1f2d" stroke-width="1" stroke-dasharray="3,4"/>
-              <line x1="160" x2="160" y1="0" y2="240" stroke="#0d1f2d" stroke-width="1" stroke-dasharray="3,4"/>
-              <line x1="240" x2="240" y1="0" y2="240" stroke="#162333" stroke-width="1"/>
-              <line x1="320" x2="320" y1="0" y2="240" stroke="#0d1f2d" stroke-width="1" stroke-dasharray="3,4"/>
-              <line x1="400" x2="400" y1="0" y2="240" stroke="#0d1f2d" stroke-width="1" stroke-dasharray="3,4"/>
-              <text x="4" y="14"  fill="#1e3a4a" font-size="7" font-family="inherit">90°N</text>
-              <text x="4" y="43"  fill="#1e3a4a" font-size="7" font-family="inherit">60°N</text>
-              <text x="4" y="83"  fill="#1e3a4a" font-size="7" font-family="inherit">30°N</text>
-              <text x="4" y="123" fill="#1e3a4a" font-size="7" font-family="inherit">0°</text>
-              <text x="4" y="163" fill="#1e3a4a" font-size="7" font-family="inherit">30°S</text>
-              <text x="4" y="203" fill="#1e3a4a" font-size="7" font-family="inherit">60°S</text>
-              <text x="78"  y="237" fill="#1e3a4a" font-size="7" font-family="inherit" text-anchor="middle">120°O</text>
-              <text x="158" y="237" fill="#1e3a4a" font-size="7" font-family="inherit" text-anchor="middle">60°O</text>
-              <text x="240" y="237" fill="#1e3a4a" font-size="7" font-family="inherit" text-anchor="middle">0°</text>
-              <text x="320" y="237" fill="#1e3a4a" font-size="7" font-family="inherit" text-anchor="middle">60°L</text>
-              <text x="400" y="237" fill="#1e3a4a" font-size="7" font-family="inherit" text-anchor="middle">120°L</text>
-              @for (dot of dots; track dot.cx + '-' + dot.cy) {
-                <circle [attr.cx]="dot.cx" [attr.cy]="dot.cy"
-                        [attr.r]="dot.count > 5 ? 6 : dot.count > 2 ? 4.5 : 3"
-                        fill="#22d3ee" opacity="0.75"/>
-              }
-              @for (dot of dots; track 'h' + dot.cx + '-' + dot.cy) {
-                @if (dot.count > 2) {
-                  <circle [attr.cx]="dot.cx" [attr.cy]="dot.cy"
-                          [attr.r]="dot.count > 5 ? 10 : 7"
-                          fill="none" stroke="#22d3ee" stroke-width="1" opacity="0.25"/>
-                }
-              }
-              @if (dots.length === 0 && !loading) {
-                <text x="240" y="120" text-anchor="middle" fill="#374151" font-size="11" font-family="inherit">Sem dados de localização</text>
-              }
-            </svg>
-            <div class="flex items-center gap-4 mt-3">
-              <div class="flex items-center gap-1.5">
-                <svg width="10" height="10"><circle cx="5" cy="5" r="3" fill="#22d3ee" opacity="0.75"/></svg>
-                <span class="text-xs text-gray-500">1–2 visitas</span>
-              </div>
-              <div class="flex items-center gap-1.5">
-                <svg width="12" height="12"><circle cx="6" cy="6" r="4.5" fill="#22d3ee" opacity="0.75"/></svg>
-                <span class="text-xs text-gray-500">3–5 visitas</span>
-              </div>
-              <div class="flex items-center gap-1.5">
-                <svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="#22d3ee" opacity="0.75"/></svg>
-                <span class="text-xs text-gray-500">6+ visitas</span>
-              </div>
-            </div>
+            @if (loading) {
+              <div class="h-64 flex items-center justify-center text-gray-600 text-sm animate-pulse">Carregando mapa...</div>
+            } @else if (!hasMapCoords) {
+              <div class="h-64 flex items-center justify-center text-gray-600 text-sm">Sem dados de localização</div>
+            } @else {
+              <div #mapEl class="leaflet-map w-full rounded-lg" style="height:260px"></div>
+            }
           </div>
 
         </div>
@@ -247,14 +165,15 @@ interface AccessRecord {
       -webkit-box-orient: vertical;
       overflow: hidden;
     }
-    :host ::ng-deep .chart-lbl {
-      fill: #6b7280;
-      font-size: 10px;
-      font-family: inherit;
-    }
   `],
 })
-export class AdminDashboardComponent implements OnInit {
+export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
+  @ViewChild('mapEl') mapEl!: ElementRef<HTMLDivElement>;
+  @ViewChild('chartCanvas') chartCanvas!: ElementRef<HTMLCanvasElement>;
+  private leafletMap?: L.Map;
+  private lineChartInstance?: Chart;
+  private themeObserver?: MutationObserver;
+
   private firebase = inject(FirebaseService);
   private cdr = inject(ChangeDetectorRef);
 
@@ -266,6 +185,7 @@ export class AdminDashboardComponent implements OnInit {
   uniqueCountries = 0;
   mobileCount = 0;
   today = new Date();
+  hasMapCoords = false;
 
   async ngOnInit(): Promise<void> {
     try {
@@ -280,6 +200,7 @@ export class AdminDashboardComponent implements OnInit {
       this.visitorMap = new Map(visitors.filter(v => v.id).map(v => [v.id!, v]));
       this.uniqueCountries = new Set(visitors.map(v => v.country).filter(Boolean)).size;
       this.mobileCount = visitors.filter(v => this.isMobile(v.userAgent)).length;
+      this.hasMapCoords = visitors.some(v => v.lat != null && v.lng != null);
     } catch {
       this.aiMatches = [];
       this.devMatches = [];
@@ -287,6 +208,150 @@ export class AdminDashboardComponent implements OnInit {
     } finally {
       this.loading = false;
       this.cdr.detectChanges();
+      setTimeout(() => {
+        this.initLineChart();
+        this.initMap();
+      }, 50);
+    }
+  }
+
+  ngAfterViewInit(): void {}
+
+  ngOnDestroy(): void {
+    this.lineChartInstance?.destroy();
+    this.themeObserver?.disconnect();
+    this.leafletMap?.remove();
+  }
+
+  private isLightTheme(): boolean {
+    return document.documentElement.classList.contains('light');
+  }
+
+  private chartColors() {
+    const light = this.isLightTheme();
+    return {
+      accent:     light ? '#7c3aed' : '#22d3ee',
+      areaStart:  light ? 'rgba(124,58,237,0.18)' : 'rgba(34,211,238,0.18)',
+      areaEnd:    light ? 'rgba(124,58,237,0)' : 'rgba(34,211,238,0)',
+      grid:       light ? '#e9d5ff' : '#1f2937',
+      tickColor:  light ? '#6b7280' : '#6b7280',
+    };
+  }
+
+  private initLineChart(): void {
+    if (!this.chartCanvas?.nativeElement) return;
+    this.lineChartInstance?.destroy();
+
+    const today = new Date();
+    const days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(today);
+      d.setDate(today.getDate() - (6 - i));
+      return d;
+    });
+    const labels = days.map(d => d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }));
+    const counts = days.map(day =>
+      this.visitors.filter(v => {
+        const ls = new Date(v.lastSeen);
+        return ls.getFullYear() === day.getFullYear()
+          && ls.getMonth() === day.getMonth()
+          && ls.getDate() === day.getDate();
+      }).length
+    );
+
+    const c = this.chartColors();
+    const ctx = this.chartCanvas.nativeElement.getContext('2d')!;
+    const grad = ctx.createLinearGradient(0, 0, 0, 220);
+    grad.addColorStop(0, c.areaStart);
+    grad.addColorStop(1, c.areaEnd);
+
+    this.lineChartInstance = new Chart(ctx, {
+      type: 'line',
+      data: {
+        labels,
+        datasets: [{
+          data: counts,
+          borderColor: c.accent,
+          backgroundColor: grad,
+          borderWidth: 2,
+          pointBackgroundColor: c.accent,
+          pointRadius: 4,
+          pointHoverRadius: 6,
+          fill: true,
+          tension: 0.35,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: true,
+        plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+        scales: {
+          x: { grid: { color: c.grid }, ticks: { color: c.tickColor, font: { size: 11 } } },
+          y: { beginAtZero: true, grid: { color: c.grid }, ticks: { color: c.tickColor, font: { size: 11 }, precision: 0 } },
+        },
+      },
+    });
+
+    // Observa troca de tema no <html> e atualiza cores
+    this.themeObserver?.disconnect();
+    this.themeObserver = new MutationObserver(() => this.updateChartTheme());
+    this.themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
+  }
+
+  private updateChartTheme(): void {
+    if (!this.lineChartInstance) return;
+    const c = this.chartColors();
+    const ctx = this.chartCanvas.nativeElement.getContext('2d')!;
+    const grad = ctx.createLinearGradient(0, 0, 0, 220);
+    grad.addColorStop(0, c.areaStart);
+    grad.addColorStop(1, c.areaEnd);
+
+    const ds = this.lineChartInstance.data.datasets[0] as any;
+    ds.borderColor = c.accent;
+    ds.backgroundColor = grad;
+    ds.pointBackgroundColor = c.accent;
+    const scales = this.lineChartInstance.options.scales!;
+    (scales['x'] as any).grid.color = c.grid;
+    (scales['x'] as any).ticks.color = c.tickColor;
+    (scales['y'] as any).grid.color = c.grid;
+    (scales['y'] as any).ticks.color = c.tickColor;
+    this.lineChartInstance.update();
+  }
+
+  private initMap(): void {
+    const withCoords = this.visitors.filter(v => v.lat != null && v.lng != null);
+    if (!withCoords.length || !this.mapEl?.nativeElement) return;
+    if (this.leafletMap) { this.leafletMap.remove(); }
+
+    // Fix ícones padrão do Leaflet no contexto de bundler
+    const iconUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png';
+    const iconRetina = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png';
+    const shadowUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png';
+    L.Marker.prototype.options.icon = L.icon({ iconUrl, iconRetinaUrl: iconRetina, shadowUrl, iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34] });
+
+    this.leafletMap = L.map(this.mapEl.nativeElement, { zoomControl: true, scrollWheelZoom: false });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
+      maxZoom: 18,
+    }).addTo(this.leafletMap);
+
+    const bounds: [number, number][] = [];
+    for (const v of withCoords) {
+      const lat = v.lat!;
+      const lng = v.lng!;
+      bounds.push([lat, lng]);
+      const label = [v.city, v.country].filter(Boolean).join(', ') || v.ip;
+      L.circleMarker([lat, lng], {
+        radius: v.visitCount > 5 ? 10 : v.visitCount > 2 ? 7 : 5,
+        color: '#22d3ee',
+        fillColor: '#22d3ee',
+        fillOpacity: 0.75,
+        weight: 1.5,
+      }).bindPopup(`<b>${label}</b><br>${v.visitCount} visita(s)`).addTo(this.leafletMap!);
+    }
+    if (bounds.length === 1) {
+      this.leafletMap.setView(bounds[0], 5);
+    } else {
+      this.leafletMap.fitBounds(bounds, { padding: [30, 30] });
     }
   }
 
@@ -323,58 +388,6 @@ export class AdminDashboardComponent implements OnInit {
     }
 
     return records.sort((a, b) => b.date.getTime() - a.date.getTime());
-  }
-
-  get lineChart(): LineChartData {
-    const PAD_L = 44, PAD_R = 12, PAD_T = 16, PAD_B = 36;
-    const W = 492 - PAD_L - PAD_R;
-    const H = 148;
-    const bottomY = PAD_T + H;
-    const today = new Date();
-    const days = Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(today);
-      d.setDate(today.getDate() - (6 - i));
-      return d;
-    });
-    const counts = days.map(day =>
-      this.visitors.filter(v => {
-        const ls = new Date(v.lastSeen);
-        return ls.getFullYear() === day.getFullYear()
-          && ls.getMonth() === day.getMonth()
-          && ls.getDate() === day.getDate();
-      }).length
-    );
-    const maxVal = Math.max(...counts, 1);
-    const pts: ChartPoint[] = days.map((day, i) => ({
-      x: PAD_L + (i / 6) * W,
-      y: PAD_T + (1 - counts[i] / maxVal) * H,
-      count: counts[i],
-      label: day.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
-    }));
-    const area = `M${pts[0].x},${bottomY} L${pts.map(p => `${p.x},${p.y}`).join(' L')} L${pts[pts.length - 1].x},${bottomY} Z`;
-    const line = pts.map(p => `${p.x},${p.y}`).join(' ');
-    const yLabels = Array.from({ length: 5 }, (_, i) => ({
-      val: Math.round((maxVal / 4) * i),
-      y: bottomY - (i / 4) * H,
-    }));
-    return {
-      pts, area, line, yLabels,
-      gridY: yLabels.map(l => l.y),
-      vb: `0 0 492 ${H + PAD_T + PAD_B}`,
-      bottomY,
-      padL: PAD_L,
-    };
-  }
-
-  get mapDots(): MapDot[] {
-    const W = 480, H = 240;
-    return this.visitors
-      .filter(v => v.lat != null && v.lng != null)
-      .map(v => ({
-        cx: ((v.lng! + 180) / 360) * W,
-        cy: ((90 - v.lat!) / 180) * H,
-        count: v.visitCount,
-      }));
   }
 
   isMobile(ua?: string): boolean {

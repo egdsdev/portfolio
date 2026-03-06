@@ -507,31 +507,6 @@ html.light om-theme-toggle span {
 html.light .admin-dashboard-link { color: #7c3aed !important; }
 html.light .admin-dashboard-link:hover { color: #6d28d9 !important; }
 
-/* ---- Admin Dashboard SVGs: light theme (ciano → violeta) ---- */
-
-/* Fundo do mapa */
-.admin-map { background: #05080f; }
-html.light .admin-map { background: #f0edff !important; }
-
-/* Linhas de grade do mapa */
-html.light .admin-map line { stroke: #ddd6fe !important; }
-
-/* Labels lat/lng do mapa */
-html.light .admin-map text { fill: #c4b5fd !important; }
-
-/* Pontos e halos do mapa */
-html.light .admin-page circle[fill="#22d3ee"] { fill: #7c3aed !important; }
-html.light .admin-page circle[stroke="#22d3ee"] { stroke: #7c3aed !important; }
-
-/* Linha e poliline do gráfico */
-html.light .admin-chart polyline { stroke: #7c3aed !important; }
-
-/* Border dos pontos do gráfico (era quase preto, vira branco) */
-html.light .admin-chart circle[stroke="#0a0f1a"] { stroke: #ffffff !important; }
-
-/* Linhas de grade do gráfico */
-html.light .admin-chart line { stroke: #e9d5ff !important; }
-
-/* Gradiente de área do gráfico */
-html.light #areaGrad stop:nth-child(1) { stop-color: rgba(124,58,237,0.22) !important; }
-html.light #areaGrad stop:nth-child(2) { stop-color: rgba(124,58,237,0) !important; }
+/* ---- Leaflet map ---- */
+.leaflet-map { z-index: 0; }
+html.light .leaflet-map .leaflet-tile-pane { filter: hue-rotate(220deg) saturate(0.7) brightness(1.1); }
