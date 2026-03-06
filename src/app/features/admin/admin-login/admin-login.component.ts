@@ -8,9 +8,9 @@ import { FirebaseService } from '../../../core/services/firebase.service';
   standalone: true,
   imports: [FormsModule],
   template: `
-    <div class="min-h-screen flex items-center justify-center bg-gray-950 p-4">
-      <div class="w-full max-w-sm bg-gray-900 border border-gray-800 rounded-2xl p-8 shadow-xl">
-        <h1 class="text-xl font-bold text-white text-center mb-6">🔐 Admin</h1>
+    <div class="admin-page min-h-screen flex items-center justify-center p-4 pt-20">
+      <div class="w-full max-w-sm admin-card border rounded-2xl p-8 shadow-xl">
+        <h1 class="text-xl font-bold text-center mb-6">🔐 Admin</h1>
 
         @if (error) {
           <div class="bg-red-500/10 border border-red-500/30 text-red-400 text-xs rounded-lg p-3 mb-4 text-center">
@@ -22,12 +22,12 @@ import { FirebaseService } from '../../../core/services/firebase.service';
           <input type="email"
                  [(ngModel)]="email"
                  placeholder="Email"
-                 class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-200 placeholder-gray-600 outline-none focus:border-cyan-500/60 transition-colors">
+                 class="w-full admin-input border rounded-xl px-4 py-3 text-sm outline-none transition-colors">
           <input type="password"
                  [(ngModel)]="password"
                  placeholder="Senha"
                  (keydown.enter)="login()"
-                 class="w-full bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-200 placeholder-gray-600 outline-none focus:border-cyan-500/60 transition-colors">
+                 class="w-full admin-input border rounded-xl px-4 py-3 text-sm outline-none transition-colors">
           <button (click)="login()"
                   [disabled]="loading"
                   class="w-full py-3 rounded-xl text-white text-sm font-bold transition-all"

@@ -27,7 +27,7 @@ import { NgxThemeToggleComponent } from '@omnedia/ngx-theme-toggle';
               themeTarget="html"
               [duration]="500">
               <ng-template omDarkIcon>🌙</ng-template>
-              <ng-template omLightIcon>☀️</ng-template>
+              <ng-template omLightIcon><span style="filter: brightness(0) invert(1); font-size: 1rem;">☀️</span></ng-template>
             </om-theme-toggle>
           </li>
         </ul>
@@ -77,7 +77,7 @@ import { NgxThemeToggleComponent } from '@omnedia/ngx-theme-toggle';
           themeTarget="html"
           [duration]="500">
           <ng-template omDarkIcon>🌙</ng-template>
-          <ng-template omLightIcon>☀️</ng-template>
+          <ng-template omLightIcon><span style="filter: brightness(0) invert(1); font-size: 1rem;">☀️</span></ng-template>
         </om-theme-toggle>
       </div>
 

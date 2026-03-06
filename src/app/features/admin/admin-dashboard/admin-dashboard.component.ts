@@ -8,10 +8,10 @@ import { FirebaseService, AiMatchRecord } from '../../../core/services/firebase.
   standalone: true,
   imports: [DatePipe],
   template: `
-    <div class="min-h-screen bg-gray-950 text-gray-200 pt-20">
+    <div class="admin-page min-h-screen pt-20">
       <!-- Sub-header -->
       <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-        <h1 class="text-lg font-bold text-white">📊 Dashboard Admin</h1>
+        <h1 class="text-lg font-bold">📊 Dashboard Admin</h1>
         <div class="flex items-center gap-3">
           <a href="/" class="text-xs text-gray-500 hover:text-gray-300 transition-colors">← Voltar ao site</a>
           <button (click)="logout()"

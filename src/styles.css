@@ -444,3 +444,43 @@ om-theme-toggle {
   50% { transform: translateY(8px); opacity: 0.3; }
 }
 .scroll-dot { animation: scrollBounce 1.5s ease-in-out infinite; }
+
+/* ---- Admin pages (dark default) ---- */
+.admin-page {
+  background: #030712;
+  color: #e5e7eb;
+}
+.admin-card {
+  background: #111827;
+  border-color: #1f2937;
+}
+.admin-input {
+  background: #1f2937;
+  border-color: #374151;
+  color: #e5e7eb;
+}
+.admin-input::placeholder { color: #6b7280; }
+.admin-input:focus { border-color: rgba(6,182,212,0.6); }
+
+/* ---- Admin pages (light theme) ---- */
+html.light .admin-page {
+  background: #faf8ff !important;
+  color: #3b3558 !important;
+}
+html.light .admin-card {
+  background: #ffffff !important;
+  border-color: #ede9fe !important;
+  box-shadow: 0 2px 12px rgba(109,40,217,0.08) !important;
+}
+html.light .admin-input {
+  background: #f5f3ff !important;
+  border-color: #ddd6fe !important;
+  color: #3b3558 !important;
+}
+html.light .admin-input::placeholder { color: #9ca3af !important; }
+html.light .admin-input:focus { border-color: rgba(124,58,237,0.5) !important; }
+
+/* Light theme sun icon fix */
+html.light om-theme-toggle span[style*="invert"] {
+  filter: none !important;
+}
