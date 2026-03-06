@@ -487,6 +487,7 @@ html.light .admin-input:focus { border-color: rgba(124,58,237,0.5) !important; }
   color: #ffffff;
 }
 html.light .header-theme-icon {
+  stroke: #6b7280 !important;
   color: #6b7280 !important;
 }
 
