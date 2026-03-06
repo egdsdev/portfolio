@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject } from '@angular/core';
+import { RouterOutlet, Router } from '@angular/router';
 import { HeaderComponent } from './features/header/header.component';
 import { PersonalDetailsComponent } from './features/personal-details/personal-details.component';
 import { EducationComponent } from './features/education/education.component';
@@ -13,6 +14,7 @@ import { FooterComponent } from './shared/components/footer/footer.component';
   selector: 'app-root',
   standalone: true,
   imports: [
+    RouterOutlet,
     HeaderComponent,
     PersonalDetailsComponent,
     EducationComponent,
@@ -24,27 +26,37 @@ import { FooterComponent } from './shared/components/footer/footer.component';
     FooterComponent
   ],
   template: `
-    <div class="starfield">
-      <div class="stars stars-sm"></div>
-      <div class="stars stars-md"></div>
-      <div class="stars stars-lg"></div>
-    </div>
-    <div class="min-h-screen text-gray-100 relative">
-      <app-header></app-header>
-      <app-personal-details></app-personal-details>
-      <app-education></app-education>
-      <app-experience></app-experience>
-      <app-skills></app-skills>
-      <app-dev-match></app-dev-match>
-      <app-certifications></app-certifications>
-      <app-contact></app-contact>
-      <app-footer></app-footer>
-    </div>
+    @if (isAdminRoute()) {
+      <router-outlet></router-outlet>
+    } @else {
+      <div class="starfield">
+        <div class="stars stars-sm"></div>
+        <div class="stars stars-md"></div>
+        <div class="stars stars-lg"></div>
+      </div>
+      <div class="min-h-screen text-gray-100 relative">
+        <app-header></app-header>
+        <app-personal-details></app-personal-details>
+        <app-education></app-education>
+        <app-experience></app-experience>
+        <app-skills></app-skills>
+        <app-dev-match></app-dev-match>
+        <app-certifications></app-certifications>
+        <app-contact></app-contact>
+        <app-footer></app-footer>
+      </div>
+      <router-outlet></router-outlet>
+    }
   `,
   styleUrl: './app.css'
 })
 export class App implements OnInit, OnDestroy {
   private themeObserver?: MutationObserver;
+  private router = inject(Router);
+
+  isAdminRoute(): boolean {
+    return this.router.url.startsWith('/admin');
+  }
 
   ngOnInit() {
     this.themeObserver = new MutationObserver(() => {
