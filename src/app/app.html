@@ -1,4 +1,4 @@
-<om-starry-sky
+﻿<om-starry-sky
   [shootingStarsConfig]="{ minDelay: 1000, maxDelay: 2000 }"
   [starsBackgroundConfig]="{ starDensity: 0.001 }"
   class="min-h-screen">
@@ -6,22 +6,22 @@
     <!-- Bolinha que segue o cursor -->
     <div #cursorFollower class="pointer-events-none fixed w-2 h-2 bg-white/80 rounded-full z-50"></div>
 
-  <!-- Barra de Navegação -->
+  <!-- Barra de NavegaÃ§Ã£o -->
   <nav class="fixed top-0 left-0 right-0 bg-gray-900/80 backdrop-blur-sm z-50 border-b border-gray-800/50">
-    <div class="max-w-6xl mx-auto px-6 py-4">
+    <div class="max-w-7xl mx-auto px-6 py-4">
       <ul class="flex justify-center space-x-8">
         <li><a href="#detalhes" class="text-gray-300 hover:text-cyan-400 transition-colors">Detalhes Pessoais</a></li>
         <li><a href="#escolaridade" class="text-gray-300 hover:text-cyan-400 transition-colors">Escolaridade</a></li>
-        <li><a href="#experiencia" class="text-gray-300 hover:text-cyan-400 transition-colors">Experiência</a></li>
+        <li><a href="#experiencia" class="text-gray-300 hover:text-cyan-400 transition-colors">ExperiÃªncia</a></li>
         <li><a href="#habilidades" class="text-gray-300 hover:text-cyan-400 transition-colors">Habilidades</a></li>
-        <li><a href="#certificacoes" class="text-gray-300 hover:text-cyan-400 transition-colors">Certificações</a></li>
+        <li><a href="#certificacoes" class="text-gray-300 hover:text-cyan-400 transition-colors">CertificaÃ§Ãµes</a></li>
       </ul>
     </div>
   </nav>
 
-  <!-- Seção: Detalhes Pessoais -->
+  <!-- SeÃ§Ã£o: Detalhes Pessoais -->
   <section id="detalhes" class="min-h-screen pt-20 flex items-center justify-center relative overflow-hidden">
-    <!-- Círculos decorativos com blur -->
+    <!-- CÃ­rculos decorativos com blur -->
     <div class="absolute top-20 left-20 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
     <div class="absolute top-20 right-20 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
     <div class="absolute -bottom-8 left-40 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
@@ -43,7 +43,7 @@
           <om-marquee>
             <ng-template>
               <div class="flex items-center gap-8 px-6">
-                <!-- Primeira metade dos ícones -->
+                <!-- Primeira metade dos Ã­cones -->
                 <fa-icon [icon]="phpIcon" class="text-3xl text-indigo-400 hover:scale-125 transition-transform cursor-pointer" title="PHP"></fa-icon>
                 <fa-icon [icon]="laravelIcon" class="text-3xl text-red-500 hover:scale-125 transition-transform cursor-pointer" title="Laravel"></fa-icon>
                 <fa-icon [icon]="pythonIcon" class="text-3xl text-yellow-400 hover:scale-125 transition-transform cursor-pointer" title="Python"></fa-icon>
@@ -62,7 +62,7 @@
           <om-marquee [reverse]="true">
             <ng-template>
               <div class="flex items-center gap-8 px-6">
-                <!-- Segunda metade dos ícones -->
+                <!-- Segunda metade dos Ã­cones -->
                 <fa-icon [icon]="mongoIcon" class="text-3xl text-green-500 hover:scale-125 transition-transform cursor-pointer" title="MongoDB"></fa-icon>
                 <fa-icon [icon]="postgresIcon" class="text-3xl text-blue-400 hover:scale-125 transition-transform cursor-pointer" title="PostgreSQL"></fa-icon>
                 <fa-icon [icon]="sqlServerIcon" class="text-3xl text-red-400 hover:scale-125 transition-transform cursor-pointer" title="SQL Server"></fa-icon>
@@ -87,20 +87,20 @@
     </div>
   </section>
 
-  <!-- Seção: Escolaridade -->
+  <!-- SeÃ§Ã£o: Escolaridade -->
   <section id="escolaridade" class="py-20 px-8">
     <div class="max-w-4xl mx-auto">
       <h2 class="text-4xl font-bold text-center mb-16 bg-linear-to-r from-blue-400 to-cyan-400 text-transparent bg-clip-text">
-        Formação Acadêmica
+        FormaÃ§Ã£o AcadÃªmica
       </h2>
       <div class="space-y-8">
         <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 hover:bg-gray-800/60 transition-all duration-300
                     border border-gray-700/50 hover:border-cyan-500/30 shadow-lg">
           <div class="flex items-start space-x-4">
-            <span class="text-cyan-400 text-xl">🎓</span>
+            <span class="text-cyan-400 text-xl">ðŸŽ“</span>
             <div>
-              <h3 class="text-xl font-semibold text-white mb-2">Pós-Graduação</h3>
-              <p class="text-gray-300">Qualidade, Teste e Desenvolvimento de Software com Metodologia Ágil</p>
+              <h3 class="text-xl font-semibold text-white mb-2">PÃ³s-GraduaÃ§Ã£o</h3>
+              <p class="text-gray-300">Qualidade, Teste e Desenvolvimento de Software com Metodologia Ãgil</p>
               <p class="text-gray-400 mt-2">UNIMAIS (2020-2022)</p>
             </div>
           </div>
@@ -109,19 +109,19 @@
         <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 hover:bg-gray-800/60 transition-all duration-300
                     border border-gray-700/50 hover:border-cyan-500/30 shadow-lg">
           <div class="flex items-start space-x-4">
-            <span class="text-cyan-400 text-xl">🎓</span>
+            <span class="text-cyan-400 text-xl">ðŸŽ“</span>
             <div>
-              <h3 class="text-xl font-semibold text-white mb-2">Graduação em Engenharia da Computação</h3>
-              <p class="text-gray-300">PUC Goiás</p>
+              <h3 class="text-xl font-semibold text-white mb-2">GraduaÃ§Ã£o em Engenharia da ComputaÃ§Ã£o</h3>
+              <p class="text-gray-300">PUC GoiÃ¡s</p>
               <p class="text-gray-400 mt-2">2015-2019</p>
               <ul class="mt-4 space-y-2 text-gray-300">
                 <li class="flex items-start">
-                  <span class="text-cyan-400 mr-2">▹</span>
-                  Diretor do Centro Acadêmico
+                  <span class="text-cyan-400 mr-2">â–¹</span>
+                  Diretor do Centro AcadÃªmico
                 </li>
                 <li class="flex items-start">
-                  <span class="text-cyan-400 mr-2">▹</span>
-                  TCC na Área de Segurança da Informação (Redes IEEE 802.11)
+                  <span class="text-cyan-400 mr-2">â–¹</span>
+                  TCC na Ãrea de SeguranÃ§a da InformaÃ§Ã£o (Redes IEEE 802.11)
                 </li>
               </ul>
             </div>
@@ -131,11 +131,11 @@
     </div>
   </section>
 
-  <!-- Seção: Experiência Profissional -->
+  <!-- SeÃ§Ã£o: ExperiÃªncia Profissional -->
   <section id="experiencia" class="py-20 px-8">
-    <div class="max-w-6xl mx-auto">
+    <div class="max-w-7xl mx-auto">
       <h2 class="text-4xl font-bold text-center mb-16 bg-linear-to-r from-blue-400 to-cyan-400 text-transparent bg-clip-text">
-        Experiência Profissional
+        ExperiÃªncia Profissional
       </h2>
       <om-timeline
         [data]="timelineData"
@@ -150,13 +150,13 @@
     </div>
   </section>
 
-  <!-- Seção: Habilidades -->
+  <!-- SeÃ§Ã£o: Habilidades -->
   <section id="habilidades" class="py-20 px-8">
-    <div class="max-w-6xl mx-auto">
+    <div class="max-w-7xl mx-auto">
       <h2 class="text-4xl font-bold text-center mb-16 bg-linear-to-r from-blue-400 to-cyan-400 text-transparent bg-clip-text">
-        Habilidades e Competências
+        Habilidades e CompetÃªncias
       </h2>
-      <div class="flex flex-wrap justify-center items-center gap-6 mx-auto max-w-6xl">
+      <div class="flex flex-wrap justify-center items-center gap-6 mx-auto max-w-7xl">
         <div class="p-6 bg-gray-800/50 rounded-xl hover:bg-gray-800/70 transition-all duration-300 backdrop-blur-sm
                     border border-gray-700/50 hover:border-cyan-500/30 group w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-1.5rem)] flex flex-col items-center">
           <h3 class="text-xl font-semibold text-cyan-400 mb-4">Backend</h3>
@@ -206,21 +206,21 @@
     </div>
   </section>
 
-  <!-- Seção: Certificações -->
+  <!-- SeÃ§Ã£o: CertificaÃ§Ãµes -->
   <section id="certificacoes" class="py-20 px-8">
     <div class="max-w-4xl mx-auto">
       <h2 class="text-4xl font-bold text-center mb-16 bg-linear-to-r from-blue-400 to-cyan-400 text-transparent bg-clip-text">
-        Certificações & Licenças
+        CertificaÃ§Ãµes & LicenÃ§as
       </h2>
       <div class="bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 hover:bg-gray-800/60 transition-all duration-300
                   border border-gray-700/50 hover:border-cyan-500/30 shadow-lg">
         <div class="space-y-4 text-gray-300">
           <div class="flex items-start space-x-4">
-            <span class="text-cyan-400 text-xl">🏆</span>
+            <span class="text-cyan-400 text-xl">ðŸ†</span>
             <div>
-              <h3 class="text-xl font-semibold text-white mb-2">Certificado de Mérito no TCC</h3>
-              <p class="text-gray-400">V Congresso de Ciência e Tecnologia da PUCGO (2019)</p>
-              <p class="text-gray-300 mt-2">"REDES IEEE 802.11 PROTOCOLOS DE SEGURANÇA, VULNERABILIDADES E PROTEÇÃO" - Apresentação Oral</p>
+              <h3 class="text-xl font-semibold text-white mb-2">Certificado de MÃ©rito no TCC</h3>
+              <p class="text-gray-400">V Congresso de CiÃªncia e Tecnologia da PUCGO (2019)</p>
+              <p class="text-gray-300 mt-2">"REDES IEEE 802.11 PROTOCOLOS DE SEGURANÃ‡A, VULNERABILIDADES E PROTEÃ‡ÃƒO" - ApresentaÃ§Ã£o Oral</p>
             </div>
           </div>
         </div>
@@ -228,7 +228,7 @@
     </div>
   </section>
 
-  <!-- Seção: Contato -->
+  <!-- SeÃ§Ã£o: Contato -->
   <section id="contato" class="py-20 px-8">
     <div class="max-w-4xl mx-auto text-center">
       <h2 class="text-4xl font-bold mb-16 bg-linear-to-r from-blue-400 to-cyan-400 text-transparent bg-clip-text">
@@ -239,7 +239,7 @@
            class="group p-6 bg-gray-800/50 rounded-2xl hover:bg-gray-800/70 transition-all duration-300
                   transform hover:scale-105 backdrop-blur-sm border border-gray-700/50 hover:border-cyan-500/30">
           <div class="text-cyan-400 text-3xl mb-4 group-hover:scale-110 transition-transform">
-            ✉️
+            âœ‰ï¸
           </div>
           <h3 class="text-lg font-semibold text-gray-200 mb-2">Email</h3>
           <p class="text-gray-400">egds.dev@gmail.com</p>
@@ -260,24 +260,24 @@
         <div class="group p-6 bg-gray-800/50 rounded-2xl hover:bg-gray-800/70 transition-all duration-300
                     transform hover:scale-105 backdrop-blur-sm border border-gray-700/50 hover:border-cyan-500/30">
           <div class="text-cyan-400 text-3xl mb-4 group-hover:scale-110 transition-transform">
-            📍
+            ðŸ“
           </div>
-          <h3 class="text-lg font-semibold text-gray-200 mb-2">Localização</h3>
+          <h3 class="text-lg font-semibold text-gray-200 mb-2">LocalizaÃ§Ã£o</h3>
           <p class="text-gray-400">Piracanjuba, GO</p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Rodapé com copyright -->
+  <!-- RodapÃ© com copyright -->
   <footer class="py-12 relative overflow-hidden group">
     <div class="absolute inset-0 bg-linear-to-r from-blue-500/10 to-cyan-500/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
     <div class="max-w-7xl mx-auto text-center relative z-10">
       <div class="flex flex-col items-center space-y-6">
         <p class="text-gray-400 text-lg">
-          Desenvolvido com <span class="text-cyan-400">❤</span> por Elias Gomes da Silva
+          Desenvolvido com <span class="text-cyan-400">â¤</span> por Elias Gomes da Silva
         </p>
-        <p class="text-gray-500 text-sm">© 2025. Todos os direitos reservados.</p>
+        <p class="text-gray-500 text-sm">Â© 2025. Todos os direitos reservados.</p>
       </div>
     </div>
   </footer>
