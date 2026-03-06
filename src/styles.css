@@ -484,3 +484,9 @@ html.light .admin-input:focus { border-color: rgba(124,58,237,0.5) !important; }
 html.light om-theme-toggle span {
   color: #6b7280 !important;
 }
+
+/* Dashboard link: blue in dark, purple in light */
+.admin-dashboard-link { color: #3b82f6 !important; }
+.admin-dashboard-link:hover { color: #60a5fa !important; }
+html.light .admin-dashboard-link { color: #7c3aed !important; }
+html.light .admin-dashboard-link:hover { color: #6d28d9 !important; }

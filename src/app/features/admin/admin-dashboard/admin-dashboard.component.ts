@@ -1,5 +1,4 @@
 import { Component, inject, OnInit, ChangeDetectorRef } from '@angular/core';
-import { Router } from '@angular/router';
 import { DatePipe } from '@angular/common';
 import { FirebaseService, AiMatchRecord } from '../../../core/services/firebase.service';
 
@@ -9,19 +8,9 @@ import { FirebaseService, AiMatchRecord } from '../../../core/services/firebase.
   imports: [DatePipe],
   template: `
     <div class="admin-page min-h-screen pt-20">
-      <!-- Sub-header -->
-      <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-        <h1 class="text-lg font-bold">📊 Dashboard Admin</h1>
-        <div class="flex items-center gap-3">
-          <a href="/" class="text-xs text-gray-500 hover:text-gray-300 transition-colors">← Voltar ao site</a>
-          <button (click)="logout()"
-                  class="text-xs px-3 py-1.5 rounded-lg border border-gray-700 text-gray-500 hover:text-red-400 hover:border-red-500/40 transition-all">
-            Sair
-          </button>
-        </div>
-      </div>
-
       <main class="max-w-6xl mx-auto p-6 space-y-8">
+        <!-- Title -->
+        <h1 class="text-lg font-bold">📊 Dashboard Admin</h1>
 
         <!-- Stats -->
         <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -112,7 +101,6 @@ import { FirebaseService, AiMatchRecord } from '../../../core/services/firebase.
 })
 export class AdminDashboardComponent implements OnInit {
   private firebase = inject(FirebaseService);
-  private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
 
   matches: AiMatchRecord[] = [];
@@ -131,10 +119,5 @@ export class AdminDashboardComponent implements OnInit {
       this.loading = false;
       this.cdr.detectChanges();
     }
-  }
-
-  async logout(): Promise<void> {
-    await this.firebase.logout();
-    this.router.navigate(['/admin/login']);
   }
 }

@@ -1,6 +1,7 @@
-import { Component, signal } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Component, signal, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { RouterLink, Router } from '@angular/router';
 import { NgxThemeToggleComponent } from '@omnedia/ngx-theme-toggle';
+import { FirebaseService } from '../../core/services/firebase.service';
 
 @Component({
   selector: 'app-header',
@@ -18,7 +19,12 @@ import { NgxThemeToggleComponent } from '@omnedia/ngx-theme-toggle';
           <li><a href="#dev-match" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">Match</a></li>
           <li><a href="#certificacoes" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">Certificações</a></li>
           <li><a href="#contato" class="px-4 py-1.5 rounded-full border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 transition-all text-sm tracking-wide">Contato</a></li>
-          <li><a routerLink="/admin/login" class="text-gray-600 hover:text-gray-400 transition-colors" title="Admin"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg></a></li>
+          @if (loggedIn()) {
+            <li><a routerLink="/admin" class="admin-dashboard-link nav-link text-blue-400 hover:text-blue-300 transition-colors text-sm tracking-wide font-semibold">Dashboard</a></li>
+            <li><button (click)="logout()" class="text-gray-500 hover:text-red-400 transition-colors text-sm tracking-wide">Sair</button></li>
+          } @else {
+            <li><a routerLink="/admin/login" class="text-gray-600 hover:text-gray-400 transition-colors" title="Admin"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg></a></li>
+          }
           <li class="flex items-center">
             <om-theme-toggle
               animationStyle="circle"
@@ -40,12 +46,10 @@ import { NgxThemeToggleComponent } from '@omnedia/ngx-theme-toggle';
       (click)="toggleMenu()"
       aria-label="Abrir menu">
       @if (isOpen()) {
-        <!-- Ícone X (fechar) -->
         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
         </svg>
       } @else {
-        <!-- Ícone hambúrguer -->
         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h16"/>
         </svg>
@@ -67,7 +71,6 @@ import { NgxThemeToggleComponent } from '@omnedia/ngx-theme-toggle';
       [class.-translate-x-full]="!isOpen()"
       [class.translate-x-0]="isOpen()">
 
-      <!-- Cabeçalho do drawer -->
       <div class="p-5 border-b border-gray-800/50 flex items-center justify-between">
         <a href="#detalhes" class="text-cyan-400 font-bold text-lg tracking-widest font-mono" (click)="closeMenu()">&lt;EG /&gt;</a>
         <om-theme-toggle
@@ -81,7 +84,6 @@ import { NgxThemeToggleComponent } from '@omnedia/ngx-theme-toggle';
         </om-theme-toggle>
       </div>
 
-      <!-- Links de navegação -->
       <nav class="flex flex-col p-6 gap-5">
         <a href="#escolaridade" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm tracking-wide py-1 border-b border-gray-800/30" (click)="closeMenu()">Formação</a>
         <a href="#experiencia" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm tracking-wide py-1 border-b border-gray-800/30" (click)="closeMenu()">Experiência</a>
@@ -89,7 +91,12 @@ import { NgxThemeToggleComponent } from '@omnedia/ngx-theme-toggle';
         <a href="#dev-match" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm tracking-wide py-1 border-b border-gray-800/30" (click)="closeMenu()">Match</a>
         <a href="#certificacoes" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm tracking-wide py-1 border-b border-gray-800/30" (click)="closeMenu()">Certificações</a>
         <a href="#contato" class="mt-2 px-4 py-2 rounded-full border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 transition-all text-sm tracking-wide text-center" (click)="closeMenu()">Contato</a>
-        <a routerLink="/admin/login" class="text-gray-600 hover:text-gray-400 transition-colors text-xs flex items-center gap-1.5 mt-4 pt-4 border-t border-gray-800/30" (click)="closeMenu()"><svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg> Admin</a>
+        @if (loggedIn()) {
+          <a routerLink="/admin" class="admin-dashboard-link text-blue-400 hover:text-blue-300 transition-colors text-sm flex items-center gap-1.5 mt-4 pt-4 border-t border-gray-800/30 font-semibold" (click)="closeMenu()">📊 Dashboard</a>
+          <button (click)="logout(); closeMenu()" class="text-gray-500 hover:text-red-400 transition-colors text-xs text-left">Sair</button>
+        } @else {
+          <a routerLink="/admin/login" class="text-gray-600 hover:text-gray-400 transition-colors text-xs flex items-center gap-1.5 mt-4 pt-4 border-t border-gray-800/30" (click)="closeMenu()"><svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg> Admin</a>
+        }
       </nav>
     </aside>
   `,
@@ -99,8 +106,30 @@ import { NgxThemeToggleComponent } from '@omnedia/ngx-theme-toggle';
     }
   `]
 })
-export class HeaderComponent {
+export class HeaderComponent implements OnInit {
+  private firebase = inject(FirebaseService);
+  private router = inject(Router);
+  private cdr = inject(ChangeDetectorRef);
+
   isOpen = signal(false);
+  loggedIn = signal(false);
+
+  ngOnInit() {
+    this.checkAuth();
+  }
+
+  private async checkAuth() {
+    const logged = await this.firebase.isLoggedIn();
+    this.loggedIn.set(logged);
+    this.cdr.detectChanges();
+  }
+
+  async logout() {
+    await this.firebase.logout();
+    this.loggedIn.set(false);
+    this.cdr.detectChanges();
+    this.router.navigate(['/']);
+  }
 
   toggleMenu() {
     this.isOpen.update(v => !v);
