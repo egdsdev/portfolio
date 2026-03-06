@@ -26,6 +26,7 @@ import { FooterComponent } from './shared/components/footer/footer.component';
     FooterComponent
   ],
   template: `
+    <app-header></app-header>
     @if (isAdminRoute()) {
       <router-outlet></router-outlet>
     } @else {
@@ -35,7 +36,6 @@ import { FooterComponent } from './shared/components/footer/footer.component';
         <div class="stars stars-lg"></div>
       </div>
       <div class="min-h-screen text-gray-100 relative">
-        <app-header></app-header>
         <app-personal-details></app-personal-details>
         <app-education></app-education>
         <app-experience></app-experience>

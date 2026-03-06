@@ -1,10 +1,11 @@
 import { Component, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { NgxThemeToggleComponent } from '@omnedia/ngx-theme-toggle';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [NgxThemeToggleComponent],
+  imports: [NgxThemeToggleComponent, RouterLink],
   template: `
     <!-- Header Desktop: oculto no mobile -->
     <nav class="fixed top-0 left-0 right-0 bg-gray-900/90 backdrop-blur-md z-50 border-b border-gray-800/50 hidden md:block">
@@ -17,6 +18,7 @@ import { NgxThemeToggleComponent } from '@omnedia/ngx-theme-toggle';
           <li><a href="#dev-match" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">Match</a></li>
           <li><a href="#certificacoes" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">Certificações</a></li>
           <li><a href="#contato" class="px-4 py-1.5 rounded-full border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 transition-all text-sm tracking-wide">Contato</a></li>
+          <li><a routerLink="/admin/login" class="text-gray-600 hover:text-gray-400 transition-colors" title="Admin"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg></a></li>
           <li class="flex items-center">
             <om-theme-toggle
               animationStyle="circle"
@@ -87,6 +89,7 @@ import { NgxThemeToggleComponent } from '@omnedia/ngx-theme-toggle';
         <a href="#dev-match" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm tracking-wide py-1 border-b border-gray-800/30" (click)="closeMenu()">Match</a>
         <a href="#certificacoes" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm tracking-wide py-1 border-b border-gray-800/30" (click)="closeMenu()">Certificações</a>
         <a href="#contato" class="mt-2 px-4 py-2 rounded-full border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 transition-all text-sm tracking-wide text-center" (click)="closeMenu()">Contato</a>
+        <a routerLink="/admin/login" class="text-gray-600 hover:text-gray-400 transition-colors text-xs flex items-center gap-1.5 mt-4 pt-4 border-t border-gray-800/30" (click)="closeMenu()"><svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg> Admin</a>
       </nav>
     </aside>
   `,

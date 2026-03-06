@@ -8,9 +8,9 @@ import { FirebaseService, AiMatchRecord } from '../../../core/services/firebase.
   standalone: true,
   imports: [DatePipe],
   template: `
-    <div class="min-h-screen bg-gray-950 text-gray-200">
-      <!-- Header -->
-      <header class="border-b border-gray-800 px-6 py-4 flex items-center justify-between">
+    <div class="min-h-screen bg-gray-950 text-gray-200 pt-20">
+      <!-- Sub-header -->
+      <div class="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
         <h1 class="text-lg font-bold text-white">📊 Dashboard Admin</h1>
         <div class="flex items-center gap-3">
           <a href="/" class="text-xs text-gray-500 hover:text-gray-300 transition-colors">← Voltar ao site</a>
@@ -19,7 +19,7 @@ import { FirebaseService, AiMatchRecord } from '../../../core/services/firebase.
             Sair
           </button>
         </div>
-      </header>
+      </div>
 
       <main class="max-w-6xl mx-auto p-6 space-y-8">
 
