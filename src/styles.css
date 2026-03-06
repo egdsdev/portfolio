@@ -413,6 +413,17 @@ html.light .devmatch-surprise-title  { color: #92400e !important; }
 html.light .devmatch-surprise-body   { color: #1c1917 !important; }
 html.light .devmatch-surprise-item   { color: #292524 !important; }
 html.light .devmatch-surprise-quote  { color: #92400e !important; opacity: 1 !important; }
+html.light .ai-match-btn {
+  background: linear-gradient(135deg, #7c3aed, #a855f7) !important;
+  box-shadow: 0 4px 20px rgba(124,58,237,0.3) !important;
+}
+html.light .ai-match-btn:hover:not(:disabled) {
+  box-shadow: 0 8px 28px rgba(124,58,237,0.45) !important;
+}
+html.light .ai-loading-ring {
+  border-color: rgba(124,58,237,0.15) !important;
+  border-top-color: #7c3aed !important;
+}
 
 /* ---- Timeline path/gradient (light) ---- */
 html.light .experiencia-timeline {
