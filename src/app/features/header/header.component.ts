@@ -21,8 +21,8 @@ import { FirebaseService } from '../../core/services/firebase.service';
           <li><a href="#contato" class="px-4 py-1.5 rounded-full border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 transition-all text-sm tracking-wide">Contato</a></li>
           @if (loggedIn()) {
             <li class="flex items-center gap-4">
-              <a routerLink="/admin" class="admin-dashboard-link nav-link text-cyan-400 hover:text-cyan-300 transition-colors text-sm tracking-wide">Dashboard</a>
               <span class="text-gray-700 select-none">|</span>
+              <a routerLink="/admin" class="admin-dashboard-link nav-link text-cyan-400 hover:text-cyan-300 transition-colors text-sm tracking-wide">Dashboard</a>
               <button (click)="logout()" class="text-gray-400 hover:text-red-400 transition-colors text-sm tracking-wide">Sair</button>
             </li>
           } @else {
@@ -35,8 +35,8 @@ import { FirebaseService } from '../../core/services/firebase.service';
               lightThemeClass="light"
               themeTarget="html"
               [duration]="500">
-              <ng-template omDarkIcon><span style="color: #9ca3af; font-size: 1rem;">🌙</span></ng-template>
-              <ng-template omLightIcon><span style="color: #9ca3af; font-size: 1rem;">☀️</span></ng-template>
+              <ng-template omDarkIcon><span class="header-theme-icon">🌙</span></ng-template>
+              <ng-template omLightIcon><span class="header-theme-icon">☀️</span></ng-template>
             </om-theme-toggle>
           </li>
         </ul>
@@ -82,8 +82,8 @@ import { FirebaseService } from '../../core/services/firebase.service';
           lightThemeClass="light"
           themeTarget="html"
           [duration]="500">
-          <ng-template omDarkIcon><span style="color: #9ca3af; font-size: 1rem;">🌙</span></ng-template>
-          <ng-template omLightIcon><span style="color: #9ca3af; font-size: 1rem;">☀️</span></ng-template>
+          <ng-template omDarkIcon><span class="header-theme-icon">🌙</span></ng-template>
+          <ng-template omLightIcon><span class="header-theme-icon">☀️</span></ng-template>
         </om-theme-toggle>
       </div>
 
