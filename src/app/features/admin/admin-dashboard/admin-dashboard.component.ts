@@ -2,6 +2,19 @@ import { Component, inject, OnInit, ChangeDetectorRef, signal } from '@angular/c
 import { DatePipe } from '@angular/common';
 import { FirebaseService, AiMatchRecord, VisitorRecord, DevMatchRecord } from '../../../core/services/firebase.service';
 
+interface ChartPoint { x: number; y: number; count: number; label: string; }
+interface MapDot { cx: number; cy: number; count: number; }
+interface LineChartData {
+  pts: ChartPoint[];
+  area: string;
+  line: string;
+  yLabels: { val: number; y: number }[];
+  gridY: number[];
+  vb: string;
+  bottomY: number;
+  padL: number;
+}
+
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
@@ -16,78 +29,25 @@ import { FirebaseService, AiMatchRecord, VisitorRecord, DevMatchRecord } from '.
           <p class="text-xs text-gray-500 mt-1">{{ today | date:'dd/MM/yyyy' }}</p>
         </div>
 
-        <!-- Seção IA -->
-        <section>
-          <p class="text-xs text-gray-500 uppercase tracking-widest mb-3 font-semibold">🤖 Análises de IA</p>
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <div class="admin-card rounded-xl p-4 border">
-              <p class="text-xs text-gray-500 mb-1">Total de Análises</p>
-              <p class="text-3xl font-bold">{{ aiMatches.length }}</p>
-            </div>
-            <div class="admin-card rounded-xl p-4 border">
-              <p class="text-xs text-gray-500 mb-1">Match Médio</p>
-              <p class="text-3xl font-bold" [class.text-green-400]="avgAiMatch >= 70" [class.text-yellow-400]="avgAiMatch >= 50 && avgAiMatch < 70" [class.text-red-400]="avgAiMatch < 50 && aiMatches.length > 0">
-                {{ aiMatches.length > 0 ? avgAiMatch + '%' : '—' }}
-              </p>
-            </div>
-            <div class="admin-card rounded-xl p-4 border">
-              <p class="text-xs text-gray-500 mb-1">Melhor Match</p>
-              <p class="text-3xl font-bold text-green-400">{{ bestAiMatch > 0 ? bestAiMatch + '%' : '—' }}</p>
-            </div>
-            <div class="admin-card rounded-xl p-4 border">
-              <p class="text-xs text-gray-500 mb-1">Última Análise</p>
-              <p class="text-sm font-medium mt-1">{{ aiMatches.length > 0 ? (aiMatches[0].createdAt | date:'dd/MM HH:mm') : '—' }}</p>
-            </div>
+        <!-- 4 Cards resumo -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <div class="admin-card rounded-xl p-4 border">
+            <p class="text-xs text-gray-500 mb-1">Visitantes Únicos</p>
+            <p class="text-3xl font-bold text-cyan-400">{{ visitors.length }}</p>
           </div>
-        </section>
-
-        <!-- Seção Dev Match -->
-        <section>
-          <p class="text-xs text-gray-500 uppercase tracking-widest mb-3 font-semibold">🎯 Dev Match Manual</p>
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <div class="admin-card rounded-xl p-4 border">
-              <p class="text-xs text-gray-500 mb-1">Total de Matches</p>
-              <p class="text-3xl font-bold">{{ devMatches.length }}</p>
-            </div>
-            <div class="admin-card rounded-xl p-4 border">
-              <p class="text-xs text-gray-500 mb-1">Match Médio</p>
-              <p class="text-3xl font-bold" [class.text-green-400]="avgDevMatch >= 70" [class.text-yellow-400]="avgDevMatch >= 50 && avgDevMatch < 70" [class.text-red-400]="avgDevMatch < 50 && devMatches.length > 0">
-                {{ devMatches.length > 0 ? avgDevMatch + '%' : '—' }}
-              </p>
-            </div>
-            <div class="admin-card rounded-xl p-4 border">
-              <p class="text-xs text-gray-500 mb-1">Melhor Match</p>
-              <p class="text-3xl font-bold text-green-400">{{ bestDevMatch > 0 ? bestDevMatch + '%' : '—' }}</p>
-            </div>
-            <div class="admin-card rounded-xl p-4 border">
-              <p class="text-xs text-gray-500 mb-1">Último Match</p>
-              <p class="text-sm font-medium mt-1">{{ devMatches.length > 0 ? (devMatches[0].createdAt | date:'dd/MM HH:mm') : '—' }}</p>
-            </div>
+          <div class="admin-card rounded-xl p-4 border">
+            <p class="text-xs text-gray-500 mb-1">Países</p>
+            <p class="text-3xl font-bold">{{ uniqueCountries }}</p>
           </div>
-        </section>
-
-        <!-- Seção Visitantes -->
-        <section>
-          <p class="text-xs text-gray-500 uppercase tracking-widest mb-3 font-semibold">👥 Visitantes</p>
-          <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
-            <div class="admin-card rounded-xl p-4 border">
-              <p class="text-xs text-gray-500 mb-1">Visitantes Únicos</p>
-              <p class="text-3xl font-bold text-cyan-400">{{ visitors.length }}</p>
-            </div>
-            <div class="admin-card rounded-xl p-4 border">
-              <p class="text-xs text-gray-500 mb-1">Países</p>
-              <p class="text-3xl font-bold">{{ uniqueCountries }}</p>
-            </div>
-            <div class="admin-card rounded-xl p-4 border">
-              <p class="text-xs text-gray-500 mb-1">Mobile</p>
-              <p class="text-3xl font-bold">{{ mobileCount }}</p>
-            </div>
-            <div class="admin-card rounded-xl p-4 border">
-              <p class="text-xs text-gray-500 mb-1">Última Visita</p>
-              <p class="text-sm font-medium mt-1">{{ visitors.length > 0 ? (visitors[0].lastSeen | date:'dd/MM HH:mm') : '—' }}</p>
-            </div>
+          <div class="admin-card rounded-xl p-4 border">
+            <p class="text-xs text-gray-500 mb-1">Análises IA</p>
+            <p class="text-3xl font-bold">{{ aiMatches.length }}</p>
           </div>
-        </section>
+          <div class="admin-card rounded-xl p-4 border">
+            <p class="text-xs text-gray-500 mb-1">Dev Matches</p>
+            <p class="text-3xl font-bold">{{ devMatches.length }}</p>
+          </div>
+        </div>
 
         <!-- Abas -->
         <div class="flex gap-1 border-b border-gray-800">
@@ -250,8 +210,102 @@ import { FirebaseService, AiMatchRecord, VisitorRecord, DevMatchRecord } from '.
           </div>
         }
 
+        <!-- Gráficos -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
+          <!-- Gráfico de linha -->
+          @let chart = lineChart;
+          <div class="admin-card border rounded-xl p-5">
+            <p class="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">📈 Acessos — Últimos 7 dias</p>
+            <svg [attr.viewBox]="chart.vb" class="w-full" style="overflow:visible">
+              <defs>
+                <linearGradient id="areaGrad" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="0%" stop-color="#22d3ee" stop-opacity="0.25"/>
+                  <stop offset="100%" stop-color="#22d3ee" stop-opacity="0"/>
+                </linearGradient>
+              </defs>
+              @for (gy of chart.gridY; track gy) {
+                <line [attr.x1]="chart.padL" x2="492" [attr.y1]="gy" [attr.y2]="gy"
+                      stroke="#1f2937" stroke-width="1"/>
+              }
+              <path [attr.d]="chart.area" fill="url(#areaGrad)"/>
+              <polyline [attr.points]="chart.line"
+                        fill="none" stroke="#22d3ee" stroke-width="2"
+                        stroke-linejoin="round" stroke-linecap="round"/>
+              @for (pt of chart.pts; track pt.label) {
+                <circle [attr.cx]="pt.x" [attr.cy]="pt.y" r="4"
+                        fill="#22d3ee" stroke="#0a0f1a" stroke-width="2"/>
+              }
+              @for (pt of chart.pts; track pt.label) {
+                <text [attr.x]="pt.x" [attr.y]="chart.bottomY + 18"
+                      text-anchor="middle" class="chart-lbl">{{ pt.label }}</text>
+              }
+              @for (l of chart.yLabels; track l.val) {
+                <text [attr.x]="chart.padL - 6" [attr.y]="l.y + 4"
+                      text-anchor="end" class="chart-lbl">{{ l.val }}</text>
+              }
+            </svg>
+          </div>
 
+          <!-- Mapa de pontos -->
+          @let dots = mapDots;
+          <div class="admin-card border rounded-xl p-5">
+            <p class="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">🌍 Localização dos Acessos</p>
+            <svg viewBox="0 0 480 240" class="w-full rounded-lg" style="background:#05080f">
+              <line x1="0" x2="480" y1="40"  y2="40"  stroke="#0d1f2d" stroke-width="1" stroke-dasharray="3,4"/>
+              <line x1="0" x2="480" y1="80"  y2="80"  stroke="#0d1f2d" stroke-width="1" stroke-dasharray="3,4"/>
+              <line x1="0" x2="480" y1="120" y2="120" stroke="#162333" stroke-width="1"/>
+              <line x1="0" x2="480" y1="160" y2="160" stroke="#0d1f2d" stroke-width="1" stroke-dasharray="3,4"/>
+              <line x1="0" x2="480" y1="200" y2="200" stroke="#0d1f2d" stroke-width="1" stroke-dasharray="3,4"/>
+              <line x1="80"  x2="80"  y1="0" y2="240" stroke="#0d1f2d" stroke-width="1" stroke-dasharray="3,4"/>
+              <line x1="160" x2="160" y1="0" y2="240" stroke="#0d1f2d" stroke-width="1" stroke-dasharray="3,4"/>
+              <line x1="240" x2="240" y1="0" y2="240" stroke="#162333" stroke-width="1"/>
+              <line x1="320" x2="320" y1="0" y2="240" stroke="#0d1f2d" stroke-width="1" stroke-dasharray="3,4"/>
+              <line x1="400" x2="400" y1="0" y2="240" stroke="#0d1f2d" stroke-width="1" stroke-dasharray="3,4"/>
+              <text x="4" y="14"  fill="#1e3a4a" font-size="7" font-family="inherit">90°N</text>
+              <text x="4" y="43"  fill="#1e3a4a" font-size="7" font-family="inherit">60°N</text>
+              <text x="4" y="83"  fill="#1e3a4a" font-size="7" font-family="inherit">30°N</text>
+              <text x="4" y="123" fill="#1e3a4a" font-size="7" font-family="inherit">0°</text>
+              <text x="4" y="163" fill="#1e3a4a" font-size="7" font-family="inherit">30°S</text>
+              <text x="4" y="203" fill="#1e3a4a" font-size="7" font-family="inherit">60°S</text>
+              <text x="78"  y="237" fill="#1e3a4a" font-size="7" font-family="inherit" text-anchor="middle">120°O</text>
+              <text x="158" y="237" fill="#1e3a4a" font-size="7" font-family="inherit" text-anchor="middle">60°O</text>
+              <text x="240" y="237" fill="#1e3a4a" font-size="7" font-family="inherit" text-anchor="middle">0°</text>
+              <text x="320" y="237" fill="#1e3a4a" font-size="7" font-family="inherit" text-anchor="middle">60°L</text>
+              <text x="400" y="237" fill="#1e3a4a" font-size="7" font-family="inherit" text-anchor="middle">120°L</text>
+              @for (dot of dots; track dot.cx + '-' + dot.cy) {
+                <circle [attr.cx]="dot.cx" [attr.cy]="dot.cy"
+                        [attr.r]="dot.count > 5 ? 6 : dot.count > 2 ? 4.5 : 3"
+                        fill="#22d3ee" opacity="0.75"/>
+              }
+              @for (dot of dots; track 'h' + dot.cx + '-' + dot.cy) {
+                @if (dot.count > 2) {
+                  <circle [attr.cx]="dot.cx" [attr.cy]="dot.cy"
+                          [attr.r]="dot.count > 5 ? 10 : 7"
+                          fill="none" stroke="#22d3ee" stroke-width="1" opacity="0.25"/>
+                }
+              }
+              @if (dots.length === 0 && !loading) {
+                <text x="240" y="120" text-anchor="middle" fill="#374151" font-size="11" font-family="inherit">Sem dados de localização</text>
+              }
+            </svg>
+            <div class="flex items-center gap-4 mt-3">
+              <div class="flex items-center gap-1.5">
+                <svg width="10" height="10"><circle cx="5" cy="5" r="3" fill="#22d3ee" opacity="0.75"/></svg>
+                <span class="text-xs text-gray-500">1–2 visitas</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <svg width="12" height="12"><circle cx="6" cy="6" r="4.5" fill="#22d3ee" opacity="0.75"/></svg>
+                <span class="text-xs text-gray-500">3–5 visitas</span>
+              </div>
+              <div class="flex items-center gap-1.5">
+                <svg width="14" height="14"><circle cx="7" cy="7" r="6" fill="#22d3ee" opacity="0.75"/></svg>
+                <span class="text-xs text-gray-500">6+ visitas</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
       </main>
     </div>
   `,
@@ -261,6 +315,11 @@ import { FirebaseService, AiMatchRecord, VisitorRecord, DevMatchRecord } from '.
       -webkit-line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
+    }
+    :host ::ng-deep .chart-lbl {
+      fill: #6b7280;
+      font-size: 10px;
+      font-family: inherit;
     }
   `],
 })
@@ -273,10 +332,6 @@ export class AdminDashboardComponent implements OnInit {
   visitors: VisitorRecord[] = [];
   visitorMap = new Map<string, VisitorRecord>();
   loading = true;
-  avgAiMatch = 0;
-  bestAiMatch = 0;
-  avgDevMatch = 0;
-  bestDevMatch = 0;
   uniqueCountries = 0;
   mobileCount = 0;
   today = new Date();
@@ -293,16 +348,6 @@ export class AdminDashboardComponent implements OnInit {
       this.devMatches = devMatches;
       this.visitors = visitors;
       this.visitorMap = new Map(visitors.filter(v => v.id).map(v => [v.id!, v]));
-
-      if (aiMatches.length > 0) {
-        this.avgAiMatch = Math.round(aiMatches.reduce((s, m) => s + m.matchPercentage, 0) / aiMatches.length);
-        this.bestAiMatch = Math.max(...aiMatches.map(m => m.matchPercentage));
-      }
-      if (devMatches.length > 0) {
-        this.avgDevMatch = Math.round(devMatches.reduce((s, m) => s + m.matchPercentage, 0) / devMatches.length);
-        this.bestDevMatch = Math.max(...devMatches.map(m => m.matchPercentage));
-      }
-
       this.uniqueCountries = new Set(visitors.map(v => v.country).filter(Boolean)).size;
       this.mobileCount = visitors.filter(v => this.isMobile(v.userAgent)).length;
     } catch {
@@ -317,6 +362,58 @@ export class AdminDashboardComponent implements OnInit {
 
   getVisitor(visitorId?: string): VisitorRecord | undefined {
     return visitorId ? this.visitorMap.get(visitorId) : undefined;
+  }
+
+  get lineChart(): LineChartData {
+    const PAD_L = 44, PAD_R = 12, PAD_T = 16, PAD_B = 36;
+    const W = 492 - PAD_L - PAD_R;
+    const H = 148;
+    const bottomY = PAD_T + H;
+    const today = new Date();
+    const days = Array.from({ length: 7 }, (_, i) => {
+      const d = new Date(today);
+      d.setDate(today.getDate() - (6 - i));
+      return d;
+    });
+    const counts = days.map(day =>
+      this.visitors.filter(v => {
+        const ls = new Date(v.lastSeen);
+        return ls.getFullYear() === day.getFullYear()
+          && ls.getMonth() === day.getMonth()
+          && ls.getDate() === day.getDate();
+      }).length
+    );
+    const maxVal = Math.max(...counts, 1);
+    const pts: ChartPoint[] = days.map((day, i) => ({
+      x: PAD_L + (i / 6) * W,
+      y: PAD_T + (1 - counts[i] / maxVal) * H,
+      count: counts[i],
+      label: day.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }),
+    }));
+    const area = `M${pts[0].x},${bottomY} L${pts.map(p => `${p.x},${p.y}`).join(' L')} L${pts[pts.length - 1].x},${bottomY} Z`;
+    const line = pts.map(p => `${p.x},${p.y}`).join(' ');
+    const yLabels = Array.from({ length: 5 }, (_, i) => ({
+      val: Math.round((maxVal / 4) * i),
+      y: bottomY - (i / 4) * H,
+    }));
+    return {
+      pts, area, line, yLabels,
+      gridY: yLabels.map(l => l.y),
+      vb: `0 0 492 ${H + PAD_T + PAD_B}`,
+      bottomY,
+      padL: PAD_L,
+    };
+  }
+
+  get mapDots(): MapDot[] {
+    const W = 480, H = 240;
+    return this.visitors
+      .filter(v => v.lat != null && v.lng != null)
+      .map(v => ({
+        cx: ((v.lng! + 180) / 360) * W,
+        cy: ((90 - v.lat!) / 180) * H,
+        count: v.visitCount,
+      }));
   }
 
   isMobile(ua?: string): boolean {
