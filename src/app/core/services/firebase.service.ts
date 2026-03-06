@@ -17,6 +17,26 @@ export interface AiMatchRecord {
   createdAt: Date;
 }
 
+export interface VisitorRecord {
+  id?: string;
+  ip: string;
+  city?: string;
+  country?: string;
+  region?: string;
+  language?: string;
+  timezone?: string;
+  lat?: number;
+  lng?: number;
+  referrer?: string;
+  userAgent?: string;
+  screenWidth?: number;
+  screenHeight?: number;
+  preciseLocation?: boolean;
+  visitCount: number;
+  firstSeen: Date;
+  lastSeen: Date;
+}
+
 @Injectable({ providedIn: 'root' })
 export class FirebaseService {
   private app: FirebaseApp;
@@ -63,6 +83,33 @@ export class FirebaseService {
         aiResponse: d['aiResponse'],
         matchPercentage: d['matchPercentage'],
         createdAt: d['createdAt']?.toDate() ?? new Date(),
+      };
+    });
+  }
+
+  async getVisitors(): Promise<VisitorRecord[]> {
+    const q = query(collection(this.db, 'visitors'), orderBy('lastSeen', 'desc'));
+    const snap = await getDocs(q);
+    return snap.docs.map(doc => {
+      const d = doc.data();
+      return {
+        id: doc.id,
+        ip: d['ip'] ?? '',
+        city: d['city'],
+        country: d['country'],
+        region: d['region'],
+        language: d['language'],
+        timezone: d['timezone'],
+        lat: d['lat'],
+        lng: d['lng'],
+        referrer: d['referrer'],
+        userAgent: d['userAgent'],
+        screenWidth: d['screenWidth'],
+        screenHeight: d['screenHeight'],
+        preciseLocation: d['preciseLocation'],
+        visitCount: d['visitCount'] ?? 1,
+        firstSeen: d['firstSeen']?.toDate() ?? new Date(),
+        lastSeen: d['lastSeen']?.toDate() ?? new Date(),
       };
     });
   }

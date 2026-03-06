@@ -482,13 +482,12 @@ html.light .admin-input:focus { border-color: rgba(124,58,237,0.5) !important; }
 
 /* Theme toggle icon: gray matching header text */
 .header-theme-icon {
+  width: 1.1rem;
+  height: 1.1rem;
   color: #9ca3af;
-  font-size: 1rem;
-  filter: grayscale(1) brightness(1.5);
 }
 html.light .header-theme-icon {
   color: #6b7280 !important;
-  filter: grayscale(1) brightness(0.7);
 }
 
 /* Light theme sun icon */
