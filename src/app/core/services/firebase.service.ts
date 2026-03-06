@@ -148,6 +148,18 @@ export class FirebaseService {
     });
   }
 
+  async touchVisitor(visitorId: string): Promise<void> {
+    try {
+      await updateDoc(doc(this.db, 'visitors', visitorId), { lastSeen: Timestamp.now() });
+    } catch { /* visitante sem doc ainda — ignora */ }
+  }
+
+  async updateVisitorCoords(visitorId: string, lat: number, lng: number): Promise<void> {
+    try {
+      await updateDoc(doc(this.db, 'visitors', visitorId), { lat, lng, preciseLocation: true });
+    } catch { /* ignora */ }
+  }
+
   async trackVisitor(visitorId: string, isFirstVisit: boolean, data: Omit<VisitorRecord, 'id' | 'visitCount' | 'firstSeen' | 'lastSeen'>): Promise<void> {
     const ref = doc(this.db, 'visitors', visitorId);
     if (isFirstVisit) {

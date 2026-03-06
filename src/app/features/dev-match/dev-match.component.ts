@@ -935,8 +935,10 @@ export class DevMatchComponent implements OnInit {
       this.resultMatch,
       this.resultActiveAreas.map(a => a.label),
     );
+    const _dvid = localStorage.getItem('portfolio-vid') ?? undefined;
+    if (_dvid) this.firebaseService.touchVisitor(_dvid);
     this.firebaseService.saveDevMatch({
-      visitorId: localStorage.getItem('portfolio-vid') ?? undefined,
+      visitorId: _dvid,
       areas: this.resultActiveAreas.map(a => a.label),
       requirements: this.allToggles.filter(t => t.active).map(t => t.label),
       matchPercentage: this.resultMatch,
@@ -1215,8 +1217,10 @@ export class DevMatchComponent implements OnInit {
         this.saveToCache(cacheKey, parsed);
 
         // Salvar no Firestore
+        const _avid = localStorage.getItem('portfolio-vid') ?? undefined;
+        if (_avid) this.firebaseService.touchVisitor(_avid);
         this.firebaseService.saveAiMatch({
-          visitorId: localStorage.getItem('portfolio-vid') ?? undefined,
+          visitorId: _avid,
           jobDescription: this.aiJobDescription.trim(),
           aiResponse: parsed.recommendation ?? text,
           matchPercentage: parsed.matchPercentage,

@@ -14,29 +14,29 @@ export class AnalyticsService {
         localStorage.setItem('portfolio-vid', visitorId);
       }
 
-      // Solicita localização precisa e IP em paralelo
-      const [geo, preciseCoords] = await Promise.all([
-        this.fetchIpGeo(),
-        this.requestPreciseLocation(),
-      ]);
-
-      const lat = preciseCoords?.latitude ?? (geo['lat'] as number | undefined);
-      const lng = preciseCoords?.longitude ?? (geo['lng'] as number | undefined);
-
+      // Salva imediatamente com geolocalização por IP (sem esperar permissão do navegador)
+      const geo = await this.fetchIpGeo();
       await this.firebase.trackVisitor(visitorId, isFirstVisit, {
         ip: (geo['ip'] as string) ?? 'unknown',
         city: geo['city'] as string | undefined,
         country: geo['country'] as string | undefined,
         region: geo['region'] as string | undefined,
-        lat,
-        lng,
+        lat: geo['lat'] as number | undefined,
+        lng: geo['lng'] as number | undefined,
         timezone: geo['timezone'] as string | undefined,
         language: navigator.language,
         userAgent: navigator.userAgent,
         screenWidth: screen.width,
         screenHeight: screen.height,
         referrer: document.referrer || undefined,
-        preciseLocation: !!preciseCoords,
+        preciseLocation: false,
+      });
+
+      // Solicita localização precisa em background — atualiza coords se concedido
+      this.requestPreciseLocation().then(coords => {
+        if (coords) {
+          this.firebase.updateVisitorCoords(visitorId!, coords.latitude, coords.longitude);
+        }
       });
     } catch (err) {
       console.error('[Analytics] trackVisit error:', err);
