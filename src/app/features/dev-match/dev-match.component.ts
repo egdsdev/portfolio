@@ -936,6 +936,7 @@ export class DevMatchComponent implements OnInit {
       this.resultActiveAreas.map(a => a.label),
     );
     this.firebaseService.saveDevMatch({
+      visitorId: localStorage.getItem('portfolio-vid') ?? undefined,
       areas: this.resultActiveAreas.map(a => a.label),
       requirements: this.allToggles.filter(t => t.active).map(t => t.label),
       matchPercentage: this.resultMatch,
@@ -1215,6 +1216,7 @@ export class DevMatchComponent implements OnInit {
 
         // Salvar no Firestore
         this.firebaseService.saveAiMatch({
+          visitorId: localStorage.getItem('portfolio-vid') ?? undefined,
           jobDescription: this.aiJobDescription.trim(),
           aiResponse: parsed.recommendation ?? text,
           matchPercentage: parsed.matchPercentage,

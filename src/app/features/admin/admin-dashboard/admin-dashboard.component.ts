@@ -8,7 +8,7 @@ import { FirebaseService, AiMatchRecord, VisitorRecord, DevMatchRecord } from '.
   imports: [DatePipe],
   template: `
     <div class="admin-page min-h-screen pt-20">
-      <main class="max-w-6xl mx-auto px-4 pb-12 space-y-8">
+      <main class="max-w-7xl mx-auto px-4 pb-12 space-y-8">
 
         <!-- Título -->
         <div class="pt-6">
@@ -107,14 +107,7 @@ import { FirebaseService, AiMatchRecord, VisitorRecord, DevMatchRecord } from '.
                   [class.text-gray-500]="activeTab() !== 'dev'">
             Dev Match ({{ devMatches.length }})
           </button>
-          <button (click)="activeTab.set('visitors')"
-                  class="px-4 py-2 text-sm font-medium transition-colors border-b-2 -mb-px"
-                  [class.border-cyan-400]="activeTab() === 'visitors'"
-                  [class.text-cyan-400]="activeTab() === 'visitors'"
-                  [class.border-transparent]="activeTab() !== 'visitors'"
-                  [class.text-gray-500]="activeTab() !== 'visitors'">
-            Visitantes ({{ visitors.length }})
-          </button>
+
         </div>
 
         <!-- Tabela IA -->
@@ -133,6 +126,9 @@ import { FirebaseService, AiMatchRecord, VisitorRecord, DevMatchRecord } from '.
                       <th class="text-left px-5 py-3">Match</th>
                       <th class="text-left px-5 py-3">O que escreveu</th>
                       <th class="text-left px-5 py-3">Resposta da IA</th>
+                      <th class="text-left px-5 py-3">Localização</th>
+                      <th class="text-left px-5 py-3">Dispositivo</th>
+                      <th class="text-left px-5 py-3">IP</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -149,6 +145,24 @@ import { FirebaseService, AiMatchRecord, VisitorRecord, DevMatchRecord } from '.
                         </td>
                         <td class="px-5 py-3 text-xs text-gray-400 max-w-xs"><div class="line-clamp-2" [title]="m.jobDescription">{{ m.jobDescription }}</div></td>
                         <td class="px-5 py-3 text-xs text-gray-400 max-w-xs"><div class="line-clamp-2" [title]="m.aiResponse">{{ m.aiResponse }}</div></td>
+                        <td class="px-5 py-3 text-xs text-gray-400 whitespace-nowrap">
+                          @if (getVisitor(m.visitorId); as v) {
+                            {{ v.city }}{{ v.city && v.country ? ', ' : '' }}{{ v.country }}
+                          } @else {
+                            <span class="text-gray-600">—</span>
+                          }
+                        </td>
+                        <td class="px-5 py-3 text-xs text-gray-400 whitespace-nowrap">
+                          @if (getVisitor(m.visitorId); as v) {
+                            {{ isMobile(v.userAgent) ? '📱' : '🖥️' }}
+                            <span class="text-gray-600"> {{ v.screenWidth }}×{{ v.screenHeight }}</span>
+                          } @else {
+                            <span class="text-gray-600">—</span>
+                          }
+                        </td>
+                        <td class="px-5 py-3 text-xs text-gray-600 font-mono whitespace-nowrap">
+                          {{ getVisitor(m.visitorId)?.ip ?? '—' }}
+                        </td>
                       </tr>
                     }
                   </tbody>
@@ -174,6 +188,9 @@ import { FirebaseService, AiMatchRecord, VisitorRecord, DevMatchRecord } from '.
                       <th class="text-left px-5 py-3">Match</th>
                       <th class="text-left px-5 py-3">Áreas de Atuação</th>
                       <th class="text-left px-5 py-3">Requisitos Específicos</th>
+                      <th class="text-left px-5 py-3">Localização</th>
+                      <th class="text-left px-5 py-3">Dispositivo</th>
+                      <th class="text-left px-5 py-3">IP</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -206,6 +223,24 @@ import { FirebaseService, AiMatchRecord, VisitorRecord, DevMatchRecord } from '.
                             </div>
                           }
                         </td>
+                        <td class="px-5 py-3 text-xs text-gray-400 whitespace-nowrap">
+                          @if (getVisitor(d.visitorId); as v) {
+                            {{ v.city }}{{ v.city && v.country ? ', ' : '' }}{{ v.country }}
+                          } @else {
+                            <span class="text-gray-600">—</span>
+                          }
+                        </td>
+                        <td class="px-5 py-3 text-xs text-gray-400 whitespace-nowrap">
+                          @if (getVisitor(d.visitorId); as v) {
+                            {{ isMobile(v.userAgent) ? '📱' : '🖥️' }}
+                            <span class="text-gray-600"> {{ v.screenWidth }}×{{ v.screenHeight }}</span>
+                          } @else {
+                            <span class="text-gray-600">—</span>
+                          }
+                        </td>
+                        <td class="px-5 py-3 text-xs text-gray-600 font-mono whitespace-nowrap">
+                          {{ getVisitor(d.visitorId)?.ip ?? '—' }}
+                        </td>
                       </tr>
                     }
                   </tbody>
@@ -215,52 +250,7 @@ import { FirebaseService, AiMatchRecord, VisitorRecord, DevMatchRecord } from '.
           </div>
         }
 
-        <!-- Tabela Visitantes -->
-        @if (activeTab() === 'visitors') {
-          <div class="admin-card border rounded-xl overflow-hidden">
-            @if (loading) {
-              <div class="p-10 text-center text-gray-500 text-sm animate-pulse">Carregando...</div>
-            } @else if (visitors.length === 0) {
-              <div class="p-10 text-center text-gray-600 text-sm">Nenhum visitante registrado ainda.</div>
-            } @else {
-              <div class="overflow-x-auto">
-                <table class="w-full text-sm">
-                  <thead>
-                    <tr class="text-xs text-gray-500 uppercase tracking-wider border-b border-gray-800">
-                      <th class="text-left px-5 py-3">Última Visita</th>
-                      <th class="text-left px-5 py-3">Visitas</th>
-                      <th class="text-left px-5 py-3">Localização</th>
-                      <th class="text-left px-5 py-3">Idioma</th>
-                      <th class="text-left px-5 py-3">Dispositivo</th>
-                      <th class="text-left px-5 py-3">IP</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    @for (v of visitors; track v.id) {
-                      <tr class="border-b border-gray-800/40 hover:bg-gray-800/20 transition-colors">
-                        <td class="px-5 py-3 text-xs text-gray-400 whitespace-nowrap">{{ v.lastSeen | date:'dd/MM/yy HH:mm' }}</td>
-                        <td class="px-5 py-3">
-                          <span class="text-xs font-bold px-2.5 py-1 rounded-full bg-cyan-500/10 text-cyan-400">
-                            {{ v.visitCount }}x
-                          </span>
-                        </td>
-                        <td class="px-5 py-3 text-xs text-gray-400">
-                          {{ v.city }}{{ v.city && v.country ? ', ' : '' }}{{ v.country }}
-                        </td>
-                        <td class="px-5 py-3 text-xs text-gray-400">{{ v.language ?? '—' }}</td>
-                        <td class="px-5 py-3 text-xs text-gray-400 whitespace-nowrap">
-                          {{ isMobile(v.userAgent) ? '📱 Mobile' : '🖥️ Desktop' }}
-                          <span class="text-gray-600"> {{ v.screenWidth }}×{{ v.screenHeight }}</span>
-                        </td>
-                        <td class="px-5 py-3 text-xs text-gray-600 font-mono">{{ v.ip }}</td>
-                      </tr>
-                    }
-                  </tbody>
-                </table>
-              </div>
-            }
-          </div>
-        }
+
 
       </main>
     </div>
@@ -281,6 +271,7 @@ export class AdminDashboardComponent implements OnInit {
   aiMatches: AiMatchRecord[] = [];
   devMatches: DevMatchRecord[] = [];
   visitors: VisitorRecord[] = [];
+  visitorMap = new Map<string, VisitorRecord>();
   loading = true;
   avgAiMatch = 0;
   bestAiMatch = 0;
@@ -289,7 +280,7 @@ export class AdminDashboardComponent implements OnInit {
   uniqueCountries = 0;
   mobileCount = 0;
   today = new Date();
-  activeTab = signal<'ai' | 'dev' | 'visitors'>('ai');
+  activeTab = signal<'ai' | 'dev'>('ai');
 
   async ngOnInit(): Promise<void> {
     try {
@@ -301,6 +292,7 @@ export class AdminDashboardComponent implements OnInit {
       this.aiMatches = aiMatches;
       this.devMatches = devMatches;
       this.visitors = visitors;
+      this.visitorMap = new Map(visitors.filter(v => v.id).map(v => [v.id!, v]));
 
       if (aiMatches.length > 0) {
         this.avgAiMatch = Math.round(aiMatches.reduce((s, m) => s + m.matchPercentage, 0) / aiMatches.length);
@@ -321,6 +313,10 @@ export class AdminDashboardComponent implements OnInit {
       this.loading = false;
       this.cdr.detectChanges();
     }
+  }
+
+  getVisitor(visitorId?: string): VisitorRecord | undefined {
+    return visitorId ? this.visitorMap.get(visitorId) : undefined;
   }
 
   isMobile(ua?: string): boolean {

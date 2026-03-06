@@ -11,6 +11,7 @@ import { environment } from '../../../environments/environment';
 
 export interface AiMatchRecord {
   id?: string;
+  visitorId?: string;
   jobDescription: string;
   aiResponse: string;
   matchPercentage: number;
@@ -19,6 +20,7 @@ export interface AiMatchRecord {
 
 export interface DevMatchRecord {
   id?: string;
+  visitorId?: string;
   areas: string[];
   requirements: string[];
   matchPercentage: number;
@@ -87,6 +89,7 @@ export class FirebaseService {
       const d = doc.data();
       return {
         id: doc.id,
+        visitorId: d['visitorId'],
         jobDescription: d['jobDescription'],
         aiResponse: d['aiResponse'],
         matchPercentage: d['matchPercentage'],
@@ -109,6 +112,7 @@ export class FirebaseService {
       const d = doc.data();
       return {
         id: doc.id,
+        visitorId: d['visitorId'],
         areas: d['areas'] ?? [],
         requirements: d['requirements'] ?? [],
         matchPercentage: d['matchPercentage'] ?? 0,
