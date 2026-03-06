@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { initializeApp, FirebaseApp } from 'firebase/app';
 import {
   getFirestore, Firestore, collection, addDoc, getDocs,
-  query, orderBy, Timestamp, doc, getDoc, setDoc, updateDoc, increment,
+  query, orderBy, Timestamp, doc, setDoc, updateDoc, increment,
 } from 'firebase/firestore';
 import {
   getAuth, Auth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
@@ -114,22 +114,31 @@ export class FirebaseService {
     });
   }
 
-  async trackVisitor(visitorId: string, data: Omit<VisitorRecord, 'id' | 'visitCount' | 'firstSeen' | 'lastSeen'>): Promise<void> {
+  async trackVisitor(visitorId: string, isFirstVisit: boolean, data: Omit<VisitorRecord, 'id' | 'visitCount' | 'firstSeen' | 'lastSeen'>): Promise<void> {
     const ref = doc(this.db, 'visitors', visitorId);
-    const snap = await getDoc(ref);
-    if (snap.exists()) {
-      await updateDoc(ref, {
-        ...data,
-        visitCount: increment(1),
-        lastSeen: Timestamp.now(),
-      });
-    } else {
+    if (isFirstVisit) {
       await setDoc(ref, {
         ...data,
         visitCount: 1,
         firstSeen: Timestamp.now(),
         lastSeen: Timestamp.now(),
       });
+    } else {
+      try {
+        await updateDoc(ref, {
+          ...data,
+          visitCount: increment(1),
+          lastSeen: Timestamp.now(),
+        });
+      } catch {
+        // Documento removido — recria
+        await setDoc(ref, {
+          ...data,
+          visitCount: 1,
+          firstSeen: Timestamp.now(),
+          lastSeen: Timestamp.now(),
+        });
+      }
     }
   }
 }

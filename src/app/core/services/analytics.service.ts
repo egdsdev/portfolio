@@ -7,6 +7,7 @@ export class AnalyticsService {
 
   async trackVisit(): Promise<void> {
     try {
+      const isFirstVisit = !localStorage.getItem('portfolio-vid');
       let visitorId = localStorage.getItem('portfolio-vid');
       if (!visitorId) {
         visitorId = crypto.randomUUID();
@@ -31,7 +32,7 @@ export class AnalyticsService {
         // geo opcional — continua sem ele
       }
 
-      await this.firebase.trackVisitor(visitorId, {
+      await this.firebase.trackVisitor(visitorId, isFirstVisit, {
         ip: (geo['ip'] as string) ?? 'unknown',
         city: geo['city'] as string | undefined,
         country: geo['country'] as string | undefined,
@@ -45,8 +46,8 @@ export class AnalyticsService {
         screenHeight: screen.height,
         referrer: document.referrer || undefined,
       });
-    } catch {
-      // silent — tracking nunca deve quebrar o app
+    } catch (err) {
+      console.error('[Analytics] trackVisit error:', err);
     }
   }
 
