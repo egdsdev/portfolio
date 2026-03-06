@@ -26,15 +26,15 @@ import { FooterComponent } from './shared/components/footer/footer.component';
     FooterComponent
   ],
   template: `
+    <div class="starfield">
+      <div class="stars stars-sm"></div>
+      <div class="stars stars-md"></div>
+      <div class="stars stars-lg"></div>
+    </div>
     <app-header></app-header>
     @if (isAdminRoute()) {
       <router-outlet></router-outlet>
     } @else {
-      <div class="starfield">
-        <div class="stars stars-sm"></div>
-        <div class="stars stars-md"></div>
-        <div class="stars stars-lg"></div>
-      </div>
       <div class="min-h-screen text-gray-100 relative">
         <app-personal-details></app-personal-details>
         <app-education></app-education>

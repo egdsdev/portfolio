@@ -447,7 +447,7 @@ om-theme-toggle {
 
 /* ---- Admin pages (dark default) ---- */
 .admin-page {
-  background: #030712;
+  background: transparent;
   color: #e5e7eb;
 }
 .admin-card {
@@ -464,7 +464,7 @@ om-theme-toggle {
 
 /* ---- Admin pages (light theme) ---- */
 html.light .admin-page {
-  background: #faf8ff !important;
+  background: transparent !important;
   color: #3b3558 !important;
 }
 html.light .admin-card {
