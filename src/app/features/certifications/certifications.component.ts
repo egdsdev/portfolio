@@ -16,7 +16,7 @@ import { Component } from '@angular/core';
                     shadow-lg transition-all duration-300 hover:-translate-y-0.5 relative overflow-hidden">
           <div class="absolute left-0 top-0 bottom-0 w-1 bg-linear-to-b from-yellow-400 to-orange-400 rounded-l-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
           <div class="flex items-start space-x-5">
-            <div class="w-12 h-12 rounded-xl bg-yellow-500/10 flex items-center justify-center flex-shrink-0">
+            <div class="w-12 h-12 rounded-xl bg-yellow-500/10 flex items-center justify-center shrink-0">
               <span class="text-2xl">🏆</span>
             </div>
             <div>

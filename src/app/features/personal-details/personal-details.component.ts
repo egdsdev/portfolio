@@ -40,15 +40,26 @@ import { TechMarqueeComponent } from '../../shared/components/tech-marquee/tech-
 
         <app-tech-marquee></app-tech-marquee>
 
-        <a href="#contato"
-           class="mt-10 inline-block px-10 py-3.5 bg-linear-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-full
-                  transform hover:scale-105 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/40 text-sm tracking-wide contact-btn">
-          Entre em Contato
-        </a>
+        <div class="mt-10 flex flex-wrap justify-center gap-4">
+          <a href="#contato"
+             class="inline-block px-10 py-3.5 bg-linear-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-full
+                    transform hover:scale-105 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/40 text-sm tracking-wide contact-btn">
+            Entre em Contato
+          </a>
+          <a href="curriculo-elias-gomes.pdf"
+             download="Curriculo-Elias-Gomes-da-Silva.pdf"
+             class="inline-flex items-center gap-2 px-8 py-3.5 border border-cyan-500/50 text-cyan-300 font-semibold rounded-full
+                    transform hover:scale-105 transition-all duration-300 hover:bg-cyan-500/10 hover:border-cyan-400 text-sm tracking-wide">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            </svg>
+            Baixar Currículo
+          </a>
+        </div>
       </div>
 
-      <!-- Scroll indicator -->
-      <div class="absolute bottom-8 left-1/2 -translate-x-1/2 flex flex-col items-center gap-1 text-gray-500 scroll-indicator z-10">
+      <!-- Scroll indicator: oculto no mobile para não sobrepor os botões -->
+      <div class="absolute bottom-8 left-1/2 -translate-x-1/2 hidden sm:flex flex-col items-center gap-1 text-gray-500 scroll-indicator z-10">
         <span class="text-xs tracking-widest uppercase font-mono">scroll</span>
         <div class="w-5 h-8 border border-gray-500 rounded-full flex justify-center pt-1.5 scroll-mouse">
           <div class="scroll-dot w-1 h-2 bg-cyan-400 rounded-full"></div>

@@ -9,8 +9,12 @@ import { ExperienceComponent } from './features/experience/experience.component'
 import { SkillsComponent } from './features/skills/skills.component';
 import { DevMatchComponent } from './features/dev-match/dev-match.component';
 import { CertificationsComponent } from './features/certifications/certifications.component';
+import { PortfolioComponent } from './features/portfolio/portfolio.component';
 import { ContactComponent } from './features/contact/contact.component';
 import { FooterComponent } from './shared/components/footer/footer.component';
+import { StatsComponent } from './features/stats/stats.component';
+import { GithubStatsComponent } from './features/stats/github-stats.component';
+import { RevealDirective } from './shared/directives/reveal.directive';
 
 @Component({
   selector: 'app-root',
@@ -19,13 +23,17 @@ import { FooterComponent } from './shared/components/footer/footer.component';
     RouterOutlet,
     HeaderComponent,
     PersonalDetailsComponent,
+    StatsComponent,
     EducationComponent,
     ExperienceComponent,
     SkillsComponent,
     DevMatchComponent,
     CertificationsComponent,
+    PortfolioComponent,
     ContactComponent,
-    FooterComponent
+    FooterComponent,
+    RevealDirective,
+    GithubStatsComponent,
   ],
   template: `
     <div class="starfield">
@@ -40,12 +48,36 @@ import { FooterComponent } from './shared/components/footer/footer.component';
       } @else {
         <div class="min-h-screen text-gray-100 relative">
           <app-personal-details></app-personal-details>
-          <app-education></app-education>
-          <app-experience></app-experience>
-          <app-skills></app-skills>
-          <app-dev-match></app-dev-match>
-          <app-certifications></app-certifications>
-          <app-contact></app-contact>
+          <div appReveal="fade" [revealDelay]="0">
+            <app-stats></app-stats>
+          </div>
+          <div appReveal="up" [revealDelay]="0">
+            <app-education></app-education>
+          </div>
+          <div appReveal="up" [revealDelay]="0" [revealThreshold]="0.03">
+            <app-experience></app-experience>
+          </div>
+          <div appReveal="up" [revealDelay]="0">
+            <app-skills></app-skills>
+          </div>
+          <!-- GitHub stats: oculto temporariamente -->
+          @if (false) {
+            <div appReveal="up" [revealDelay]="0">
+              <app-github-stats></app-github-stats>
+            </div>
+          }
+          <div appReveal="up" [revealDelay]="0">
+            <app-dev-match></app-dev-match>
+          </div>
+          <div appReveal="up" [revealDelay]="0">
+            <app-certifications></app-certifications>
+          </div>
+          <div appReveal="up" [revealDelay]="0">
+            <app-portfolio></app-portfolio>
+          </div>
+          <div appReveal="up" [revealDelay]="0">
+            <app-contact></app-contact>
+          </div>
           <app-footer></app-footer>
         </div>
         <router-outlet></router-outlet>

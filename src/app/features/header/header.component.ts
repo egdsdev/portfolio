@@ -1,4 +1,4 @@
-import { Component, signal, inject, OnInit, ChangeDetectorRef } from '@angular/core';
+import { Component, signal, inject, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
 import { NgxThemeToggleComponent } from '@omnedia/ngx-theme-toggle';
 import { FirebaseService } from '../../core/services/firebase.service';
@@ -8,6 +8,12 @@ import { FirebaseService } from '../../core/services/firebase.service';
   standalone: true,
   imports: [NgxThemeToggleComponent, RouterLink],
   template: `
+    <!-- Barra de progresso de scroll -->
+    <div class="progress-bar-wrap fixed top-0 left-0 right-0 z-51 h-0.5 pointer-events-none">
+      <div class="progress-bar h-full transition-none"
+           [style.width.%]="scrollProgress()"></div>
+    </div>
+
     <!-- Header Desktop: oculto no mobile -->
     <nav class="fixed top-0 left-0 right-0 bg-gray-900/90 backdrop-blur-md z-50 border-b border-gray-800/50 hidden md:block">
       <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
@@ -16,8 +22,10 @@ import { FirebaseService } from '../../core/services/firebase.service';
           <li><a href="#escolaridade" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">Formação</a></li>
           <li><a href="#experiencia" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">Experiência</a></li>
           <li><a href="#habilidades" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">Skills</a></li>
+          <!-- <li><a href="#github" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">GitHub</a></li> -->
           <li><a href="#dev-match" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">Match</a></li>
           <li><a href="#certificacoes" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">Certificações</a></li>
+          <li><a href="#projetos" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">Projetos</a></li>
           <li><a href="#contato" class="px-4 py-1.5 rounded-full border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 transition-all text-sm tracking-wide">Contato</a></li>
           @if (loggedIn()) {
             <li class="flex items-center gap-4">
@@ -93,8 +101,10 @@ import { FirebaseService } from '../../core/services/firebase.service';
         <a href="#escolaridade" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm tracking-wide py-1" (click)="closeMenu()">Formação</a>
         <a href="#experiencia" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm tracking-wide py-1" (click)="closeMenu()">Experiência</a>
         <a href="#habilidades" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm tracking-wide py-1" (click)="closeMenu()">Skills</a>
+        <!-- <a href="#github" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm tracking-wide py-1" (click)="closeMenu()">GitHub</a> -->
         <a href="#dev-match" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm tracking-wide py-1" (click)="closeMenu()">Match</a>
         <a href="#certificacoes" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm tracking-wide py-1" (click)="closeMenu()">Certificações</a>
+        <a href="#projetos" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm tracking-wide py-1" (click)="closeMenu()">Projetos</a>
         <a href="#contato" class="mt-2 px-4 py-2 rounded-full border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 transition-all text-sm tracking-wide text-center" (click)="closeMenu()">Contato</a>
         @if (loggedIn()) {
           <div class="border-t border-gray-800/30 pt-4 mt-2 flex flex-col gap-4">
@@ -111,18 +121,53 @@ import { FirebaseService } from '../../core/services/firebase.service';
     :host om-theme-toggle {
       cursor: pointer;
     }
+
+    .progress-bar-wrap {
+      background: transparent;
+    }
+
+    .progress-bar {
+      background: linear-gradient(90deg, #3b82f6, #22d3ee, #a855f7);
+      background-size: 200% 100%;
+      animation: shimmer 3s linear infinite;
+      box-shadow: 0 0 8px rgba(34, 211, 238, 0.6);
+    }
+
+    @keyframes shimmer {
+      0%   { background-position: 200% center; }
+      100% { background-position: -200% center; }
+    }
+
+    :host-context(html.light) .progress-bar {
+      background: linear-gradient(90deg, #7c3aed, #a855f7, #6d28d9);
+      background-size: 200% 100%;
+      box-shadow: 0 0 8px rgba(124, 58, 237, 0.5);
+    }
   `]
 })
-export class HeaderComponent implements OnInit {
+export class HeaderComponent implements OnInit, OnDestroy {
   private firebase = inject(FirebaseService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
 
   isOpen = signal(false);
   loggedIn = signal(false);
+  scrollProgress = signal(0);
+
+  private onScroll = () => {
+    const doc = document.documentElement;
+    const scrolled = doc.scrollTop || document.body.scrollTop;
+    const total = doc.scrollHeight - doc.clientHeight;
+    this.scrollProgress.set(total > 0 ? Math.round((scrolled / total) * 1000) / 10 : 0);
+  };
 
   ngOnInit() {
     this.checkAuth();
+    window.addEventListener('scroll', this.onScroll, { passive: true });
+  }
+
+  ngOnDestroy() {
+    window.removeEventListener('scroll', this.onScroll);
   }
 
   private async checkAuth() {

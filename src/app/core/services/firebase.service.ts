@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { initializeApp, FirebaseApp } from 'firebase/app';
 import {
   getFirestore, Firestore, collection, addDoc, getDocs,
-  query, orderBy, Timestamp, doc, setDoc, updateDoc, increment,
+  query, orderBy, Timestamp, doc, setDoc, updateDoc, increment, deleteDoc, where,
 } from 'firebase/firestore';
 import {
   getAuth, Auth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
@@ -158,6 +158,15 @@ export class FirebaseService {
     try {
       await updateDoc(doc(this.db, 'visitors', visitorId), { lat, lng, preciseLocation: true });
     } catch { /* ignora */ }
+  }
+
+  async deleteVisitor(visitorId: string): Promise<void> {
+    await deleteDoc(doc(this.db, 'visitors', visitorId));
+    // Apaga matches associados
+    const aiSnap = await getDocs(query(collection(this.db, 'ai_matches'), where('visitorId', '==', visitorId)));
+    await Promise.all(aiSnap.docs.map(d => deleteDoc(d.ref)));
+    const devSnap = await getDocs(query(collection(this.db, 'dev_matches'), where('visitorId', '==', visitorId)));
+    await Promise.all(devSnap.docs.map(d => deleteDoc(d.ref)));
   }
 
   async trackVisitor(visitorId: string, isFirstVisit: boolean, data: Omit<VisitorRecord, 'id' | 'visitCount' | 'firstSeen' | 'lastSeen'>): Promise<void> {

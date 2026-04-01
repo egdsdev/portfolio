@@ -26,7 +26,7 @@ import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
             <p class="text-gray-400 text-sm">egds.dev&#64;gmail.com</p>
           </a>
 
-          <a href="https://wa.me/5568984190157"
+          <a href="https://wa.me/5564992726932"
              target="_blank"
              rel="noopener noreferrer"
              class="group p-6 bg-gray-800/50 rounded-2xl hover:bg-gray-800/70 transition-all duration-300
@@ -35,7 +35,7 @@ import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
               <fa-icon [icon]="whatsappIcon" class="text-2xl text-green-500"></fa-icon>
             </div>
             <h3 class="text-base font-semibold text-gray-200 mb-1">WhatsApp</h3>
-            <p class="text-gray-400 text-sm">+55 68 98419-0157</p>
+            <p class="text-gray-400 text-sm">+55 64 99272-6932</p>
           </a>
 
           <div class="group p-6 bg-gray-800/50 rounded-2xl hover:bg-gray-800/70 transition-all duration-300

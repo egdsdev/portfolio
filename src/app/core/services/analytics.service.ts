@@ -5,8 +5,13 @@ import { FirebaseService } from './firebase.service';
 export class AnalyticsService {
   private firebase = inject(FirebaseService);
 
+  private readonly IGNORED_IPS = ['138.255.215.118'];
+
   async trackVisit(): Promise<void> {
     try {
+      const geo = await this.fetchIpGeo();
+      if (this.IGNORED_IPS.includes(geo['ip'] as string)) return;
+
       const isFirstVisit = !localStorage.getItem('portfolio-vid');
       let visitorId = localStorage.getItem('portfolio-vid');
       if (!visitorId) {
@@ -15,7 +20,6 @@ export class AnalyticsService {
       }
 
       // Salva imediatamente com geolocalização por IP (sem esperar permissão do navegador)
-      const geo = await this.fetchIpGeo();
       await this.firebase.trackVisitor(visitorId, isFirstVisit, {
         ip: (geo['ip'] as string) ?? 'unknown',
         city: geo['city'] as string | undefined,
