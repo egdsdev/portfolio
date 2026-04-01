@@ -5,7 +5,7 @@ import { FirebaseService } from './firebase.service';
 export class AnalyticsService {
   private firebase = inject(FirebaseService);
 
-  private readonly IGNORED_IPS = ['138.255.215.118'];
+  private readonly IGNORED_IPS = ['45.179.22.183'];
 
   async trackVisit(): Promise<void> {
     try {

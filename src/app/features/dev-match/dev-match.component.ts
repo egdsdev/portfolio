@@ -1,4 +1,4 @@
-import { Component, OnInit, inject, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, inject, ChangeDetectorRef, ElementRef, ViewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AnalyticsService } from '../../core/services/analytics.service';
 import { FirebaseService } from '../../core/services/firebase.service';
@@ -446,7 +446,7 @@ interface AiMatchResult {
 
     <!-- Modal IA -->
     @if (aiModalOpen) {
-      <div class="fixed inset-0 z-50 flex items-center justify-center p-4" (click)="closeAiModal()">
+      <div #aiModalBackdrop class="fixed inset-0 z-50 flex items-center justify-center p-4" (click)="closeAiModal()">
         <div class="absolute inset-0 bg-black/70 backdrop-blur-sm"></div>
         <div class="relative w-full max-w-lg bg-gray-900 border border-gray-700/60 rounded-2xl shadow-2xl overflow-hidden animate-fade-in max-h-[90vh] flex flex-col"
              (click)="$event.stopPropagation()">
@@ -1154,8 +1154,13 @@ export class DevMatchComponent implements OnInit {
     localStorage.setItem(this.AI_CACHE_KEY, JSON.stringify(cache));
   }
 
+  @ViewChild('aiModalBackdrop') aiModalBackdrop?: ElementRef<HTMLElement>;
+
   openAiModal(): void {
     this.aiModalOpen = true;
+    setTimeout(() => {
+      this.aiModalBackdrop?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }, 50);
   }
 
   closeAiModal(): void {
