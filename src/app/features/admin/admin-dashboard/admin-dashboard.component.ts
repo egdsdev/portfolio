@@ -137,7 +137,15 @@ interface TimeToActionRow {
                 </thead>
                 <tbody>
                   @for (r of paginatedAccessRows; track r.key) {
-                    <tr class="border-b border-gray-800/40 hover:bg-gray-800/20 transition-colors">
+                    <tr
+                      class="access-row border-b border-gray-800/40 transition-colors"
+                      [class.access-row-clickable]="hasMapTarget(r)"
+                      [class.access-row-selected]="selectedAccessRowKey === r.key"
+                      [attr.tabindex]="hasMapTarget(r) ? 0 : null"
+                      [attr.title]="rowMapHint(r)"
+                      (click)="focusRowOnMap(r)"
+                      (keydown.enter)="focusRowOnMap(r)"
+                      (keydown.space)="focusRowOnMap(r); $event.preventDefault()">
                       <td class="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">{{ r.date | date:'dd/MM/yy HH:mm' }}</td>
                       <td class="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
                         @if (r.visitor) {
@@ -212,7 +220,7 @@ interface TimeToActionRow {
                       <td class="px-4 py-3 text-center">
                         @if (r.ip && r.visitorIds.length > 0) {
                           <button
-                            (click)="confirmDelete(r)"
+                            (click)="$event.stopPropagation(); confirmDelete(r)"
                             class="text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors rounded p-1.5"
                             title="Excluir grupo de IP e resolução">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -302,6 +310,7 @@ interface TimeToActionRow {
           <!-- Mapa Leaflet -->
           <div class="admin-card border rounded-xl p-5">
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">Localização dos Acessos</p>
+            <p class="text-[11px] text-gray-600 mb-4">Clique em uma linha da tabela para aproximar o mapa nesse acesso.</p>
             @if (loading) {
               <div class="h-64 flex items-center justify-center text-gray-600 text-sm animate-pulse">Carregando mapa...</div>
             } @else if (!hasMapCoords) {
@@ -750,6 +759,18 @@ interface TimeToActionRow {
       filter: brightness(1.55) contrast(0.75) saturate(0.65);
     }
 
+    .access-row-clickable {
+      cursor: pointer;
+    }
+
+    .access-row-clickable:hover {
+      background: rgba(148, 163, 184, 0.08);
+    }
+
+    .access-row-selected {
+      background: rgba(34, 211, 238, 0.12);
+    }
+
     .line-clamp-2 {
       display: -webkit-box;
       -webkit-line-clamp: 2;
@@ -762,6 +783,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   @ViewChild('mapEl') mapEl!: ElementRef<HTMLDivElement>;
   @ViewChild('chartCanvas') chartCanvas!: ElementRef<HTMLCanvasElement>;
   private leafletMap?: L.Map;
+  private mapMarkers = new Map<string, L.CircleMarker>();
   private lineChartInstance?: Chart;
   private themeObserver?: MutationObserver;
 
@@ -783,6 +805,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   bruliasClicksByIp = new Map<string, number>();
   currentPage = 1;
   readonly pageSize = 10;
+  selectedAccessRowKey: string | null = null;
+  selectedVisitorId: string | null = null;
   sourceConversions: SourceConversionRow[] = [];
   ctaPerformance: CtaPerformanceRow[] = [];
   sectionReachRows: SectionReachRow[] = [];
@@ -860,6 +884,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     this.lineChartInstance?.destroy();
     this.themeObserver?.disconnect();
     this.leafletMap?.remove();
+    this.mapMarkers.clear();
   }
 
   private isLightTheme(): boolean {
@@ -963,8 +988,16 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
 
   private initMap(): void {
     const withCoords = this.visitors.filter(v => v.lat != null && v.lng != null);
-    if (!withCoords.length || !this.mapEl?.nativeElement) return;
-    if (this.leafletMap) { this.leafletMap.remove(); }
+    this.mapMarkers.clear();
+    if (!withCoords.length || !this.mapEl?.nativeElement) {
+      this.leafletMap?.remove();
+      this.leafletMap = undefined;
+      return;
+    }
+    if (this.leafletMap) {
+      this.leafletMap.remove();
+      this.leafletMap = undefined;
+    }
 
     // Fix ícones padrão do Leaflet no contexto de bundler
     const iconUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png';
@@ -986,14 +1019,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
       const lng = v.lng!;
       bounds.push([lat, lng]);
       const markerContent = this.buildMapMarkerContent(v);
-      const markerColor = this.isLightTheme() ? '#7c3aed' : '#22d3ee';
-      L.circleMarker([lat, lng], {
-        radius: v.visitCount > 5 ? 10 : v.visitCount > 2 ? 7 : 5,
-        color: markerColor,
-        fillColor: markerColor,
-        fillOpacity: 0.75,
-        weight: 1.5,
-      })
+      const marker = L.circleMarker([lat, lng], this.buildMapMarkerStyle(v, v.id === this.selectedVisitorId))
         .bindTooltip(markerContent, {
           direction: 'top',
           sticky: true,
@@ -1001,12 +1027,40 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
         })
         .bindPopup(markerContent)
         .addTo(this.leafletMap!);
+
+      if (v.id) {
+        this.mapMarkers.set(v.id, marker);
+      }
     }
+
+    const selectedVisitor = this.selectedVisitorId ? this.visitorMap.get(this.selectedVisitorId) : undefined;
+    if (this.hasCoordinates(selectedVisitor)) {
+      this.focusVisitorOnMap(selectedVisitor, false);
+      return;
+    }
+
     if (bounds.length === 1) {
       this.leafletMap.setView(bounds[0], 5);
     } else {
       this.leafletMap.fitBounds(bounds, { padding: [30, 30] });
     }
+  }
+
+  focusRowOnMap(row: AccessTableRow): void {
+    const visitor = this.resolveRowMapVisitor(row);
+    if (!this.hasCoordinates(visitor)) return;
+
+    this.selectedAccessRowKey = row.key;
+    this.selectedVisitorId = visitor.id ?? null;
+    this.focusVisitorOnMap(visitor, true);
+  }
+
+  hasMapTarget(row: AccessTableRow): boolean {
+    return this.resolveRowMapVisitor(row) != null;
+  }
+
+  rowMapHint(row: AccessTableRow): string | null {
+    return this.hasMapTarget(row) ? 'Clique para focar este acesso no mapa' : null;
   }
 
   confirmDelete(row: AccessTableRow): void {
@@ -1178,6 +1232,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     this.mobileCount = this.visitors.filter(v => this.isMobile(v.userAgent)).length;
     this.hasMapCoords = this.visitors.some(v => v.lat != null && v.lng != null);
     this.currentPage = Math.min(this.currentPage, this.totalPages);
+    this.syncSelectedMapTarget();
     this.computeExtraStats();
     this.computeAnalyticsInsights();
   }
@@ -1490,6 +1545,96 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
 
   pct(ratio: number): number {
     return Math.round(ratio * 100);
+  }
+
+  private hasCoordinates(visitor?: VisitorRecord): visitor is VisitorRecord & { lat: number; lng: number } {
+    return visitor?.lat != null && visitor.lng != null;
+  }
+
+  private resolveRowMapVisitor(row: AccessTableRow): VisitorRecord | undefined {
+    if (this.hasCoordinates(row.visitor)) {
+      return row.visitor;
+    }
+
+    let latestVisitor: VisitorRecord | undefined;
+    for (const visitorId of row.visitorIds) {
+      const candidate = this.visitorMap.get(visitorId);
+      if (!this.hasCoordinates(candidate)) continue;
+      if (!latestVisitor || new Date(candidate.lastSeen).getTime() > new Date(latestVisitor.lastSeen).getTime()) {
+        latestVisitor = candidate;
+      }
+    }
+
+    return latestVisitor;
+  }
+
+  private focusVisitorOnMap(visitor: VisitorRecord & { lat: number; lng: number }, animate: boolean): void {
+    if (!this.leafletMap) return;
+
+    this.updateMarkerSelection(visitor.id ?? null);
+
+    const target: L.LatLngExpression = [visitor.lat, visitor.lng];
+    if (animate) {
+      this.leafletMap.flyTo(target, 7, { animate: true, duration: 0.8 });
+    } else {
+      this.leafletMap.setView(target, 7, { animate: false });
+    }
+
+    if (visitor.id) {
+      this.mapMarkers.get(visitor.id)?.openPopup();
+    }
+  }
+
+  private buildMapMarkerStyle(visitor: VisitorRecord, isSelected: boolean): L.CircleMarkerOptions {
+    const defaultColor = this.isLightTheme() ? '#7c3aed' : '#22d3ee';
+    const selectedColor = this.isLightTheme() ? '#ea580c' : '#fbbf24';
+    const color = isSelected ? selectedColor : defaultColor;
+
+    return {
+      radius: this.mapMarkerRadius(visitor) + (isSelected ? 4 : 0),
+      color,
+      fillColor: color,
+      fillOpacity: isSelected ? 0.95 : 0.75,
+      weight: isSelected ? 3 : 1.5,
+    };
+  }
+
+  private mapMarkerRadius(visitor: VisitorRecord): number {
+    return visitor.visitCount > 5 ? 10 : visitor.visitCount > 2 ? 7 : 5;
+  }
+
+  private updateMarkerSelection(selectedVisitorId: string | null): void {
+    for (const visitor of this.visitors) {
+      if (!visitor.id) continue;
+      const marker = this.mapMarkers.get(visitor.id);
+      if (!marker) continue;
+
+      const isSelected = visitor.id === selectedVisitorId;
+      marker.setStyle(this.buildMapMarkerStyle(visitor, isSelected));
+      if (!isSelected) {
+        marker.closePopup();
+      }
+    }
+  }
+
+  private syncSelectedMapTarget(): void {
+    if (!this.selectedVisitorId) {
+      if (this.selectedAccessRowKey && !this.accessRows.some(row => row.key === this.selectedAccessRowKey)) {
+        this.selectedAccessRowKey = null;
+      }
+      return;
+    }
+
+    const selectedVisitor = this.visitorMap.get(this.selectedVisitorId);
+    if (!this.hasCoordinates(selectedVisitor)) {
+      this.selectedVisitorId = null;
+      this.selectedAccessRowKey = null;
+      this.updateMarkerSelection(null);
+      return;
+    }
+
+    const matchingRow = this.accessRows.find(row => this.resolveRowMapVisitor(row)?.id === this.selectedVisitorId);
+    this.selectedAccessRowKey = matchingRow?.key ?? null;
   }
 
   private buildMapMarkerContent(visitor: VisitorRecord): string {
