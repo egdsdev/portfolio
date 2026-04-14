@@ -109,7 +109,7 @@ interface AiMatchResult {
                     </div>
                     <input type="range" min="0" max="100" step="10"
                            [(ngModel)]="area.importance"
-                           (change)="saveState()"
+                            (change)="onAreaImportanceChange()"
                            class="devmatch-slider w-full outline-none cursor-pointer"
                            [style.accent-color]="area.color">
                     <div class="flex flex-wrap gap-1 mt-2 items-center min-h-[22px]">
@@ -222,7 +222,7 @@ interface AiMatchResult {
               <p class="text-gray-500 text-xs mb-5">Clique nos que são importantes para você</p>
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 @for (toggle of allToggles; track toggle.id) {
-                  <button (click)="toggle.active = !toggle.active"
+                  <button (click)="toggleRequirement(toggle)"
                           class="devmatch-toggle group flex items-center gap-3 px-4 py-3 rounded-xl border text-sm text-left transition-all duration-200 w-full"
                           [class.toggle-inactive]="!toggle.active"
                           [class.toggle-match]="toggle.active && toggle.eliasHas"
@@ -381,6 +381,7 @@ interface AiMatchResult {
                   {{ resultMatch >= 90 ? '🎉 Match perfeito encontrado!' : '🎯 Elias é uma ótima escolha!' }}
                 </p>
                 <a href="#contato"
+                   (click)="onDevMatchContactClick('success')"
                    class="devmatch-cta-btn inline-block px-6 py-2.5 bg-linear-to-r from-blue-500 to-cyan-500 text-white text-sm font-semibold rounded-full hover:scale-105 transition-transform">
                   Entrar em Contato
                 </a>
@@ -415,6 +416,7 @@ interface AiMatchResult {
                 <p class="devmatch-surprise-quote text-sm text-center italic mb-4">"É melhor contratar quem aprende tudo<br>do que quem sabe só o que já viveu."</p>
                 <div class="text-center">
                   <a href="#contato"
+                    (click)="onDevMatchContactClick('surprise')"
                      class="devmatch-surprise-btn inline-block px-6 py-2.5 text-white text-sm font-semibold rounded-full hover:scale-105 transition-transform">
                     Vamos conversar mesmo assim?
                   </a>
@@ -572,7 +574,7 @@ interface AiMatchResult {
                     Nova análise
                   </button>
                   <a href="#contato"
-                     (click)="closeAiModal()"
+                    (click)="onAiContactClick(); closeAiModal()"
                      class="flex-1 py-2.5 rounded-xl bg-linear-to-r from-blue-500 to-cyan-500 text-white text-sm font-semibold text-center hover:scale-[1.02] transition-transform">
                     Entrar em contato
                   </a>
@@ -927,6 +929,7 @@ export class DevMatchComponent implements OnInit {
 
   // ---- Calcular (revela os cards de resultado) ----
   calculate(): void {
+    this.markDevMatchStarted();
     this.resultMatch = this.overallMatch;
     this.resultActiveAreas = this.allAreas.filter(a => a.importance > 0);
     this.calculated = true;
@@ -943,6 +946,10 @@ export class DevMatchComponent implements OnInit {
       requirements: this.allToggles.filter(t => t.active).map(t => t.label),
       matchPercentage: this.resultMatch,
     }).catch(() => {});
+    void this.analytics.trackFeatureComplete('dev_match', this.resultMatch, {
+      activeAreas: this.resultActiveAreas.length,
+      activeRequirements: this.allToggles.filter(t => t.active).length,
+    });
   }
 
   // ---- Display (live) ----
@@ -980,6 +987,7 @@ export class DevMatchComponent implements OnInit {
   // ---- Áreas (custom) ----
   addCustomArea(): void {
     if (!this.newAreaLabel.trim()) return;
+    this.markDevMatchStarted();
     const color = this.customColors[this.customAreas.length % this.customColors.length];
     this.customAreas.push({
       id: 'ca_' + Date.now(),
@@ -996,6 +1004,7 @@ export class DevMatchComponent implements OnInit {
   }
 
   removeCustomArea(id: string): void {
+    this.markDevMatchStarted();
     this.customAreas = this.customAreas.filter(a => a.id !== id);
     this.saveState();
   }
@@ -1016,6 +1025,7 @@ export class DevMatchComponent implements OnInit {
   addTechToArea(area: SkillArea): void {
     const tag = this.newTagInput.trim();
     if (tag && !area.techs.includes(tag)) {
+      this.markDevMatchStarted();
       area.techs.push(tag);
       this.saveState();
     }
@@ -1024,6 +1034,7 @@ export class DevMatchComponent implements OnInit {
   }
 
   removeTech(area: SkillArea, tech: string): void {
+    this.markDevMatchStarted();
     area.techs = area.techs.filter(t => t !== tech);
     this.saveState();
   }
@@ -1043,6 +1054,7 @@ export class DevMatchComponent implements OnInit {
   // ---- Toggles (custom) ----
   addCustomToggle(): void {
     if (!this.newToggleLabel.trim()) return;
+    this.markDevMatchStarted();
     this.customToggles.push({
       id: 'ct_' + Date.now(),
       label: this.newToggleLabel.trim(),
@@ -1056,6 +1068,7 @@ export class DevMatchComponent implements OnInit {
   }
 
   removeCustomToggle(id: string): void {
+    this.markDevMatchStarted();
     this.customToggles = this.customToggles.filter(t => t.id !== id);
     this.saveState();
   }
@@ -1157,6 +1170,7 @@ export class DevMatchComponent implements OnInit {
   @ViewChild('aiModalBackdrop') aiModalBackdrop?: ElementRef<HTMLElement>;
 
   openAiModal(): void {
+    void this.analytics.trackFeatureStart('ai_match', { entry: 'modal_open' });
     this.aiModalOpen = true;
     setTimeout(() => {
       this.aiModalBackdrop?.nativeElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1182,6 +1196,10 @@ export class DevMatchComponent implements OnInit {
     // Cache hit — sem chamar a API
     if (cache[cacheKey]) {
       this.aiResult = cache[cacheKey];
+      void this.analytics.trackFeatureComplete('ai_match', this.aiResult.matchPercentage, {
+        cached: true,
+        inputLength: this.aiJobDescription.trim().length,
+      });
       return;
     }
 
@@ -1235,6 +1253,10 @@ export class DevMatchComponent implements OnInit {
           parsed.matchPercentage,
           ['IA Match'],
         );
+        void this.analytics.trackFeatureComplete('ai_match', parsed.matchPercentage, {
+          cached: false,
+          inputLength: this.aiJobDescription.trim().length,
+        });
         lastError = null;
         break;
       } catch (err: unknown) {
@@ -1300,5 +1322,28 @@ Responda EXCLUSIVAMENTE em JSON válido (sem markdown, sem backticks) no formato
 
 Se não houver lacunas, retorne "gaps" como array vazio.
 Responda em português brasileiro.`;
+  }
+
+  onAreaImportanceChange(): void {
+    this.markDevMatchStarted();
+    this.saveState();
+  }
+
+  toggleRequirement(toggle: ToggleItem): void {
+    this.markDevMatchStarted();
+    toggle.active = !toggle.active;
+    this.saveState();
+  }
+
+  onDevMatchContactClick(kind: 'success' | 'surprise'): void {
+    void this.analytics.trackCtaClick(`dev_match_contact_${kind}`, 'dev-match', 'contact', { kind });
+  }
+
+  onAiContactClick(): void {
+    void this.analytics.trackCtaClick('ai_match_contact', 'dev-match', 'contact', { source: 'ai_result' });
+  }
+
+  private markDevMatchStarted(): void {
+    void this.analytics.trackFeatureStart('dev_match', { source: 'configurator' });
   }
 }

@@ -1,5 +1,6 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, inject } from '@angular/core';
 import { TechMarqueeComponent } from '../../shared/components/tech-marquee/tech-marquee.component';
+import { AnalyticsService } from '../../core/services/analytics.service';
 
 @Component({
   selector: 'app-personal-details',
@@ -14,7 +15,7 @@ import { TechMarqueeComponent } from '../../shared/components/tech-marquee/tech-
       <div class="absolute top-20 right-20 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
       <div class="absolute -bottom-8 left-40 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
 
-      <div class="relative z-10 text-center justify-center items-center px-8 flex flex-col items-center">
+      <div class="relative z-10 text-center justify-center px-8 flex flex-col items-center">
         <!-- Avatar -->
         <div class="relative inline-flex items-center justify-center mb-5">
           <div class="avatar-ring w-32 h-32 rounded-full border-2 border-cyan-400/40 overflow-hidden">
@@ -42,12 +43,14 @@ import { TechMarqueeComponent } from '../../shared/components/tech-marquee/tech-
 
         <div class="mt-10 flex flex-wrap justify-center gap-4">
           <a href="#contato"
+             (click)="onHeroContactClick()"
              class="inline-block px-10 py-3.5 bg-linear-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-full
                     transform hover:scale-105 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/40 text-sm tracking-wide contact-btn">
             Entre em Contato
           </a>
           <a href="curriculo-elias-gomes.pdf"
              download="Curriculo-Elias-Gomes-da-Silva.pdf"
+             (click)="onResumeDownload()"
              class="inline-flex items-center gap-2 px-8 py-3.5 border border-cyan-500/50 text-cyan-300 font-semibold rounded-full
                     transform hover:scale-105 transition-all duration-300 hover:bg-cyan-500/10 hover:border-cyan-400 text-sm tracking-wide">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -68,4 +71,14 @@ import { TechMarqueeComponent } from '../../shared/components/tech-marquee/tech-
     </section>
   `
 })
-export class PersonalDetailsComponent {}
+export class PersonalDetailsComponent {
+  private analytics = inject(AnalyticsService);
+
+  onHeroContactClick(): void {
+    void this.analytics.trackCtaClick('hero_contact', 'detalhes', 'contact');
+  }
+
+  onResumeDownload(): void {
+    void this.analytics.trackResumeDownload();
+  }
+}

@@ -47,6 +47,24 @@ export interface VisitorRecord {
   lastSeen: Date;
 }
 
+export type AnalyticsMetadata = Record<string, string | number | boolean | null>;
+
+export interface AnalyticsEventRecord {
+  id?: string;
+  visitorId?: string;
+  sessionId: string;
+  ip?: string;
+  source: string;
+  sourceDetail?: string;
+  eventType: 'page_visit' | 'section_view' | 'cta_click' | 'feature_start' | 'feature_complete';
+  eventName: string;
+  section?: string;
+  target?: string;
+  value?: number;
+  metadata?: AnalyticsMetadata;
+  createdAt: Date;
+}
+
 @Injectable({ providedIn: 'root' })
 export class FirebaseService {
   private app: FirebaseApp;
@@ -167,6 +185,12 @@ export class FirebaseService {
     await Promise.all(aiSnap.docs.map(d => deleteDoc(d.ref)));
     const devSnap = await getDocs(query(collection(this.db, 'dev_matches'), where('visitorId', '==', visitorId)));
     await Promise.all(devSnap.docs.map(d => deleteDoc(d.ref)));
+    const analyticsSnap = await getDocs(query(collection(this.db, 'analytics_events'), where('visitorId', '==', visitorId)));
+    await Promise.all(analyticsSnap.docs.map(d => deleteDoc(d.ref)));
+  }
+
+  async deleteVisitorsByIds(visitorIds: string[]): Promise<void> {
+    await Promise.all(visitorIds.map(visitorId => this.deleteVisitor(visitorId)));
   }
 
   async trackBruliasClick(ip: string): Promise<void> {
@@ -182,6 +206,36 @@ export class FirebaseService {
       ip: d.data()['ip'] as string,
       createdAt: (d.data()['createdAt'] as Timestamp).toDate(),
     }));
+  }
+
+  async trackAnalyticsEvent(data: Omit<AnalyticsEventRecord, 'id' | 'createdAt'>): Promise<void> {
+    await addDoc(collection(this.db, 'analytics_events'), {
+      ...data,
+      createdAt: Timestamp.now(),
+    });
+  }
+
+  async getAnalyticsEvents(): Promise<AnalyticsEventRecord[]> {
+    const q = query(collection(this.db, 'analytics_events'), orderBy('createdAt', 'desc'));
+    const snap = await getDocs(q);
+    return snap.docs.map(d => {
+      const data = d.data();
+      return {
+        id: d.id,
+        visitorId: data['visitorId'],
+        sessionId: data['sessionId'] ?? '',
+        ip: data['ip'],
+        source: data['source'] ?? 'Direto',
+        sourceDetail: data['sourceDetail'],
+        eventType: data['eventType'] ?? 'page_visit',
+        eventName: data['eventName'] ?? 'unknown',
+        section: data['section'],
+        target: data['target'],
+        value: typeof data['value'] === 'number' ? data['value'] : undefined,
+        metadata: (data['metadata'] ?? {}) as AnalyticsMetadata,
+        createdAt: data['createdAt']?.toDate() ?? new Date(),
+      } as AnalyticsEventRecord;
+    });
   }
 
   async trackVisitor(visitorId: string, isFirstVisit: boolean, data: Omit<VisitorRecord, 'id' | 'visitCount' | 'firstSeen' | 'lastSeen'>): Promise<void> {

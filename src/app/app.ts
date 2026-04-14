@@ -127,5 +127,6 @@ export class App implements OnInit, OnDestroy {
 
   ngOnDestroy() {
     this.themeObserver?.disconnect();
+    this.analytics.destroyPageTracking();
   }
 }

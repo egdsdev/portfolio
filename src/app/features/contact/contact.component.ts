@@ -1,6 +1,7 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
+import { AnalyticsService } from '../../core/services/analytics.service';
 
 @Component({
   selector: 'app-contact',
@@ -17,6 +18,7 @@ import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
         </div>
         <div class="grid md:grid-cols-3 gap-6">
           <a href="mailto:egds.dev@gmail.com"
+             (click)="onEmailClick()"
              class="group p-6 bg-gray-800/50 rounded-2xl hover:bg-gray-800/70 transition-all duration-300
                     backdrop-blur-sm border border-gray-700/50 hover:border-cyan-500/30 hover:-translate-y-1">
             <div class="w-14 h-14 rounded-xl bg-cyan-500/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-cyan-500/20 transition-colors">
@@ -29,6 +31,7 @@ import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
           <a href="https://wa.me/5564992726932"
              target="_blank"
              rel="noopener noreferrer"
+             (click)="onWhatsappClick()"
              class="group p-6 bg-gray-800/50 rounded-2xl hover:bg-gray-800/70 transition-all duration-300
                     backdrop-blur-sm border border-gray-700/50 hover:border-green-500/30 hover:-translate-y-1">
             <div class="w-14 h-14 rounded-xl bg-green-500/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-green-500/20 transition-colors">
@@ -52,5 +55,15 @@ import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
   `
 })
 export class ContactComponent {
+  private analytics = inject(AnalyticsService);
+
   whatsappIcon = faWhatsapp;
+
+  onEmailClick(): void {
+    void this.analytics.trackContactClick('email');
+  }
+
+  onWhatsappClick(): void {
+    void this.analytics.trackContactClick('whatsapp');
+  }
 }

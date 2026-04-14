@@ -2,6 +2,7 @@ import { Component, signal, inject, OnInit, OnDestroy, ChangeDetectorRef } from 
 import { RouterLink, Router } from '@angular/router';
 import { NgxThemeToggleComponent } from '@omnedia/ngx-theme-toggle';
 import { FirebaseService } from '../../core/services/firebase.service';
+import { AnalyticsService } from '../../core/services/analytics.service';
 
 @Component({
   selector: 'app-header',
@@ -23,10 +24,10 @@ import { FirebaseService } from '../../core/services/firebase.service';
           <li><a href="#experiencia" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">Experiência</a></li>
           <li><a href="#habilidades" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">Skills</a></li>
           <!-- <li><a href="#github" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">GitHub</a></li> -->
-          <li><a href="#dev-match" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">Match</a></li>
+          <li><a href="#dev-match" (click)="trackNavClick('dev-match', 'desktop')" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">Match</a></li>
           <li><a href="#certificacoes" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">Certificações</a></li>
-          <li><a href="#projetos" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">Projetos</a></li>
-          <li><a href="#contato" class="px-4 py-1.5 rounded-full border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 transition-all text-sm tracking-wide">Contato</a></li>
+          <li><a href="#projetos" (click)="trackNavClick('projetos', 'desktop')" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">Projetos</a></li>
+          <li><a href="#contato" (click)="trackNavClick('contato', 'desktop')" class="px-4 py-1.5 rounded-full border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 transition-all text-sm tracking-wide">Contato</a></li>
           @if (loggedIn()) {
             <li class="flex items-center gap-4">
               <span class="text-gray-700 select-none">|</span>
@@ -102,10 +103,10 @@ import { FirebaseService } from '../../core/services/firebase.service';
         <a href="#experiencia" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm tracking-wide py-1" (click)="closeMenu()">Experiência</a>
         <a href="#habilidades" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm tracking-wide py-1" (click)="closeMenu()">Skills</a>
         <!-- <a href="#github" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm tracking-wide py-1" (click)="closeMenu()">GitHub</a> -->
-        <a href="#dev-match" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm tracking-wide py-1" (click)="closeMenu()">Match</a>
+        <a href="#dev-match" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm tracking-wide py-1" (click)="trackNavClick('dev-match', 'mobile'); closeMenu()">Match</a>
         <a href="#certificacoes" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm tracking-wide py-1" (click)="closeMenu()">Certificações</a>
-        <a href="#projetos" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm tracking-wide py-1" (click)="closeMenu()">Projetos</a>
-        <a href="#contato" class="mt-2 px-4 py-2 rounded-full border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 transition-all text-sm tracking-wide text-center" (click)="closeMenu()">Contato</a>
+        <a href="#projetos" class="text-gray-300 hover:text-cyan-400 transition-colors text-sm tracking-wide py-1" (click)="trackNavClick('projetos', 'mobile'); closeMenu()">Projetos</a>
+        <a href="#contato" class="mt-2 px-4 py-2 rounded-full border border-cyan-500/50 text-cyan-400 hover:bg-cyan-500/10 transition-all text-sm tracking-wide text-center" (click)="trackNavClick('contato', 'mobile'); closeMenu()">Contato</a>
         @if (loggedIn()) {
           <div class="border-t border-gray-800/30 pt-4 mt-2 flex flex-col gap-4">
             <a routerLink="/admin" class="admin-dashboard-link text-cyan-400 hover:text-cyan-300 transition-colors text-sm" (click)="closeMenu()">Dashboard</a>
@@ -147,6 +148,7 @@ import { FirebaseService } from '../../core/services/firebase.service';
 })
 export class HeaderComponent implements OnInit, OnDestroy {
   private firebase = inject(FirebaseService);
+  private analytics = inject(AnalyticsService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
 
@@ -189,5 +191,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   closeMenu() {
     this.isOpen.set(false);
+  }
+
+  trackNavClick(targetSection: 'dev-match' | 'projetos' | 'contato', surface: 'desktop' | 'mobile'): void {
+    void this.analytics.trackCtaClick(`nav_${targetSection}`, targetSection, 'navigation', { surface });
   }
 }
