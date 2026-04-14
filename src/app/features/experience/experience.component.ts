@@ -16,7 +16,7 @@ export class ExperienceComponent {
         <div class="company">ByToken</div>
       </div>`,
       content: `<div class="timeline-content">
-        <strong>Desenvolvedor Full Stack</strong> (Remoto)
+        <strong>Desenvolvedor Full Stack</strong> (Presencial, Goiânia, GO)
         <ul>
           <li>Plataforma SaaS multi-tenant para gestão de certificados digitais ICP-Brasil (PHP, Laravel, Vue.js, PostgreSQL)</li>
           <li>Modelagem e otimização de banco de dados com stored procedures, triggers, views e índices para alta performance em ambiente multi-tenant</li>
@@ -36,7 +36,7 @@ export class ExperienceComponent {
         <div class="company">EQ Seguros</div>
       </div>`,
       content: `<div class="timeline-content">
-        <strong>Desenvolvedor Backend / BI</strong> (Goiânia, GO)
+        <strong>Desenvolvedor Backend / BI</strong> (Presencial, Goiânia, GO)
         <ul>
           <li>Desenvolvimento e manutenção de dashboards analíticos no Power BI para acompanhamento de KPIs comerciais e operacionais</li>
           <li>Elaboração de queries SQL complexas no SQL Server para extração, tratamento e modelagem de dados para relatórios</li>

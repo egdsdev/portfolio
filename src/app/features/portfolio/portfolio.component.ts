@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { AnalyticsService } from '../../core/services/analytics.service';
 
 @Component({
   selector: 'app-portfolio',
@@ -29,9 +30,10 @@ import { Component } from '@angular/core';
                 <h3 class="text-2xl font-bold text-white">Brulias</h3>
                 <p class="text-purple-400 text-sm font-semibold tracking-wider uppercase">Projeto Pessoal · 2025</p>
               </div>
-              <a href="https://egdsdev.github.io/brulias"
+              <a href="https://egdsdev.github.io/brulias/universo"
                  target="_blank"
                  rel="noopener noreferrer"
+                 (click)="onBruliasClick()"
                  class="ml-auto inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-linear-to-r from-purple-600 to-cyan-600
                         hover:from-purple-500 hover:to-cyan-500 text-white font-bold text-sm tracking-wide shadow-lg
                         shadow-purple-900/40 hover:shadow-purple-800/60 transform hover:scale-105 transition-all duration-300 group/btn shrink-0">
@@ -83,4 +85,10 @@ import { Component } from '@angular/core';
     </section>
   `
 })
-export class PortfolioComponent {}
+export class PortfolioComponent {
+  private analytics = inject(AnalyticsService);
+
+  onBruliasClick(): void {
+    this.analytics.trackBruliasClick();
+  }
+}

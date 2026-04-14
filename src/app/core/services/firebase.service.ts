@@ -169,6 +169,21 @@ export class FirebaseService {
     await Promise.all(devSnap.docs.map(d => deleteDoc(d.ref)));
   }
 
+  async trackBruliasClick(ip: string): Promise<void> {
+    await addDoc(collection(this.db, 'brulias_clicks'), {
+      ip,
+      createdAt: Timestamp.now(),
+    });
+  }
+
+  async getBruliasClicks(): Promise<{ ip: string; createdAt: Date }[]> {
+    const snap = await getDocs(collection(this.db, 'brulias_clicks'));
+    return snap.docs.map(d => ({
+      ip: d.data()['ip'] as string,
+      createdAt: (d.data()['createdAt'] as Timestamp).toDate(),
+    }));
+  }
+
   async trackVisitor(visitorId: string, isFirstVisit: boolean, data: Omit<VisitorRecord, 'id' | 'visitCount' | 'firstSeen' | 'lastSeen'>): Promise<void> {
     const ref = doc(this.db, 'visitors', visitorId);
     if (isFirstVisit) {

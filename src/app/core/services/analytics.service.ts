@@ -76,5 +76,16 @@ export class AnalyticsService {
     });
   }
 
+  async trackBruliasClick(): Promise<void> {
+    try {
+      const geo = await this.fetchIpGeo();
+      const ip = geo['ip'] as string | undefined;
+      if (!ip || this.IGNORED_IPS.includes(ip)) return;
+      await this.firebase.trackBruliasClick(ip);
+    } catch (err) {
+      console.error('[Analytics] trackBruliasClick error:', err);
+    }
+  }
+
   updateMatchScore(_score: number, _areas: string[]): void {}
 }

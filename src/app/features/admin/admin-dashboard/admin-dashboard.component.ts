@@ -47,6 +47,15 @@ interface AccessRecord {
           </div>
         </div>
 
+        <!-- Card Brulias Clicks -->
+        <div class="admin-card rounded-xl p-4 border flex items-center gap-4">
+          <span class="text-3xl shrink-0">🌌</span>
+          <div>
+            <p class="text-xs text-gray-500 mb-1">Cliques em Brulias <span class="text-gray-600">(excluindo seu IP)</span></p>
+            <p class="text-3xl font-bold text-purple-400">{{ bruliasClicks }}</p>
+          </div>
+        </div>
+
         <!-- Tabela unificada de acessos -->
         <div class="admin-card border rounded-xl overflow-hidden">
           @if (loading) {
@@ -66,6 +75,7 @@ interface AccessRecord {
                     <th class="text-left px-4 py-3">Resposta IA</th>
                     <th class="text-left px-4 py-3 border-l border-gray-800/60">Match Dev</th>
                     <th class="text-left px-4 py-3">Areas Dev</th>
+                    <th class="text-left px-4 py-3 border-l border-gray-800/60 whitespace-nowrap">🌌 Brulias</th>
                     <th class="px-4 py-3"></th>
                   </tr>
                 </thead>
@@ -124,6 +134,15 @@ interface AccessRecord {
                             }
                           </div>
                         } @else { <span class="text-gray-700">-</span> }
+                      </td>
+                      <td class="px-4 py-3 border-l border-gray-800/40 text-center">
+                        @if (r.visitor?.ip && bruliasClicksByIp.get(r.visitor!.ip)) {
+                          <span class="inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full bg-purple-500/15 text-purple-400">
+                            {{ bruliasClicksByIp.get(r.visitor!.ip) }}×
+                          </span>
+                        } @else {
+                          <span class="text-gray-700">-</span>
+                        }
                       </td>
                       <td class="px-4 py-3 text-center">
                         @if (r.visitor?.id) {
@@ -453,6 +472,10 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   mobileCount = 0;
   today = new Date();
   hasMapCoords = false;
+  bruliasClicks = 0;
+  bruliasClicksByIp = new Map<string, number>();
+
+  private readonly OWNER_IPS = ['45.179.22.183'];
 
   // ── Novos widgets ──────────────────────────────────────────────────────────
   heatmapRows: { label: string; cells: Array<{ color: string; title: string }> }[] = [];
@@ -476,15 +499,22 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     const settle = <T>(p: Promise<T>, fallback: T) =>
       p.catch((err: unknown) => { console.error('[Dashboard]', err); return fallback; });
 
-    const [aiMatches, devMatches, visitors] = await Promise.all([
+    const [aiMatches, devMatches, visitors, bruliasClickList] = await Promise.all([
       settle(this.firebase.getAiMatches(), [] as AiMatchRecord[]),
       settle(this.firebase.getDevMatches(), [] as DevMatchRecord[]),
       settle(this.firebase.getVisitors(), [] as VisitorRecord[]),
+      settle(this.firebase.getBruliasClicks(), [] as { ip: string; createdAt: Date }[]),
     ]);
 
     this.aiMatches = aiMatches;
     this.devMatches = devMatches;
     this.visitors = visitors;
+    const filteredBrulias = bruliasClickList.filter(c => !this.OWNER_IPS.includes(c.ip));
+    this.bruliasClicks = filteredBrulias.length;
+    this.bruliasClicksByIp = filteredBrulias.reduce((map, c) => {
+      map.set(c.ip, (map.get(c.ip) ?? 0) + 1);
+      return map;
+    }, new Map<string, number>());
     this.visitorMap = new Map(visitors.filter(v => v.id).map(v => [v.id!, v]));
     this.uniqueCountries = new Set(visitors.map(v => v.country).filter(Boolean)).size;
     this.mobileCount = visitors.filter(v => this.isMobile(v.userAgent)).length;
@@ -618,7 +648,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     L.Marker.prototype.options.icon = L.icon({ iconUrl, iconRetinaUrl: iconRetina, shadowUrl, iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34] });
 
     const light = this.isLightTheme();
-    this.leafletMap = L.map(this.mapEl.nativeElement, { zoomControl: true, scrollWheelZoom: false });
+    this.leafletMap = L.map(this.mapEl.nativeElement, { zoomControl: true, scrollWheelZoom: true });
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
@@ -630,7 +660,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
       const lat = v.lat!;
       const lng = v.lng!;
       bounds.push([lat, lng]);
-      const label = [v.city, v.country].filter(Boolean).join(', ') || v.ip;
+      const markerContent = this.buildMapMarkerContent(v);
       const markerColor = this.isLightTheme() ? '#7c3aed' : '#22d3ee';
       L.circleMarker([lat, lng], {
         radius: v.visitCount > 5 ? 10 : v.visitCount > 2 ? 7 : 5,
@@ -638,7 +668,14 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
         fillColor: markerColor,
         fillOpacity: 0.75,
         weight: 1.5,
-      }).bindPopup(`<b>${label}</b><br>${v.visitCount} visita(s)`).addTo(this.leafletMap!);
+      })
+        .bindTooltip(markerContent, {
+          direction: 'top',
+          sticky: true,
+          opacity: 0.95,
+        })
+        .bindPopup(markerContent)
+        .addTo(this.leafletMap!);
     }
     if (bounds.length === 1) {
       this.leafletMap.setView(bounds[0], 5);
@@ -732,6 +769,40 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
 
   pct(ratio: number): number {
     return Math.round(ratio * 100);
+  }
+
+  private buildMapMarkerContent(visitor: VisitorRecord): string {
+    const location = [visitor.city, visitor.region, visitor.country].filter(Boolean).join(', ') || 'Local não identificado';
+    const lastAccess = this.formatMapAccessTime(visitor.lastSeen);
+    const visitLabel = `${visitor.visitCount} ${visitor.visitCount === 1 ? 'visita' : 'visitas'}`;
+
+    return [
+      '<div style="min-width: 220px; line-height: 1.45;">',
+      `  <div style="font-weight: 700; margin-bottom: 4px;">${this.escapeHtml(location)}</div>`,
+      `  <div><strong>IP:</strong> ${this.escapeHtml(visitor.ip || 'indisponível')}</div>`,
+      `  <div><strong>Último acesso:</strong> ${this.escapeHtml(lastAccess)}</div>`,
+      `  <div><strong>Visitas:</strong> ${this.escapeHtml(visitLabel)}</div>`,
+      '</div>',
+    ].join('');
+  }
+
+  private formatMapAccessTime(value: Date | string | undefined): string {
+    const date = value ? new Date(value) : undefined;
+    if (!date || Number.isNaN(date.getTime())) return 'indisponível';
+
+    return new Intl.DateTimeFormat('pt-BR', {
+      dateStyle: 'short',
+      timeStyle: 'short',
+    }).format(date);
+  }
+
+  private escapeHtml(value: string): string {
+    return value
+      .replaceAll('&', '&amp;')
+      .replaceAll('<', '&lt;')
+      .replaceAll('>', '&gt;')
+      .replaceAll('"', '&quot;')
+      .replaceAll("'", '&#39;');
   }
 
   private heatColorByIntensity(t: number, isLight = false): string {
