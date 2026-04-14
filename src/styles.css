@@ -206,6 +206,51 @@ html.light [class*="bg-gray-900"]:hover {
   border-color: rgba(124, 58, 237, 0.3) !important;
 }
 
+/* ---- Card do Brulias (Exceção/Destaque no Light Mode) ---- */
+html.light .brulias-card {
+  background-color: #ffffff !important;
+  border-color: #a855f7 !important; /* purple-500 */
+  box-shadow: 0 0 30px rgba(168, 85, 247, 0.25) !important;
+}
+html.light .brulias-card:hover {
+  border-color: #22d3ee !important; /* cyan-400 */
+  box-shadow: 0 0 40px rgba(34, 211, 238, 0.4) !important;
+}
+html.light .brulias-card strong.text-white {
+  color: #a855f7 !important;
+}
+html.light .brulias-feature {
+  background-color: rgba(168, 85, 247, 0.05) !important;
+  border-color: rgba(168, 85, 247, 0.2) !important;
+  color: #2d2546;
+}
+html.light .brulias-feature p.text-white {
+  color: #4c1d95 !important;
+}
+html.light .brulias-feature p.text-gray-500 {
+  color: #6b7280 !important;
+}
+
+/* Filtros Internos do Card Brulias para Remover o aspecto Escurecido */
+html.light .brulias-glow-overlay {
+  background: linear-gradient(to bottom right, rgba(168, 85, 247, 0.03), rgba(34, 211, 238, 0.03), rgba(255, 255, 255, 0.3)) !important;
+}
+html.light .brulias-glow-bulb-1 {
+  background-color: rgba(168, 85, 247, 0.1) !important;
+}
+html.light .brulias-glow-bulb-2 {
+  background-color: rgba(34, 211, 238, 0.1) !important;
+}
+html.light .brulias-card h3.text-transparent {
+  background-image: linear-gradient(to right, #7c3aed, #0891b2) !important; /* purple-600 to cyan-600 */
+}
+html.light .brulias-card p.text-cyan-400 {
+  color: #0891b2 !important; /* cyan-600 */
+}
+html.light .brulias-card p.text-gray-300 {
+  color: #4b5563 !important; /* gray-600 para melhor leitura no fundo claro */
+}
+
 /* Hover borders dos cards de skill */
 html.light [class*="hover:border-blue-500"],
 html.light [class*="hover:border-cyan-500"],

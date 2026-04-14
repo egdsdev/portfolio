@@ -67,13 +67,13 @@ import { RevealDirective } from './shared/directives/reveal.directive';
             </div>
           }
           <div appReveal="up" [revealDelay]="0">
+            <app-portfolio></app-portfolio>
+          </div>
+          <div appReveal="up" [revealDelay]="0">
             <app-dev-match></app-dev-match>
           </div>
           <div appReveal="up" [revealDelay]="0">
             <app-certifications></app-certifications>
-          </div>
-          <div appReveal="up" [revealDelay]="0">
-            <app-portfolio></app-portfolio>
           </div>
           <div appReveal="up" [revealDelay]="0">
             <app-contact></app-contact>

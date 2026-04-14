@@ -16,28 +16,35 @@ import { AnalyticsService } from '../../core/services/analytics.service';
         </div>
 
         <!-- Card: Brulias -->
-        <div class="relative group rounded-3xl overflow-hidden border border-purple-500/30 hover:border-purple-400/60 transition-all duration-500 bg-gray-900/70 backdrop-blur-sm shadow-2xl">
+        <div class="brulias-card relative group rounded-3xl overflow-hidden border-2 border-purple-500 hover:border-cyan-400 transition-all duration-500 bg-gray-900/80 backdrop-blur-md shadow-[0_0_30px_rgba(168,85,247,0.4)] hover:shadow-[0_0_50px_rgba(34,211,238,0.6)] transform hover:-translate-y-2">
+
+          <!-- Ribbon Destaque -->
+          <div class="absolute top-6 -right-12 bg-linear-to-r from-purple-600 to-cyan-500 text-white text-xs font-bold px-12 py-1 rotate-45 shadow-lg z-20 tracking-widest uppercase animate-pulse">
+            Destaque
+          </div>
+
           <!-- Glow de fundo -->
-          <div class="absolute inset-0 bg-linear-to-br from-purple-900/40 via-indigo-900/30 to-cyan-900/20 opacity-80 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
-          <div class="absolute -top-32 -right-32 w-96 h-96 bg-purple-600/20 rounded-full blur-3xl group-hover:bg-purple-500/30 transition-all duration-700 pointer-events-none"></div>
-          <div class="absolute -bottom-20 -left-20 w-72 h-72 bg-cyan-600/10 rounded-full blur-3xl group-hover:bg-cyan-500/20 transition-all duration-700 pointer-events-none"></div>
+          <div class="brulias-glow-overlay absolute inset-0 bg-linear-to-br from-purple-900/50 via-indigo-900/40 to-cyan-900/30 opacity-90 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none"></div>
+          <div class="absolute -top-32 -right-32 w-96 h-96 bg-purple-500/30 rounded-full blur-3xl group-hover:bg-purple-400/40 animate-pulse transition-all duration-700 pointer-events-none brulias-glow-bulb-1"></div>
+          <div class="absolute -bottom-20 -left-20 w-72 h-72 bg-cyan-500/20 rounded-full blur-3xl group-hover:bg-cyan-400/30 transition-all duration-700 pointer-events-none brulias-glow-bulb-2"></div>
 
           <div class="relative z-10 p-8 md:p-12">
             <!-- Cabeçalho do card -->
-            <div class="flex items-center gap-4 mb-6">
-              <span class="text-5xl">🌌</span>
+            <div class="flex flex-col md:flex-row items-start md:items-center gap-4 mb-6">
+              <span class="text-6xl group-hover:scale-110 transition-transform duration-500">🌌</span>
               <div>
-                <h3 class="text-2xl font-bold text-white">Brulias</h3>
-                <p class="text-purple-400 text-sm font-semibold tracking-wider uppercase">Projeto Pessoal · 2025</p>
+                <h3 class="text-3xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-purple-300 to-cyan-300">Brulias</h3>
+                <p class="text-cyan-400 text-sm font-bold tracking-widest uppercase mt-1">Experiência Imersiva em 3D</p>
               </div>
               <a href="https://egdsdev.github.io/brulias/universo"
                  target="_blank"
                  rel="noopener noreferrer"
+                 title="Clique para viver a experiência 3D"
                  (click)="onBruliasClick()"
-                 class="ml-auto inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-linear-to-r from-purple-600 to-cyan-600
-                        hover:from-purple-500 hover:to-cyan-500 text-white font-bold text-sm tracking-wide shadow-lg
-                        shadow-purple-900/40 hover:shadow-purple-800/60 transform hover:scale-105 transition-all duration-300 group/btn shrink-0">
-                <span>✨ Visitar</span>
+                 class="mt-4 md:mt-0 md:ml-auto inline-flex items-center gap-3 px-8 py-4 rounded-xl bg-linear-to-r from-purple-600 to-cyan-600
+                        hover:from-purple-500 hover:to-cyan-400 text-white font-extrabold text-base tracking-widest shadow-[0_0_20px_rgba(168,85,247,0.5)]
+                        hover:shadow-[0_0_30px_rgba(34,211,238,0.8)] transform hover:scale-110 transition-all duration-300 group/btn shrink-0 animate-bounce">
+                <span>🚀 ACESSAR PROJETO</span>
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 group-hover/btn:translate-x-0.5 transition-transform duration-200"
                      fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
@@ -54,17 +61,17 @@ import { AnalyticsService } from '../../core/services/analytics.service';
 
             <!-- Destaques -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8">
-              <div class="bg-white/5 rounded-xl p-4 text-center border border-white/10 hover:border-purple-500/30 transition-colors">
+              <div class="brulias-feature bg-white/5 rounded-xl p-4 text-center border border-white/10 hover:border-purple-500/30 transition-colors">
                 <div class="text-3xl mb-2">🎮</div>
                 <p class="text-white text-sm font-semibold">Jogos 3D</p>
                 <p class="text-gray-500 text-xs mt-1">Interativos no browser</p>
               </div>
-              <div class="bg-white/5 rounded-xl p-4 text-center border border-white/10 hover:border-cyan-500/30 transition-colors">
+              <div class="brulias-feature bg-white/5 rounded-xl p-4 text-center border border-white/10 hover:border-cyan-500/30 transition-colors">
                 <div class="text-3xl mb-2">✨</div>
                 <p class="text-white text-sm font-semibold">Universo 3D</p>
                 <p class="text-gray-500 text-xs mt-1">Renderização em tempo real</p>
               </div>
-              <div class="bg-white/5 rounded-xl p-4 text-center border border-white/10 hover:border-pink-500/30 transition-colors">
+              <div class="brulias-feature bg-white/5 rounded-xl p-4 text-center border border-white/10 hover:border-pink-500/30 transition-colors">
                 <div class="text-3xl mb-2">💎</div>
                 <p class="text-white text-sm font-semibold">Design Premium</p>
                 <p class="text-gray-500 text-xs mt-1">Experiência visual única</p>
