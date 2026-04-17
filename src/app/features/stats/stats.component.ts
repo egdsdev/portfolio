@@ -17,9 +17,9 @@ interface Stat {
       <!-- linha decorativa inferior -->
       <div class="absolute bottom-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-cyan-500/30 to-transparent"></div>
 
-      <div #trigger class="max-w-4xl mx-auto px-8 py-10 flex flex-wrap justify-center items-center gap-0">
+      <div #trigger class="max-w-4xl mx-auto px-4 sm:px-8 py-10 flex flex-wrap justify-center items-center gap-0">
         @for (stat of stats; track stat.label; let last = $last) {
-          <div class="stat-item flex flex-col items-center px-8 py-2 stat-fade"
+          <div class="stat-item flex flex-col items-center text-center px-4 sm:px-8 py-4 sm:py-2 stat-fade w-1/2 sm:w-auto"
                [class.stat-visible]="started">
             <span class="stat-number font-bold font-mono text-4xl md:text-5xl leading-none">
               {{ stat.current }}<span class="stat-suffix">{{ stat.suffix }}</span>

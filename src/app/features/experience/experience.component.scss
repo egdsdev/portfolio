@@ -38,6 +38,8 @@
   background: rgba(30, 41, 59, 0.5);
   border-radius: 0.5rem;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  position: relative;
+  z-index: 20;
 
   ul {
     padding: 1rem 0 0 1rem;
@@ -48,6 +50,51 @@
   li {
     margin-bottom: 0.5rem;
     line-height: 1.6;
+  }
+
+  // Mobile: fundo totalmente opaco para não vazar a trilha por baixo
+  @media (max-width: 639px) {
+    background: #0f172a;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* Collapse mobile para cada entrada de experiência */
+.experience-details {
+  > .experience-summary {
+    display: block;
+    cursor: pointer;
+    color: #60a5fa;
+    font-size: 0.825rem;
+    font-weight: 500;
+    padding: 0.4rem 0 0.2rem;
+    list-style: none;
+    user-select: none;
+
+    &::-webkit-details-marker { display: none; }
+    &::marker { display: none; }
+
+    &::before {
+      content: '▶ ';
+      font-size: 0.65rem;
+      display: inline-block;
+      transition: transform 0.2s;
+    }
+  }
+
+  &[open] > .experience-summary::before {
+    content: '▼ ';
+  }
+
+  // Desktop: sempre expandido, sem o toggle
+  @media (min-width: 640px) {
+    > .experience-summary {
+      display: none;
+    }
+
+    &:not([open]) > ul {
+      display: block !important;
+    }
   }
 }
 
