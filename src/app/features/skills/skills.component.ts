@@ -73,7 +73,7 @@ import { Component, signal } from '@angular/core';
           </div>
 
           <!-- DevOps & Cloud, BI & Dados, Boas Práticas: colapsáveis -->
-          @if (showAll()) {
+          <div class="w-full flex flex-wrap justify-center items-stretch gap-6" [class.hidden]="!showAll()">
           <!-- DevOps & Cloud -->
           <div class="group p-6 bg-gray-800/50 rounded-2xl border border-gray-700/50 hover:border-green-500/40 transition-all duration-300
                       backdrop-blur-sm w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-1.5rem)] flex flex-col items-center hover:-translate-y-1">
@@ -129,7 +129,7 @@ import { Component, signal } from '@angular/core';
               <span class="skill-pill border border-gray-600/50 hover:border-rose-500/50 hover:text-rose-300">Jira</span>
             </div>
           </div>
-          } <!-- /showAll -->
+          </div> <!-- /showAll wrapper -->
 
           <!-- Botão expandir/recolher -->
           <div class="w-full flex justify-center pt-2">
