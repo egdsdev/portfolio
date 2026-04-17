@@ -535,20 +535,36 @@ interface TimeToActionRow {
         <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
 
           <div class="admin-card border rounded-xl p-5 xl:col-span-2">
-            <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Origem com Conversão</p>
-            <p class="text-[11px] text-gray-600 mb-4">Sessões por canal e quantas delas geram projeto, contato e currículo.</p>
+            <div class="flex items-center justify-between gap-3 mb-1">
+              <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Origem com Conversão</p>
+              @if (!loading) {
+                <span class="text-[10px] px-2 py-0.5 rounded-full border"
+                      [class.border-amber-500/30]="usingFallback"
+                      [class.text-amber-400]="usingFallback"
+                      [class.bg-amber-500/5]="usingFallback"
+                      [class.border-gray-700]="!usingFallback"
+                      [class.text-gray-600]="!usingFallback">
+                  {{ usingFallback ? 'estimativa de referrer' : analyticsEventCount + ' eventos' }}
+                </span>
+              }
+            </div>
+            <p class="text-[11px] text-gray-600 mb-4">
+              {{ usingFallback ? 'Origem dos visitantes por campo referrer. Cliques em CTA disponíveis após acumulação de eventos.' : 'Sessões por canal e quantas delas geram projeto, contato e currículo.' }}
+            </p>
             @if (!loading && sourceConversions.length > 0) {
               <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                   <thead>
                     <tr class="text-[11px] text-gray-500 uppercase tracking-wider border-b border-gray-800/50">
                       <th class="text-left py-2 pr-4">Origem</th>
-                      <th class="text-right py-2 px-2">Sessões</th>
-                      <th class="text-right py-2 px-2">Projetos</th>
-                      <th class="text-right py-2 px-2">Contato</th>
-                      <th class="text-right py-2 px-2">Direto</th>
-                      <th class="text-right py-2 px-2">CV</th>
-                      <th class="text-right py-2 pl-2">Conv.</th>
+                      <th class="text-right py-2 px-2">{{ usingFallback ? 'Visitantes' : 'Sessões' }}</th>
+                      @if (!usingFallback) {
+                        <th class="text-right py-2 px-2">Projetos</th>
+                        <th class="text-right py-2 px-2">Contato</th>
+                        <th class="text-right py-2 px-2">Direto</th>
+                        <th class="text-right py-2 px-2">CV</th>
+                        <th class="text-right py-2 pl-2">Conv.</th>
+                      }
                     </tr>
                   </thead>
                   <tbody>
@@ -556,18 +572,20 @@ interface TimeToActionRow {
                       <tr class="border-b border-gray-800/30">
                         <td class="py-2 pr-4 text-gray-300 font-medium">{{ row.source }}</td>
                         <td class="py-2 px-2 text-right text-gray-400">{{ row.visits }}</td>
-                        <td class="py-2 px-2 text-right text-purple-300">{{ row.projectClicks }}</td>
-                        <td class="py-2 px-2 text-right text-cyan-300">{{ row.contactIntents }}</td>
-                        <td class="py-2 px-2 text-right text-green-300">{{ row.directContacts }}</td>
-                        <td class="py-2 px-2 text-right text-amber-300">{{ row.resumeDownloads }}</td>
-                        <td class="py-2 pl-2 text-right font-semibold" [style.color]="row.conversionRate >= 20 ? '#4ade80' : row.conversionRate >= 10 ? '#fbbf24' : '#94a3b8'">{{ row.conversionRate }}%</td>
+                        @if (!usingFallback) {
+                          <td class="py-2 px-2 text-right text-purple-300">{{ row.projectClicks }}</td>
+                          <td class="py-2 px-2 text-right text-cyan-300">{{ row.contactIntents }}</td>
+                          <td class="py-2 px-2 text-right text-green-300">{{ row.directContacts }}</td>
+                          <td class="py-2 px-2 text-right text-amber-300">{{ row.resumeDownloads }}</td>
+                          <td class="py-2 pl-2 text-right font-semibold" [style.color]="row.conversionRate >= 20 ? '#4ade80' : row.conversionRate >= 10 ? '#fbbf24' : '#94a3b8'">{{ row.conversionRate }}%</td>
+                        }
                       </tr>
                     }
                   </tbody>
                 </table>
               </div>
             } @else if (!loading) {
-              <div class="py-8 text-center text-gray-600 text-sm">Sem eventos suficientes ainda</div>
+              <div class="py-8 text-center text-gray-600 text-sm">Sem visitantes registrados ainda</div>
             } @else {
               <div class="py-8 text-center text-gray-500 text-sm animate-pulse">Carregando...</div>
             }
@@ -611,7 +629,9 @@ interface TimeToActionRow {
 
           <div class="admin-card border rounded-xl p-5">
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Funil de Contato</p>
-            <p class="text-[11px] text-gray-600 mb-4">Sessões, projetos, contato, CTA e contato direto.</p>
+            <p class="text-[11px] text-gray-600 mb-4">
+              {{ usingFallback ? 'Visitantes únicos e uso de features (dados de eventos acumulam com o tempo).' : 'Sessões, projetos, contato, CTA e contato direto.' }}
+            </p>
             @if (!loading && contactFunnelSteps.length > 0) {
               <div class="space-y-4">
                 @for (step of contactFunnelSteps; track step.label; let i = $index) {
@@ -712,7 +732,9 @@ interface TimeToActionRow {
 
           <div class="admin-card border rounded-xl p-5">
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Uso das Features</p>
-            <p class="text-[11px] text-gray-600 mb-4">Início, conclusão e abandono implícito por sessão.</p>
+            <p class="text-[11px] text-gray-600 mb-4">
+              {{ usingFallback ? 'Totais de uso das features (baseado nos matches registrados).' : 'Início, conclusão e abandono implícito por sessão.' }}
+            </p>
             @if (!loading && featureUsageRows.length > 0) {
               <div class="space-y-4">
                 @for (row of featureUsageRows; track row.key) {
@@ -720,7 +742,9 @@ interface TimeToActionRow {
                     <div class="flex items-start justify-between gap-4 mb-3">
                       <div>
                         <p class="text-sm text-gray-200 font-semibold">{{ row.label }}</p>
-                        <p class="text-[10px] text-gray-600">{{ row.started }} iniciaram · {{ row.completed }} concluíram · {{ row.abandoned }} abandonaram</p>
+                        <p class="text-[10px] text-gray-600">
+                          {{ usingFallback ? row.completed + ' usos registrados' : row.started + ' iniciaram · ' + row.completed + ' concluíram · ' + row.abandoned + ' abandonaram' }}
+                        </p>
                       </div>
                       <div class="text-right">
                         <p class="text-lg font-bold" [style.color]="row.completionRate >= 60 ? '#4ade80' : row.completionRate >= 30 ? '#fbbf24' : '#f87171'">{{ row.completionRate }}%</p>
@@ -815,6 +839,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   firstActionAvgSeconds = 0;
   firstActionMedianSeconds = 0;
   firstActionBySource: TimeToActionRow[] = [];
+  analyticsEventCount = 0;
+  usingFallback = false;
 
   private readonly OWNER_IPS = ['45.179.22.183', '138.255.215.188'];
 
@@ -1245,17 +1271,15 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   private computeAnalyticsInsights(): void {
+    this.analyticsEventCount = this.analyticsEvents.length;
+
     if (!this.analyticsEvents.length) {
-      this.sourceConversions = [];
-      this.ctaPerformance = [];
-      this.sectionReachRows = [];
-      this.featureUsageRows = [];
-      this.contactFunnelSteps = [];
-      this.firstActionAvgSeconds = 0;
-      this.firstActionMedianSeconds = 0;
-      this.firstActionBySource = [];
+      this.usingFallback = true;
+      this.computeInsightsFallback();
       return;
     }
+
+    this.usingFallback = false;
 
     const pageVisitsBySession = new Map<string, number>();
     const sessionSource = new Map<string, string>();
@@ -1473,8 +1497,69 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     });
   }
 
-  private addSessionToMap(map: Map<string, Set<string>>, key: string, sessionId: string): void {
-    const sessions = map.get(key) ?? new Set<string>();
+  private computeInsightsFallback(): void {
+    // Origem: derivada do campo referrer dos visitantes
+    const sourceCounts = new Map<string, number>();
+    for (const visitor of this.visitors) {
+      const source = this.resolveSourceFromReferrer(visitor.referrer);
+      sourceCounts.set(source, (sourceCounts.get(source) ?? 0) + visitor.visitCount);
+    }
+    this.sourceConversions = [...sourceCounts.entries()]
+      .map(([source, visits]) => ({
+        source,
+        visits,
+        projectClicks: 0,
+        contactIntents: 0,
+        directContacts: 0,
+        resumeDownloads: 0,
+        conversionRate: 0,
+      }))
+      .sort((a, b) => b.visits - a.visits);
+
+    // Funil: usa visitantes + uso de features
+    const aiUniq = new Set(this.aiMatches.map(m => m.visitorId).filter(Boolean)).size;
+    const devUniq = new Set(this.devMatches.map(m => m.visitorId).filter(Boolean)).size;
+    this.contactFunnelSteps = [
+      { label: 'Visitantes Únicos', value: this.visitors.length, color: '#7c3aed' },
+      { label: 'Usaram IA Match',  value: aiUniq,               color: '#a855f7' },
+      { label: 'Usaram Dev Match', value: devUniq,              color: '#22d3ee' },
+    ];
+
+    // Feature usage: baseada nos matches registrados
+    const aiAvg = this.aiMatches.length > 0
+      ? Math.round(this.aiMatches.reduce((s, m) => s + m.matchPercentage, 0) / this.aiMatches.length) : null;
+    const devAvg = this.devMatches.length > 0
+      ? Math.round(this.devMatches.reduce((s, m) => s + m.matchPercentage, 0) / this.devMatches.length) : null;
+
+    this.featureUsageRows = [
+      { key: 'ai_match',  label: 'Match por IA',  started: aiUniq,  completed: aiUniq,  abandoned: 0, completionRate: aiUniq  > 0 ? 100 : 0, avgResult: aiAvg },
+      { key: 'dev_match', label: 'Monte seu Dev', started: devUniq, completed: devUniq, abandoned: 0, completionRate: devUniq > 0 ? 100 : 0, avgResult: devAvg },
+    ];
+
+    // Sem dados de eventos: CTR e seções não podem ser estimados
+    this.ctaPerformance = [];
+    this.sectionReachRows = [];
+    this.firstActionAvgSeconds = 0;
+    this.firstActionMedianSeconds = 0;
+    this.firstActionBySource = [];
+  }
+
+  private resolveSourceFromReferrer(referrer?: string): string {
+    if (!referrer) return 'Direto';
+    try {
+      const host = new URL(referrer).hostname.replace(/^www\./, '').toLowerCase();
+      if (host.includes('linkedin')) return 'LinkedIn';
+      if (host.includes('github'))   return 'GitHub';
+      if (host.includes('google'))   return 'Google';
+      if (host.includes('gupy'))     return 'Gupy';
+      if (host.includes('openai') || host.includes('chatgpt')) return 'ChatGPT';
+      return 'Outro';
+    } catch {
+      return 'Direto';
+    }
+  }
+
+  private addSessionToMap(map: Map<string, Set<string>>, key: string, sessionId: string): void {    const sessions = map.get(key) ?? new Set<string>();
     sessions.add(sessionId);
     map.set(key, sessions);
   }

@@ -67,6 +67,10 @@ export class AnalyticsService {
         preciseLocation: false,
       });
 
+      // Inicia rastreamento de seções ANTES de gravar o evento de página,
+      // para que seções continuem sendo rastreadas mesmo se a gravação falhar.
+      this.startSectionTracking();
+
       await this.recordEvent({
         eventType: 'page_visit',
         eventName: 'portfolio_visit',
@@ -77,8 +81,6 @@ export class AnalyticsService {
           referrer: document.referrer || 'direct',
         },
       });
-
-      this.startSectionTracking();
 
       // Solicita localização precisa em background — atualiza coords se concedido
       this.requestPreciseLocation().then(coords => {
@@ -209,17 +211,21 @@ export class AnalyticsService {
     value?: number;
     metadata?: AnalyticsMetadata;
   }): Promise<void> {
-    const ctx = await this.ensureContext();
-    if (!ctx) return;
+    try {
+      const ctx = await this.ensureContext();
+      if (!ctx) return;
 
-    await this.firebase.trackAnalyticsEvent({
-      visitorId: ctx.visitorId,
-      sessionId: ctx.sessionId,
-      ip: ctx.geo.ip,
-      source: ctx.source,
-      sourceDetail: ctx.sourceDetail,
-      ...payload,
-    });
+      await this.firebase.trackAnalyticsEvent({
+        visitorId: ctx.visitorId,
+        sessionId: ctx.sessionId,
+        ip: ctx.geo.ip,
+        source: ctx.source,
+        sourceDetail: ctx.sourceDetail,
+        ...payload,
+      });
+    } catch (err) {
+      console.warn('[Analytics] Falha ao gravar evento', payload.eventType, '—', err);
+    }
   }
 
   private startSectionTracking(attempt = 0): void {
