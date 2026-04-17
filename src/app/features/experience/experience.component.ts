@@ -13,7 +13,7 @@ export class ExperienceComponent {
     {
       title: `<div class="timeline-title">
         <div class="date">2026</div>
-        <div class="company">ByToken</div>
+        <div class="company">🔐 ByToken</div>
       </div>`,
       content: `<div class="timeline-content">
         <strong>Desenvolvedor Full Stack</strong> (Presencial, Goiânia, GO)
@@ -35,7 +35,7 @@ export class ExperienceComponent {
     {
       title: `<div class="timeline-title">
         <div class="date">2025</div>
-        <div class="company">EQ Seguros</div>
+        <div class="company">🛡️ EQ Seguros</div>
       </div>`,
       content: `<div class="timeline-content">
         <strong>Desenvolvedor Backend / BI</strong> (Presencial, Goiânia, GO)
@@ -52,7 +52,7 @@ export class ExperienceComponent {
     {
       title: `<div class="timeline-title">
         <div class="date">2022 - 2025</div>
-        <div class="company">Meeta Solutions</div>
+        <div class="company">💡 Meeta Solutions</div>
       </div>`,
       content: `<div class="timeline-content">
         <strong>Desenvolvedor Backend</strong> (Remoto)
@@ -73,7 +73,7 @@ export class ExperienceComponent {
     {
       title: `<div class="timeline-title">
         <div class="date">2020 - 2023</div>
-        <div class="company">Mattos & Cia Ltda</div>
+        <div class="company">👟 Mattos & Cia Ltda</div>
       </div>`,
       content: `<div class="timeline-content">
         <strong>Desenvolvedor Full Stack Pleno</strong> (Remoto)
@@ -91,7 +91,7 @@ export class ExperienceComponent {
     {
       title: `<div class="timeline-title">
         <div class="date">2022 - 2023</div>
-        <div class="company">Sales Farm</div>
+        <div class="company">📈 Sales Farm</div>
       </div>`,
       content: `<div class="timeline-content">
         <strong>Desenvolvedor Web Full Stack</strong> (Remoto)
@@ -109,7 +109,7 @@ export class ExperienceComponent {
     {
       title: `<div class="timeline-title">
         <div class="date">2021 - 2022</div>
-        <div class="company">VirtuaMax Comunicação Ltda</div>
+        <div class="company">🌐 VirtuaMax Comunicação Ltda</div>
       </div>`,
       content: `<div class="timeline-content">
         <strong>Desenvolvedor Web Full Stack Pleno</strong> (Remoto)

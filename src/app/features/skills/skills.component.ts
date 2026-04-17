@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 
 @Component({
   selector: 'app-skills',
@@ -21,10 +21,10 @@ import { Component } from '@angular/core';
             </div>
             <h3 class="text-lg font-semibold text-blue-400 mb-4">Backend</h3>
             <div class="flex flex-wrap gap-2 justify-center">
-              <span class="skill-pill border border-gray-600/50 hover:border-blue-500/50 hover:text-blue-300">PHP</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-blue-500/50 hover:text-blue-300">Laravel</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-blue-500/50 hover:text-blue-300">Python</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-blue-500/50 hover:text-blue-300">Node.js</span>
+              <span class="skill-pill border border-gray-600/50 hover:border-blue-500/50 hover:text-blue-300">PHP <span class="text-blue-400/50 font-mono text-[10px]">· 7a</span></span>
+              <span class="skill-pill border border-gray-600/50 hover:border-blue-500/50 hover:text-blue-300">Laravel <span class="text-blue-400/50 font-mono text-[10px]">· 6a</span></span>
+              <span class="skill-pill border border-gray-600/50 hover:border-blue-500/50 hover:text-blue-300">Python <span class="text-blue-400/50 font-mono text-[10px]">· 3a</span></span>
+              <span class="skill-pill border border-gray-600/50 hover:border-blue-500/50 hover:text-blue-300">Node.js <span class="text-blue-400/50 font-mono text-[10px]">· 5a</span></span>
               <span class="skill-pill border border-gray-600/50 hover:border-blue-500/50 hover:text-blue-300">REST API</span>
               <span class="skill-pill border border-gray-600/50 hover:border-blue-500/50 hover:text-blue-300">SOAP</span>
               <span class="skill-pill border border-gray-600/50 hover:border-blue-500/50 hover:text-blue-300">Filas (Queues)</span>
@@ -41,11 +41,11 @@ import { Component } from '@angular/core';
             </div>
             <h3 class="text-lg font-semibold text-cyan-400 mb-4">Frontend</h3>
             <div class="flex flex-wrap gap-2 justify-center">
-              <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">Vue.js</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">React</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">Angular</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">TypeScript</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">JavaScript</span>
+              <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">Vue.js <span class="text-cyan-400/50 font-mono text-[10px]">· 5a</span></span>
+              <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">React <span class="text-cyan-400/50 font-mono text-[10px]">· 3a</span></span>
+              <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">Angular <span class="text-cyan-400/50 font-mono text-[10px]">· 2a</span></span>
+              <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">TypeScript <span class="text-cyan-400/50 font-mono text-[10px]">· 4a</span></span>
+              <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">JavaScript <span class="text-cyan-400/50 font-mono text-[10px]">· 7a</span></span>
               <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">HTML5</span>
               <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">CSS3</span>
               <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">Tailwind CSS</span>
@@ -60,10 +60,10 @@ import { Component } from '@angular/core';
             </div>
             <h3 class="text-lg font-semibold text-purple-400 mb-4">Banco de Dados</h3>
             <div class="flex flex-wrap gap-2 justify-center">
-              <span class="skill-pill border border-gray-600/50 hover:border-purple-500/50 hover:text-purple-300">PostgreSQL</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-purple-500/50 hover:text-purple-300">SQL Server</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-purple-500/50 hover:text-purple-300">MySQL</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-purple-500/50 hover:text-purple-300">MongoDB</span>
+              <span class="skill-pill border border-gray-600/50 hover:border-purple-500/50 hover:text-purple-300">PostgreSQL <span class="text-purple-400/50 font-mono text-[10px]">· 4a</span></span>
+              <span class="skill-pill border border-gray-600/50 hover:border-purple-500/50 hover:text-purple-300">SQL Server <span class="text-purple-400/50 font-mono text-[10px]">· 4a</span></span>
+              <span class="skill-pill border border-gray-600/50 hover:border-purple-500/50 hover:text-purple-300">MySQL <span class="text-purple-400/50 font-mono text-[10px]">· 5a</span></span>
+              <span class="skill-pill border border-gray-600/50 hover:border-purple-500/50 hover:text-purple-300">MongoDB <span class="text-purple-400/50 font-mono text-[10px]">· 3a</span></span>
               <span class="skill-pill border border-gray-600/50 hover:border-purple-500/50 hover:text-purple-300">Stored Procedures</span>
               <span class="skill-pill border border-gray-600/50 hover:border-purple-500/50 hover:text-purple-300">Triggers</span>
               <span class="skill-pill border border-gray-600/50 hover:border-purple-500/50 hover:text-purple-300">Views</span>
@@ -72,6 +72,8 @@ import { Component } from '@angular/core';
             </div>
           </div>
 
+          <!-- DevOps & Cloud, BI & Dados, Boas Práticas: colapsáveis -->
+          @if (showAll()) {
           <!-- DevOps & Cloud -->
           <div class="group p-6 bg-gray-800/50 rounded-2xl border border-gray-700/50 hover:border-green-500/40 transition-all duration-300
                       backdrop-blur-sm w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-1.5rem)] flex flex-col items-center hover:-translate-y-1">
@@ -127,9 +129,32 @@ import { Component } from '@angular/core';
               <span class="skill-pill border border-gray-600/50 hover:border-rose-500/50 hover:text-rose-300">Jira</span>
             </div>
           </div>
+          } <!-- /showAll -->
+
+          <!-- Botão expandir/recolher -->
+          <div class="w-full flex justify-center pt-2">
+            <button (click)="showAll.set(!showAll())"
+                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-gray-600/50 text-gray-400
+                           hover:border-cyan-500/50 hover:text-cyan-300 text-sm transition-all duration-300">
+              @if (showAll()) {
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/>
+                </svg>
+                Ver menos
+              } @else {
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                </svg>
+                Ver todas as habilidades
+              }
+            </button>
+          </div>
+
         </div>
       </div>
     </section>
   `
 })
-export class SkillsComponent {}
+export class SkillsComponent {
+  showAll = signal(false);
+}

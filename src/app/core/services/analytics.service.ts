@@ -116,7 +116,7 @@ export class AnalyticsService {
     });
   }
 
-  async trackContactClick(channel: 'email' | 'whatsapp'): Promise<void> {
+  async trackContactClick(channel: 'email' | 'whatsapp' | 'linkedin'): Promise<void> {
     await this.trackCtaClick(`contact_${channel}`, 'contato', 'direct_contact', { channel });
   }
 

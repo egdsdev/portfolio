@@ -88,6 +88,49 @@ import { AnalyticsService } from '../../core/services/analytics.service';
             </div>
           </div>
         </div>
+
+        <!-- Card: Portfolio Pessoal -->
+        <div class="relative group rounded-2xl overflow-hidden border border-blue-500/30 hover:border-cyan-400/60 transition-all duration-500
+                    bg-gray-900/60 backdrop-blur-md shadow-lg hover:shadow-[0_0_30px_rgba(96,165,250,0.25)] transform hover:-translate-y-2 mt-6">
+          <div class="absolute inset-0 bg-linear-to-br from-blue-900/20 via-transparent to-cyan-900/20 pointer-events-none"></div>
+
+          <div class="relative z-10 p-8 md:p-12">
+            <div class="flex flex-col md:flex-row items-start md:items-center gap-4 mb-6">
+              <span class="text-5xl group-hover:scale-110 transition-transform duration-500">🚀</span>
+              <div>
+                <h3 class="text-2xl font-extrabold text-transparent bg-clip-text bg-linear-to-r from-blue-300 to-cyan-300">Portfolio Pessoal</h3>
+                <p class="text-blue-400 text-sm font-bold tracking-widest uppercase mt-1">Este site · Angular 20 + Gemini AI</p>
+              </div>
+              <a href="https://github.com/egdsdev/portfolio"
+                 target="_blank"
+                 rel="noopener noreferrer"
+                 class="mt-4 md:mt-0 md:ml-auto inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-gray-800/80 border border-gray-600/50
+                        hover:border-blue-400/60 text-gray-300 hover:text-blue-300 font-semibold text-sm tracking-wide
+                        transition-all duration-300 hover:scale-105 shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                  <path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.21 11.39.6.11.82-.26.82-.58v-2.03c-3.34.73-4.04-1.61-4.04-1.61-.54-1.38-1.33-1.74-1.33-1.74-1.09-.74.08-.73.08-.73 1.2.09 1.83 1.23 1.83 1.23 1.07 1.83 2.81 1.3 3.49 1 .11-.78.42-1.3.76-1.6-2.66-.3-5.47-1.33-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1.01-.32 3.3 1.23a11.5 11.5 0 013-.4c1.02.01 2.04.14 3 .4 2.28-1.55 3.29-1.23 3.29-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.91 1.24 3.22 0 4.61-2.81 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.29c0 .32.22.7.83.58C20.57 21.79 24 17.29 24 12c0-6.63-5.37-12-12-12z"/>
+                </svg>
+                Ver Código
+              </a>
+            </div>
+
+            <p class="text-gray-300 text-base leading-relaxed mb-6">
+              Portfólio desenvolvido do zero com <strong class="text-white">Angular 20</strong> standalone, integrando
+              <strong class="text-white">Google Gemini AI</strong> para análise de perfil, <strong class="text-white">Firebase Firestore</strong>
+              para analytics em tempo real com dashboard admin protegido, tema claro/escuro e deploy automatizado via GitHub Actions.
+            </p>
+
+            <div class="flex flex-wrap gap-2">
+              <span class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30">Angular 20</span>
+              <span class="px-3 py-1 rounded-full text-xs font-semibold bg-cyan-500/20 text-cyan-300 border border-cyan-500/30">TypeScript</span>
+              <span class="px-3 py-1 rounded-full text-xs font-semibold bg-orange-500/20 text-orange-300 border border-orange-500/30">Firebase Firestore</span>
+              <span class="px-3 py-1 rounded-full text-xs font-semibold bg-purple-500/20 text-purple-300 border border-purple-500/30">Gemini AI</span>
+              <span class="px-3 py-1 rounded-full text-xs font-semibold bg-sky-500/20 text-sky-300 border border-sky-500/30">Tailwind CSS</span>
+              <span class="px-3 py-1 rounded-full text-xs font-semibold bg-gray-600/30 text-gray-300 border border-gray-500/30">GitHub Pages</span>
+            </div>
+          </div>
+        </div>
+
       </div>
     </section>
   `
