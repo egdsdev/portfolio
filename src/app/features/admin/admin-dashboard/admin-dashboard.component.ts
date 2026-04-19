@@ -1,7 +1,8 @@
 ﻿import { Component, inject, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef, ElementRef, ViewChild, NgZone } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { FirebaseService, AiMatchRecord, VisitorRecord, DevMatchRecord, AnalyticsEventRecord, ChatConversation, ChatMessage } from '../../../core/services/firebase.service';
+import { FirebaseService, AiMatchRecord, VisitorRecord, DevMatchRecord, AnalyticsEventRecord, ChatConversation, ChatMessage, isChatMessageWithinEditWindow } from '../../../core/services/firebase.service';
+import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import * as L from 'leaflet';
 import { Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip } from 'chart.js';
 
@@ -72,7 +73,7 @@ interface TimeToActionRow {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [DatePipe, FormsModule],
+  imports: [DatePipe, FormsModule, ConfirmDialogComponent],
   template: `
     <div class="admin-page min-h-screen pt-20">
       <main class="max-w-7xl mx-auto px-4 pb-12 space-y-6">
@@ -84,7 +85,8 @@ interface TimeToActionRow {
         </div>
 
         <!-- Tabs de navegação -->
-        <div class="flex gap-1 bg-gray-800/50 border border-gray-700/50 rounded-xl p-1 w-fit">
+        <div class="flex items-center justify-between gap-2 flex-wrap">
+          <div class="flex gap-1 bg-gray-800/50 border border-gray-700/50 rounded-xl p-1">
           <button (click)="activeTab = 'analytics'"
                   [class.bg-gray-700]="activeTab === 'analytics'"
                   [class.text-white]="activeTab === 'analytics'"
@@ -104,13 +106,25 @@ interface TimeToActionRow {
               </span>
             }
           </button>
+          </div>
+
+          <!-- Botão de notificações push -->
+          <button (click)="togglePushNotifications()"
+                  [disabled]="pushLoading"
+                  class="flex items-center gap-2 px-3 py-2 rounded-xl border text-sm transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                  [class]="pushEnabled ? 'border-green-500/50 bg-green-500/10 text-green-400 hover:bg-green-500/20' : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:text-white hover:border-gray-600'">
+            <span class="inline-block w-2 h-2 rounded-full" [class]="pushEnabled ? 'bg-green-400' : 'bg-gray-500'"></span>
+            @if (pushLoading) { A ativar... }
+            @else if (pushEnabled) { Push ativo }
+            @else { Ativar Push }
+          </button>
         </div>
 
         <!-- ── Aba: Analytics ─────────────────────────────────────────────── -->
         <div [class.hidden]="activeTab !== 'analytics'" class="space-y-8">
 
-        <!-- 4 Cards resumo -->
-        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+        <!-- 5 Cards resumo -->
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
           <div class="admin-card rounded-xl p-4 border">
             <p class="text-xs text-gray-500 mb-1">Visitantes Únicos</p>
             <p class="text-3xl font-bold text-cyan-400">{{ visitors.length }}</p>
@@ -127,13 +141,8 @@ interface TimeToActionRow {
             <p class="text-xs text-gray-500 mb-1">Dev Matches</p>
             <p class="text-3xl font-bold">{{ devMatches.length }}</p>
           </div>
-        </div>
-
-        <!-- Card Brulias Clicks -->
-        <div class="admin-card rounded-xl p-4 border flex items-center gap-4">
-          <span class="text-3xl shrink-0">🌌</span>
-          <div>
-            <p class="text-xs text-gray-500 mb-1">Cliques em Brulias <span class="text-gray-600">(excluindo seu IP)</span></p>
+          <div class="admin-card rounded-xl p-4 border">
+            <p class="text-xs text-gray-500 mb-1">🌌 Brulias <span class="text-gray-600 text-[10px]">(excl. seu IP)</span></p>
             <p class="text-3xl font-bold text-purple-400">{{ bruliasClicks }}</p>
           </div>
         </div>
@@ -450,43 +459,8 @@ interface TimeToActionRow {
           }
         </div>
 
-        <!-- ── Funil + Dispositivos + Taxa de Retorno ─────────────────────── -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-
-          <!-- Funil de Engajamento -->
-          <div class="admin-card border rounded-xl p-5">
-            <p class="text-xs text-gray-500 uppercase tracking-widest mb-5 font-semibold">Funil de Engajamento</p>
-            @if (!loading) {
-              <div class="space-y-4">
-                @for (step of funnelSteps; track $index; let i = $index) {
-                  <div>
-                    <div class="flex items-center justify-between mb-1.5">
-                      <div class="flex items-center gap-2">
-                        <span class="text-[10px] font-mono text-gray-600 w-3 shrink-0">{{ i + 1 }}</span>
-                        <span class="text-xs text-gray-300">{{ step.label }}</span>
-                      </div>
-                      <div class="flex items-center gap-1.5">
-                        <span class="text-sm font-bold tabular-nums" [style.color]="step.color">{{ step.value }}</span>
-                        @if (funnelSteps[0].value > 0) {
-                          <span class="text-[10px] text-gray-500 font-mono w-9 text-right">
-                            {{ i === 0 ? '100' : pct(step.value / funnelSteps[0].value) }}%
-                          </span>
-                        }
-                      </div>
-                    </div>
-                    <div class="h-1.5 bg-gray-800/80 rounded-full overflow-hidden">
-                      <div class="h-full rounded-full transition-all duration-700"
-                           [style.width.%]="funnelSteps[0].value > 0 ? (step.value / funnelSteps[0].value) * 100 : 0"
-                           [style.background-color]="step.color">
-                      </div>
-                    </div>
-                  </div>
-                }
-              </div>
-            } @else {
-              <div class="py-8 text-center text-gray-500 text-sm animate-pulse">Carregando...</div>
-            }
-          </div>
+        <!-- ── Dispositivos + Taxa de Retorno ────────────────────────────── -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
           <!-- Dispositivos (Donut) -->
           <div class="admin-card border rounded-xl p-5 flex flex-col">
@@ -672,7 +646,7 @@ interface TimeToActionRow {
           <div class="admin-card border rounded-xl p-5">
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Funil de Contato</p>
             <p class="text-[11px] text-gray-600 mb-4">
-              {{ usingFallback ? 'Visitantes únicos e uso de features (dados de eventos acumulam com o tempo).' : 'Sessões, projetos, contato, CTA e contato direto.' }}
+              {{ usingFallback ? 'Estimativa de adoção de features — eventos de navegação ainda insuficientes.' : 'Sessões, projetos, contato, CTA e contato direto.' }}
             </p>
             @if (!loading && contactFunnelSteps.length > 0) {
               <div class="space-y-4">
@@ -885,44 +859,133 @@ interface TimeToActionRow {
                 </div>
 
                 <!-- Mensagens -->
-                <div #convMsgContainer data-conv-msgs class="flex-1 overflow-y-auto px-4 py-3 space-y-2">
+                <div #convMsgContainer data-conv-msgs class="flex-1 overflow-y-auto px-4 py-3 space-y-2"
+                     (click)="closeConvMessageMenu()"
+                     (scroll)="closeConvMessageMenu()">
                   @if (convMessagesList.length === 0) {
                     <div class="flex items-center justify-center h-full text-gray-600 text-sm">Sem mensagens ainda.</div>
                   }
                   @for (msg of convMessagesList; track msg.id) {
-                    <div [class]="msg.sender === 'visitor' ? 'flex justify-start' : 'flex justify-end'">
-                      <div [class]="msg.sender === 'visitor'
-                          ? 'max-w-[78%] bg-gray-700/80 text-gray-100 rounded-2xl rounded-bl-sm px-3.5 py-2 text-sm'
-                          : 'max-w-[78%] bg-violet-600 text-white rounded-2xl rounded-br-sm px-3.5 py-2 text-sm'">
-                        @if (msg.sender === 'visitor') {
-                          <p class="text-[10px] text-gray-400 font-semibold mb-1">{{ selectedConv.username }}</p>
+                    <div [class]="msg.sender === 'visitor' ? 'group flex justify-start items-start gap-1.5' : 'group flex justify-end items-start gap-1.5'">
+                      <div [class]="msg.deletedAt
+                          ? 'max-w-[78%] bg-gray-700/40 text-gray-500 rounded-2xl px-3.5 py-2 text-sm italic'
+                          : msg.sender === 'visitor'
+                            ? 'max-w-[78%] bg-gray-700/80 text-gray-100 rounded-2xl rounded-bl-sm px-3.5 py-2 text-sm'
+                            : 'max-w-[78%] bg-violet-600 text-white rounded-2xl rounded-br-sm px-3.5 py-2 text-sm'">
+                        @if (msg.deletedAt) {
+                          <p class="flex items-center gap-1.5">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
+                            </svg>
+                            Mensagem excluída
+                          </p>
+                        } @else {
+                          @if (msg.sender === 'visitor') {
+                            <p class="text-[10px] text-gray-400 font-semibold mb-1">{{ selectedConv.username }}</p>
+                          }
+                          @if (editingConvMessageId === msg.id) {
+                            <div class="space-y-2 min-w-[220px]" (click)="$event.stopPropagation()">
+                              <textarea [(ngModel)]="editConvMessageText"
+                                        (keydown)="onConvEditKeydown($event, msg)"
+                                        rows="3"
+                                        class="w-full bg-black/10 border border-white/15 rounded-xl px-3 py-2 text-sm text-white
+                                               placeholder-white/50 focus:outline-none focus:border-white/30 resize-none"
+                                        placeholder="Edite a mensagem..."></textarea>
+                              <div class="flex items-center justify-end gap-2">
+                                <button (click)="cancelEditConvMessage()"
+                                        class="px-2.5 py-1 rounded-lg text-[11px] bg-black/15 hover:bg-black/25 transition-colors cursor-pointer">
+                                  Cancelar
+                                </button>
+                                <button (click)="saveEditedConvMessage(msg)"
+                                        [disabled]="!editConvMessageText.trim() || savingConvEdit"
+                                        class="px-2.5 py-1 rounded-lg text-[11px] bg-white/15 hover:bg-white/25 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                                  {{ savingConvEdit ? 'Salvando...' : 'Salvar' }}
+                                </button>
+                              </div>
+                            </div>
+                          } @else {
+                            @if (msg.text) {
+                              <p class="wrap-break-word whitespace-pre-wrap">{{ msg.text }}</p>
+                            }
+                            @if (msg.fileUrl) {
+                              <a [href]="msg.fileUrl" target="_blank" rel="noopener noreferrer"
+                                 class="flex items-center gap-1.5 mt-1 text-xs underline opacity-80 break-all">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                                </svg>
+                                {{ msg.fileName }}
+                              </a>
+                            }
+                            <p class="text-[10px] mt-1 opacity-60 text-right">
+                              {{ msg.sentAt | date:'HH:mm' }}@if (msg.editedAt) { · editada }
+                            </p>
+                          }
                         }
-                        <p class="break-words whitespace-pre-wrap">{{ msg.text }}</p>
-                        <p class="text-[10px] mt-1 opacity-60 text-right">{{ msg.sentAt | date:'HH:mm' }}</p>
                       </div>
+                      @if (msg.sender === 'owner' && !msg.deletedAt && editingConvMessageId !== msg.id) {
+                        <div class="self-start mt-1 shrink-0" (click)="$event.stopPropagation()">
+                          <button (click)="toggleConvMessageMenu(msg, $event)"
+                                  class="text-gray-500 hover:text-white transition-colors cursor-pointer p-1 rounded-lg hover:bg-gray-700/40"
+                                  title="Mais ações">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                              <path stroke-linecap="round" stroke-linejoin="round" d="M12 5h.01M12 12h.01M12 19h.01" />
+                            </svg>
+                          </button>
+                        </div>
+                      }
                     </div>
                   }
                 </div>
 
                 <!-- Input de resposta -->
-                <div class="px-3 py-3 border-t border-gray-800/50 flex items-end gap-2 shrink-0">
-                  <textarea [(ngModel)]="convReplyText"
-                            name="convReply"
-                            (keydown)="onConvKeydown($event)"
-                            rows="1"
-                            class="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-3.5 py-2.5 text-white text-sm
-                                   placeholder-gray-500 focus:outline-none focus:border-violet-500 transition-colors
-                                   resize-none max-h-24 overflow-y-auto"
-                            placeholder="Responder como Enzo..."></textarea>
-                  <button (click)="sendConvReply()"
-                          [disabled]="!convReplyText.trim() || sendingConvReply"
-                          class="shrink-0 w-9 h-9 rounded-xl bg-violet-600 hover:bg-violet-500
-                                 disabled:opacity-40 disabled:cursor-not-allowed transition-colors
-                                 flex items-center justify-center">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                    </svg>
-                  </button>
+                <div class="px-3 py-3 border-t border-gray-800/50 flex flex-col gap-2 shrink-0">
+                  <!-- Arquivo selecionado -->
+                  @if (pendingConvFile) {
+                    <div class="flex items-center gap-2 px-2 py-1 bg-gray-700/60 rounded-lg text-xs text-gray-300">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 shrink-0 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                      </svg>
+                      <span class="flex-1 truncate">{{ pendingConvFile.name }}</span>
+                      <button (click)="pendingConvFile = null" class="text-gray-500 hover:text-white cursor-pointer">✕</button>
+                    </div>
+                  }
+                  <div class="flex items-end gap-2">
+                    <input #convFileInput type="file" accept=".pdf,.jpg,.jpeg,.png" class="hidden"
+                           (change)="onConvFileSelected($event)" />
+                    <button (click)="convFileInput.click()"
+                            [disabled]="sendingConvReply"
+                            class="shrink-0 self-stretch min-w-8 px-2 rounded-xl border border-gray-700 bg-gray-800/50
+                                   text-gray-400 hover:text-violet-400 hover:border-violet-500/50 transition-colors
+                                   flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                      </svg>
+                    </button>
+                    <textarea [(ngModel)]="convReplyText"
+                              name="convReply"
+                              (keydown)="onConvKeydown($event)"
+                              rows="1"
+                              class="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-3.5 py-2.5 text-white text-sm
+                                     placeholder-gray-500 focus:outline-none focus:border-violet-500 transition-colors
+                                     resize-none max-h-24 overflow-y-auto"
+                              placeholder="Responder como Elias..."></textarea>
+                    <button (click)="sendConvReply()"
+                            [disabled]="(!convReplyText.trim() && !pendingConvFile) || sendingConvReply"
+                            class="shrink-0 self-stretch min-w-9 px-3 rounded-xl bg-violet-600 hover:bg-violet-500
+                                   disabled:opacity-40 disabled:cursor-not-allowed transition-colors
+                                   flex items-center justify-center">
+                      @if (sendingConvReply) {
+                        <svg class="w-4 h-4 text-white animate-spin" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
+                        </svg>
+                      } @else {
+                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                        </svg>
+                      }
+                    </button>
+                  </div>
                 </div>
               }
             </div>
@@ -934,6 +997,64 @@ interface TimeToActionRow {
         <!-- fim: Aba Conversas -->
 
       </main>
+
+      <!-- Dropdown flutuante do menu de mensagem (admin) -->
+      @if (openConvMessageMenuId && convMenuPos) {
+        <div class="fixed w-36 rounded-xl border border-gray-700 bg-gray-900 shadow-2xl z-9999"
+             [style.top.px]="convMenuPos.top"
+             [style.right.px]="convMenuPos.right"
+             (click)="$event.stopPropagation()">
+          @for (msg of convMessagesList; track msg.id) {
+            @if (msg.id === openConvMessageMenuId) {
+              @if (canEditConvMessage(msg)) {
+                <button (click)="startEditConvMessage(msg)"
+                        class="w-full px-3 py-2 text-left text-sm text-gray-200 hover:bg-gray-800 transition-colors cursor-pointer">
+                  Editar
+                </button>
+              }
+              <button (click)="askDeleteConvMessage(msg)"
+                      class="w-full px-3 py-2 text-left text-sm text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer">
+                Excluir
+              </button>
+            }
+          }
+        </div>
+      }
+
+      <!-- Dialog: confirmar exclusão de mensagem -->
+      @if (convMsgToDelete) {
+        <app-confirm-dialog
+          title="Excluir mensagem"
+          message="Esta mensagem será excluída para todos os participantes. Esta ação não pode ser desfeita."
+          confirmLabel="Excluir"
+          cancelLabel="Cancelar"
+          (confirmed)="confirmDeleteConvMessage()"
+          (cancelled)="cancelDeleteConvMessage()" />
+      }
+
+      <!-- Toast: nova mensagem de visitante -->
+      @if (adminToastMsg) {
+        <div class="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-gray-900 border border-violet-500/50
+                    rounded-2xl shadow-2xl px-4 py-3 max-w-xs animate-[slideUp_0.3s_ease-out]">
+          <div class="w-8 h-8 rounded-full bg-violet-500/20 flex items-center justify-center shrink-0">
+            <span class="text-sm">💬</span>
+          </div>
+          <div class="flex-1 min-w-0">
+            <p class="text-xs font-semibold text-violet-400">{{ adminToastConvName }}</p>
+            <p class="text-sm text-gray-200">Nova mensagem</p>
+          </div>
+          <button (click)="openAdminToastConv()"
+                  class="shrink-0 text-xs bg-violet-600 hover:bg-violet-500 text-white px-2.5 py-1 rounded-lg transition-colors cursor-pointer">
+            Abrir
+          </button>
+          <button (click)="dismissAdminToast()"
+                  class="shrink-0 text-gray-500 hover:text-white transition-colors cursor-pointer">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+      }
     </div>
   `,
   styles: [`
@@ -1017,7 +1138,6 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   returningCount = 0;
   returnRatePct = 0;
   topReturnList: VisitorRecord[] = [];
-  funnelSteps: { label: string; value: number; color: string }[] = [];
   readonly legendSteps = [0.1, 0.3, 0.5, 0.75, 1.0];
   readonly cellSize = 18;
 
@@ -1026,13 +1146,34 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
 
   // ── Chat ────────────────────────────────────────────────────────────
   conversations: ChatConversation[] = [];
-  selectedConv: ChatConversation | null = null;
+  selectedConvId: string | null = null;
+  get selectedConv(): ChatConversation | null {
+    return this.conversations.find(c => c.id === this.selectedConvId) ?? null;
+  }
   convMessagesList: ChatMessage[] = [];
   convReplyText = '';
   sendingConvReply = false;
+  pendingConvFile: File | null = null;
+  convMsgToDelete: ChatMessage | null = null;
+  openConvMessageMenuId: string | null = null;
+  convMenuPos: {top: number; right: number} | null = null;
+  editingConvMessageId: string | null = null;
+  editConvMessageText = '';
+  savingConvEdit = false;
+  private readonly ALLOWED_EXT = ['.pdf', '.jpg', '.jpeg', '.png'];
+  pushEnabled = false;
+  pushLoading = false;
   get totalUnread(): number { return this.conversations.reduce((s, c) => s + c.unreadByOwner, 0); }
   private unsubConversations?: () => void;
   private unsubConvMessages?: () => void;
+
+  // ── Admin toast (nova mensagem) ─────────────────────────────────────
+  adminToastMsg = '';
+  adminToastConvName = '';
+  adminToastConvId = '';
+  private adminToastTimer?: ReturnType<typeof setTimeout>;
+  private knownUnreadByConv = new Map<string, number>();
+  private hasInitializedKnownUnread = false;
 
   // ── Delete ──────────────────────────────────────────────────────────
   deleteTarget: AccessTableRow | null = null;
@@ -1040,6 +1181,9 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
 
   async ngOnInit(): Promise<void> {
     void this.firebase.setOwnerOnline(true);
+    // Verifica se já tem token FCM salvo
+    const token = await this.firebase.getSavedFCMToken();
+    this.pushEnabled = !!token;
     const settle = <T>(p: Promise<T>, fallback: T) =>
       p.catch((err: unknown) => { console.error('[Dashboard]', err); return fallback; });
 
@@ -1083,6 +1227,23 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     // Listener em tempo real das conversas
     this.unsubConversations = this.firebase.listenToConversations(convs => {
       this.zone.run(() => {
+        if (!this.hasInitializedKnownUnread) {
+          // Primeira carga: apenas inicializa sem mostrar toast
+          for (const conv of convs) {
+            if (conv.id) this.knownUnreadByConv.set(conv.id, conv.unreadByOwner);
+          }
+          this.hasInitializedKnownUnread = true;
+        } else {
+          // Atualizações posteriores: detecta novas mensagens
+          for (const conv of convs) {
+            if (!conv.id) continue;
+            const prev = this.knownUnreadByConv.get(conv.id) ?? 0;
+            if (conv.unreadByOwner > prev && this.selectedConvId !== conv.id) {
+              this.showAdminToast(conv.username, conv.id);
+            }
+            this.knownUnreadByConv.set(conv.id, conv.unreadByOwner);
+          }
+        }
         this.conversations = convs;
         this.cdr.detectChanges();
       });
@@ -1091,9 +1252,25 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
 
   ngAfterViewInit(): void {}
 
+  // ── Push Notifications ───────────────────────────────────────────────
+  async togglePushNotifications(): Promise<void> {
+    if (this.pushLoading) return;
+    this.pushLoading = true;
+    try {
+      const token = await this.firebase.requestPushPermission();
+      this.pushEnabled = !!token;
+      if (!token) alert('Permissão negada ou navegador não suportado.');
+    } finally {
+      this.pushLoading = false;
+      this.cdr.detectChanges();
+    }
+  }
+
   // ── Chat methods ────────────────────────────────────────────────────────
   selectConversation(conv: ChatConversation): void {
-    this.selectedConv = conv;
+    this.selectedConvId = conv.id!;
+    this.closeConvMessageMenu();
+    this.cancelEditConvMessage();
     this.unsubConvMessages?.();
     this.convMessagesList = [];
     this.unsubConvMessages = this.firebase.listenToChatMessages(conv.id!, msgs => {
@@ -1105,19 +1282,37 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     });
     if (conv.unreadByOwner > 0) {
       void this.firebase.markConversationRead(conv.id!);
-      conv.unreadByOwner = 0;
     }
+  }
+
+  onConvFileSelected(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    input.value = '';
+    if (!file) return;
+    const ext = '.' + file.name.split('.').pop()?.toLowerCase();
+    if (!this.ALLOWED_EXT.includes(ext)) return;
+    if (file.size > 10 * 1024 * 1024) { alert('Arquivo deve ter no máximo 10 MB.'); return; }
+    this.pendingConvFile = file;
   }
 
   async sendConvReply(): Promise<void> {
     const text = this.convReplyText.trim();
-    if (!text || !this.selectedConv || this.sendingConvReply) return;
+    if ((!text && !this.pendingConvFile) || !this.selectedConv || this.sendingConvReply) return;
     this.convReplyText = '';
+    const fileToSend = this.pendingConvFile;
+    this.pendingConvFile = null;
     this.sendingConvReply = true;
+    this.cdr.detectChanges();
     try {
-      await this.firebase.sendChatMessage(this.selectedConv.id!, text, 'owner');
+      let fileAttachment: { url: string; name: string } | undefined;
+      if (fileToSend) {
+        fileAttachment = await this.firebase.uploadChatFile(this.selectedConv.id!, fileToSend);
+      }
+      await this.firebase.sendChatMessage(this.selectedConv.id!, text, 'owner', fileAttachment);
     } finally {
       this.sendingConvReply = false;
+      this.cdr.detectChanges();
     }
   }
 
@@ -1125,6 +1320,89 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     if (event.key === 'Enter' && !event.shiftKey) {
       event.preventDefault();
       void this.sendConvReply();
+    }
+  }
+
+  askDeleteConvMessage(msg: ChatMessage): void {
+    this.closeConvMessageMenu();
+    if (this.editingConvMessageId === msg.id) this.cancelEditConvMessage();
+    this.convMsgToDelete = msg;
+  }
+
+  cancelDeleteConvMessage(): void {
+    this.convMsgToDelete = null;
+  }
+
+  async confirmDeleteConvMessage(): Promise<void> {
+    const msg = this.convMsgToDelete;
+    if (!msg?.id || !this.selectedConvId) { this.convMsgToDelete = null; return; }
+    this.convMsgToDelete = null;
+    await this.firebase.softDeleteChatMessage(this.selectedConvId, msg.id);
+  }
+
+  toggleConvMessageMenu(msg: ChatMessage, event: MouseEvent): void {
+    event.stopPropagation();
+    if (!msg.id) return;
+    if (this.openConvMessageMenuId === msg.id) {
+      this.openConvMessageMenuId = null;
+      this.convMenuPos = null;
+    } else {
+      const btn = event.currentTarget as HTMLElement;
+      const rect = btn.getBoundingClientRect();
+      this.convMenuPos = { top: rect.bottom + 4, right: window.innerWidth - rect.right };
+      this.openConvMessageMenuId = msg.id;
+    }
+    this.cdr.detectChanges();
+  }
+
+  closeConvMessageMenu(): void {
+    this.openConvMessageMenuId = null;
+    this.convMenuPos = null;
+  }
+
+  canEditConvMessage(msg: ChatMessage): boolean {
+    return msg.sender === 'owner' && !msg.deletedAt && !msg.fileUrl && isChatMessageWithinEditWindow(msg.sentAt);
+  }
+
+  startEditConvMessage(msg: ChatMessage): void {
+    if (!msg.id || !this.canEditConvMessage(msg)) return;
+    this.closeConvMessageMenu();
+    this.editingConvMessageId = msg.id;
+    this.editConvMessageText = msg.text;
+  }
+
+  cancelEditConvMessage(): void {
+    this.editingConvMessageId = null;
+    this.editConvMessageText = '';
+  }
+
+  async saveEditedConvMessage(msg: ChatMessage): Promise<void> {
+    const text = this.editConvMessageText.trim();
+    if (!this.canEditConvMessage(msg)) {
+      this.cancelEditConvMessage();
+      return;
+    }
+    if (!msg.id || !this.selectedConvId || !text || this.savingConvEdit) return;
+    this.savingConvEdit = true;
+    this.cdr.detectChanges();
+    try {
+      await this.firebase.updateChatMessage(this.selectedConvId, msg.id, text);
+      this.cancelEditConvMessage();
+    } finally {
+      this.savingConvEdit = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  onConvEditKeydown(event: KeyboardEvent, msg: ChatMessage): void {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      this.cancelEditConvMessage();
+      return;
+    }
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      void this.saveEditedConvMessage(msg);
     }
   }
 
@@ -1143,6 +1421,37 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     this.mapMarkers.clear();
     this.unsubConversations?.();
     this.unsubConvMessages?.();
+    clearTimeout(this.adminToastTimer);
+    this.knownUnreadByConv.clear();
+  }
+
+  showAdminToast(username: string, convId: string): void {
+    clearTimeout(this.adminToastTimer);
+    this.adminToastConvName = username;
+    this.adminToastConvId = convId;
+    this.adminToastMsg = `Nova mensagem de ${username}`;
+    this.adminToastTimer = setTimeout(() => {
+      this.adminToastMsg = '';
+      this.cdr.detectChanges();
+    }, 8000);
+    this.cdr.detectChanges();
+  }
+
+  openAdminToastConv(): void {
+    clearTimeout(this.adminToastTimer);
+    this.adminToastMsg = '';
+    const conv = this.conversations.find(c => c.id === this.adminToastConvId);
+    if (conv) {
+      this.activeTab = 'chat';
+      this.selectConversation(conv);
+    }
+    this.cdr.detectChanges();
+  }
+
+  dismissAdminToast(): void {
+    clearTimeout(this.adminToastTimer);
+    this.adminToastMsg = '';
+    this.cdr.detectChanges();
   }
 
   private isLightTheme(): boolean {
@@ -2165,22 +2474,5 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
       .sort((a, b) => b.visitCount - a.visitCount)
       .slice(0, 5);
 
-    // ── Funil de Engajamento ──────────────────────────────────────────────
-    const totalVisits = this.visitors.reduce((s, v) => s + (v.visitCount || 1), 0);
-    const aiUniq  = new Set(this.aiMatches.map(m => m.visitorId).filter(Boolean)).size;
-    const devUniq = new Set(this.devMatches.map(m => m.visitorId).filter(Boolean)).size;
-    this.funnelSteps = isLight
-      ? [
-          { label: 'Total de Acessos',  value: Math.max(totalVisits, this.visitors.length), color: '#7c3aed' },
-          { label: 'Visitantes Únicos', value: this.visitors.length,                        color: '#a855f7' },
-          { label: 'Usaram Match IA',   value: aiUniq,                                      color: '#c084fc' },
-          { label: 'Usaram Dev Match',  value: devUniq,                                     color: '#6d28d9' },
-        ]
-      : [
-          { label: 'Total de Acessos',  value: Math.max(totalVisits, this.visitors.length), color: '#22d3ee' },
-          { label: 'Visitantes Únicos', value: this.visitors.length,                        color: '#60a5fa' },
-          { label: 'Usaram Match IA',   value: aiUniq,                                      color: '#a78bfa' },
-          { label: 'Usaram Dev Match',  value: devUniq,                                     color: '#34d399' },
-        ];
   }
 }
