@@ -26,7 +26,7 @@ import { FirebaseService, ChatMessage } from '../../core/services/firebase.servi
              class="group p-6 bg-gray-800/50 rounded-2xl hover:bg-gray-800/70 transition-all duration-300
                     backdrop-blur-sm border border-gray-700/50 hover:border-cyan-500/30 hover:-translate-y-1">
             <div class="w-14 h-14 rounded-xl bg-cyan-500/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-cyan-500/20 transition-colors">
-              <span class="text-2xl">âœ‰ï¸</span>
+              <span class="text-2xl">✉️</span>
             </div>
             <h3 class="text-base font-semibold text-gray-200 mb-1">Email</h3>
             <p class="text-gray-400 text-sm">egds.dev&#64;gmail.com</p>
@@ -52,19 +52,19 @@ import { FirebaseService, ChatMessage } from '../../core/services/firebase.servi
                          backdrop-blur-sm border border-gray-700/50 hover:border-violet-500/30 hover:-translate-y-1
                          cursor-pointer text-center w-full">
             <div class="w-14 h-14 rounded-xl bg-violet-500/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-violet-500/20 transition-colors">
-              <span class="text-2xl">ðŸ’¬</span>
+              <span class="text-2xl">💬</span>
             </div>
             <h3 class="text-base font-semibold text-gray-200 mb-1">Chat ao Vivo</h3>
             <p class="text-gray-400 text-sm">Fale diretamente aqui</p>
           </button>
 
-          <!-- LocalizaÃ§Ã£o -->
+          <!-- Localização -->
           <div class="group p-6 bg-gray-800/50 rounded-2xl hover:bg-gray-800/70 transition-all duration-300
                       backdrop-blur-sm border border-gray-700/50 hover:border-blue-500/30 hover:-translate-y-1 cursor-default">
             <div class="w-14 h-14 rounded-xl bg-blue-500/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-500/20 transition-colors">
-              <span class="text-2xl">ðŸ“</span>
+              <span class="text-2xl">📍</span>
             </div>
-            <h3 class="text-base font-semibold text-gray-200 mb-1">LocalizaÃ§Ã£o</h3>
+            <h3 class="text-base font-semibold text-gray-200 mb-1">Localização</h3>
             <p class="text-gray-400 text-sm">Piracanjuba, GO</p>
           </div>
         </div>
@@ -79,7 +79,7 @@ import { FirebaseService, ChatMessage } from '../../core/services/firebase.servi
              (click)="$event.stopPropagation()">
           <div class="text-center mb-6">
             <div class="w-14 h-14 rounded-2xl bg-violet-500/10 flex items-center justify-center mx-auto mb-3">
-              <span class="text-3xl">ðŸ’¬</span>
+              <span class="text-3xl">💬</span>
             </div>
             <h3 class="text-xl font-semibold text-white">Iniciar conversa</h3>
             <p class="text-gray-400 text-sm mt-1">Assim sei com quem estou falando!</p>
@@ -135,7 +135,7 @@ import { FirebaseService, ChatMessage } from '../../core/services/firebase.servi
         <!-- Header -->
         <div class="flex items-center gap-3 px-4 py-3 bg-gray-800/80 border-b border-gray-700/50 shrink-0">
           <div class="w-8 h-8 rounded-full bg-violet-500/20 flex items-center justify-center shrink-0">
-            <span class="text-sm">ðŸ’¬</span>
+            <span class="text-sm">💬</span>
           </div>
           <div class="flex-1 min-w-0 text-left">
             <p class="text-sm font-medium text-white truncate">{{ chatUsername }}</p>
@@ -155,8 +155,8 @@ import { FirebaseService, ChatMessage } from '../../core/services/firebase.servi
         <div #msgContainer data-chat-msgs class="flex-1 overflow-y-auto px-4 py-3 space-y-2">
           @if (chatMessages().length === 0) {
             <div class="flex flex-col items-center justify-center h-full text-center">
-              <span class="text-3xl mb-2">ðŸ‘‹</span>
-              <p class="text-gray-400 text-sm">OlÃ¡, {{ chatUsername }}!<br>Deixe sua mensagem e eu respondo em breve.</p>
+              <span class="text-3xl mb-2">👋</span>
+              <p class="text-gray-400 text-sm">Olá, {{ chatUsername }}!<br>Deixe sua mensagem e eu respondo em breve.</p>
             </div>
           }
           @for (msg of chatMessages(); track msg.id) {
