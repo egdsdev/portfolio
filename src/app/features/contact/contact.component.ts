@@ -141,7 +141,7 @@ import { FirebaseService, ChatMessage } from '../../core/services/firebase.servi
             <span class="text-sm">💬</span>
           </div>
           <div class="flex-1 min-w-0 text-left">
-            <p class="text-sm font-medium text-white truncate">{{ chatCompany ? chatCompany + ' · ' + chatUsername : chatUsername }}</p>
+            <p class="text-sm font-medium text-white truncate">Enzo Gomes</p>
             <p class="text-xs flex items-center gap-1" [class]="isOwnerOnline() ? 'text-green-400' : 'text-gray-500'">
               <span class="inline-block w-1.5 h-1.5 rounded-full" [class]="isOwnerOnline() ? 'bg-green-400' : 'bg-gray-500'"></span>
               {{ isOwnerOnline() ? 'Online' : 'Offline' }}
