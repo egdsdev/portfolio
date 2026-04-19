@@ -847,7 +847,7 @@ interface TimeToActionRow {
                       <span class="mt-1.5 shrink-0 inline-block w-2 h-2 rounded-full"
                             [class]="conv.visitorOnline ? 'bg-green-400' : 'bg-gray-600'"></span>
                       <div class="min-w-0">
-                        <p class="text-sm font-medium text-gray-200 truncate">{{ conv.company ? conv.company + ' · ' + conv.username : conv.username }}</p>
+                        <p class="text-sm font-medium text-gray-200 truncate">{{ conv.company ? conv.username + ' · ' + conv.company : conv.username }}</p>
                         <p class="text-[10px] text-gray-600 mt-0.5">{{ conv.lastMessageAt | date:'dd/MM HH:mm' }}</p>
                       </div>
                     </div>
@@ -875,7 +875,7 @@ interface TimeToActionRow {
                     <span class="text-sm">💬</span>
                   </div>
                   <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-gray-200">{{ selectedConv.company ? selectedConv.company + ' · ' + selectedConv.username : selectedConv.username }}</p>
+                    <p class="text-sm font-medium text-gray-200">{{ selectedConv.company ? selectedConv.username + ' · ' + selectedConv.company : selectedConv.username }}</p>
                     <p class="text-xs flex items-center gap-1" [class]="selectedConv.visitorOnline ? 'text-green-400' : 'text-gray-500'">
                       <span class="inline-block w-1.5 h-1.5 rounded-full" [class]="selectedConv.visitorOnline ? 'bg-green-400' : 'bg-gray-500'"></span>
                       {{ selectedConv.visitorOnline ? 'Online' : 'Offline' }}
