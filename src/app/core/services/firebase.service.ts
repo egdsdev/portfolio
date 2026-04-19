@@ -343,10 +343,14 @@ export class FirebaseService {
   }
 
   async trackVisitor(visitorId: string, isFirstVisit: boolean, data: Omit<VisitorRecord, 'id' | 'visitCount' | 'firstSeen' | 'lastSeen'>): Promise<void> {
+    // Firestore rejeita campos undefined; remove-os antes de gravar
+    const clean = Object.fromEntries(
+      Object.entries(data).filter(([, v]) => v !== undefined),
+    );
     const ref = doc(this.db, 'visitors', visitorId);
     if (isFirstVisit) {
       await setDoc(ref, {
-        ...data,
+        ...clean,
         visitCount: 1,
         firstSeen: Timestamp.now(),
         lastSeen: Timestamp.now(),
@@ -354,14 +358,14 @@ export class FirebaseService {
     } else {
       try {
         await updateDoc(ref, {
-          ...data,
+          ...clean,
           visitCount: increment(1),
           lastSeen: Timestamp.now(),
         });
       } catch {
         // Documento removido — recria
         await setDoc(ref, {
-          ...data,
+          ...clean,
           visitCount: 1,
           firstSeen: Timestamp.now(),
           lastSeen: Timestamp.now(),
