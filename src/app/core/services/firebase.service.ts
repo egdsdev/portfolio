@@ -2,7 +2,7 @@ import { Injectable } from '@angular/core';
 import { initializeApp, FirebaseApp } from 'firebase/app';
 import {
   getFirestore, Firestore, collection, addDoc, getDocs,
-  query, orderBy, Timestamp, doc, setDoc, updateDoc, increment, deleteDoc, where,
+  query, orderBy, Timestamp, doc, setDoc, updateDoc, increment, deleteDoc, where, onSnapshot,
 } from 'firebase/firestore';
 import {
   getAuth, Auth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
@@ -48,6 +48,22 @@ export interface VisitorRecord {
   visitCount: number;
   firstSeen: Date;
   lastSeen: Date;
+}
+
+export interface ChatConversation {
+  id?: string;
+  username: string;
+  company?: string;
+  startedAt: Date;
+  lastMessageAt: Date;
+  unreadByOwner: number;
+}
+
+export interface ChatMessage {
+  id?: string;
+  sender: 'visitor' | 'owner';
+  text: string;
+  sentAt: Date;
 }
 
 export type AnalyticsMetadata = Record<string, string | number | boolean | null>;
@@ -242,6 +258,65 @@ export class FirebaseService {
         createdAt: data['createdAt']?.toDate() ?? new Date(),
       } as AnalyticsEventRecord;
     });
+  }
+
+  // ---- Chat ----
+  async createChatConversation(data: { username: string; company?: string }): Promise<string> {
+    const ref = await addDoc(collection(this.db, 'chat_conversations'), {
+      ...data,
+      startedAt: Timestamp.now(),
+      lastMessageAt: Timestamp.now(),
+      unreadByOwner: 0,
+    });
+    return ref.id;
+  }
+
+  async sendChatMessage(conversationId: string, text: string, sender: 'visitor' | 'owner'): Promise<void> {
+    await addDoc(collection(this.db, 'chat_conversations', conversationId, 'messages'), {
+      sender,
+      text,
+      sentAt: Timestamp.now(),
+    });
+    await updateDoc(doc(this.db, 'chat_conversations', conversationId), {
+      lastMessageAt: Timestamp.now(),
+      ...(sender === 'visitor' ? { unreadByOwner: increment(1) } : {}),
+    });
+  }
+
+  listenToChatMessages(conversationId: string, callback: (messages: ChatMessage[]) => void): () => void {
+    const q = query(
+      collection(this.db, 'chat_conversations', conversationId, 'messages'),
+      orderBy('sentAt', 'asc'),
+    );
+    return onSnapshot(q, snap => {
+      callback(snap.docs.map(d => ({
+        id: d.id,
+        sender: d.data()['sender'] as 'visitor' | 'owner',
+        text: d.data()['text'] as string,
+        sentAt: d.data()['sentAt']?.toDate() ?? new Date(),
+      })));
+    });
+  }
+
+  listenToConversations(callback: (convs: ChatConversation[]) => void): () => void {
+    const q = query(
+      collection(this.db, 'chat_conversations'),
+      orderBy('lastMessageAt', 'desc'),
+    );
+    return onSnapshot(q, snap => {
+      callback(snap.docs.map(d => ({
+        id: d.id,
+        username: d.data()['username'] ?? 'Anônimo',
+        company: d.data()['company'],
+        startedAt: d.data()['startedAt']?.toDate() ?? new Date(),
+        lastMessageAt: d.data()['lastMessageAt']?.toDate() ?? new Date(),
+        unreadByOwner: d.data()['unreadByOwner'] ?? 0,
+      })));
+    });
+  }
+
+  async markConversationRead(conversationId: string): Promise<void> {
+    await updateDoc(doc(this.db, 'chat_conversations', conversationId), { unreadByOwner: 0 });
   }
 
   async trackVisitor(visitorId: string, isFirstVisit: boolean, data: Omit<VisitorRecord, 'id' | 'visitCount' | 'firstSeen' | 'lastSeen'>): Promise<void> {

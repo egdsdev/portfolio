@@ -1,6 +1,7 @@
-﻿import { Component, inject, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef, ElementRef, ViewChild } from '@angular/core';
+﻿import { Component, inject, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef, ElementRef, ViewChild, NgZone } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { FirebaseService, AiMatchRecord, VisitorRecord, DevMatchRecord, AnalyticsEventRecord } from '../../../core/services/firebase.service';
+import { FormsModule } from '@angular/forms';
+import { FirebaseService, AiMatchRecord, VisitorRecord, DevMatchRecord, AnalyticsEventRecord, ChatConversation, ChatMessage } from '../../../core/services/firebase.service';
 import * as L from 'leaflet';
 import { Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip } from 'chart.js';
 
@@ -71,7 +72,7 @@ interface TimeToActionRow {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [DatePipe],
+  imports: [DatePipe, FormsModule],
   template: `
     <div class="admin-page min-h-screen pt-20">
       <main class="max-w-7xl mx-auto px-4 pb-12 space-y-8">
@@ -787,6 +788,114 @@ interface TimeToActionRow {
           </div>
         </div>
 
+        <!-- ── Conversas do Chat ──────────────────────────────────────────── -->
+        <div>
+          <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold mb-4">Conversas do Chat</p>
+          <div class="grid md:grid-cols-5 gap-4">
+
+            <!-- Lista de conversas -->
+            <div class="admin-card border rounded-xl overflow-hidden md:col-span-2">
+              <div class="px-4 py-3 border-b border-gray-800 flex items-center justify-between">
+                <p class="text-xs text-gray-500 font-semibold">{{ conversations.length }} conversa(s)</p>
+                @if (totalUnread > 0) {
+                  <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-violet-500 text-white text-[10px] font-bold">
+                    {{ totalUnread }} não lida(s)
+                  </span>
+                }
+              </div>
+              @if (conversations.length === 0) {
+                <div class="p-8 text-center text-gray-600 text-sm">Nenhuma conversa iniciada ainda.</div>
+              }
+              @for (conv of conversations; track conv.id) {
+                <button (click)="selectConversation(conv)"
+                        class="w-full text-left px-4 py-3 hover:bg-gray-800/40 transition-colors border-b border-gray-800/30"
+                        [class.bg-violet-500/10]="selectedConv?.id === conv.id">
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0">
+                      <p class="text-sm font-medium text-gray-200 truncate">{{ conv.username }}</p>
+                      @if (conv.company) {
+                        <p class="text-xs text-gray-500 truncate">{{ conv.company }}</p>
+                      }
+                      <p class="text-[10px] text-gray-600 mt-0.5">{{ conv.lastMessageAt | date:'dd/MM HH:mm' }}</p>
+                    </div>
+                    @if (conv.unreadByOwner > 0) {
+                      <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-violet-500 text-white text-[10px] font-bold">
+                        {{ conv.unreadByOwner > 9 ? '9+' : conv.unreadByOwner }}
+                      </span>
+                    }
+                  </div>
+                </button>
+              }
+            </div>
+
+            <!-- Painel de mensagens -->
+            <div class="admin-card border rounded-xl flex flex-col overflow-hidden md:col-span-3" style="height:500px">
+              @if (!selectedConv) {
+                <div class="flex-1 flex flex-col items-center justify-center text-gray-600 text-sm">
+                  <span class="text-3xl mb-2">💬</span>
+                  Selecione uma conversa para ler as mensagens.
+                </div>
+              } @else {
+                <!-- Header da conversa -->
+                <div class="px-4 py-3 border-b border-gray-800 flex items-center gap-3 shrink-0">
+                  <div class="w-8 h-8 rounded-full bg-violet-500/20 flex items-center justify-center shrink-0">
+                    <span class="text-sm">💬</span>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-200">{{ selectedConv.username }}</p>
+                    @if (selectedConv.company) {
+                      <p class="text-xs text-gray-500">{{ selectedConv.company }}</p>
+                    }
+                  </div>
+                  <p class="text-[10px] text-gray-600">{{ selectedConv.startedAt | date:'dd/MM/yy HH:mm' }}</p>
+                </div>
+
+                <!-- Mensagens -->
+                <div #convMsgContainer data-conv-msgs class="flex-1 overflow-y-auto px-4 py-3 space-y-2">
+                  @if (convMessagesList.length === 0) {
+                    <div class="flex items-center justify-center h-full text-gray-600 text-sm">Sem mensagens ainda.</div>
+                  }
+                  @for (msg of convMessagesList; track msg.id) {
+                    <div [class]="msg.sender === 'visitor' ? 'flex justify-start' : 'flex justify-end'">
+                      <div [class]="msg.sender === 'visitor'
+                          ? 'max-w-[78%] bg-gray-700/80 text-gray-100 rounded-2xl rounded-bl-sm px-3.5 py-2 text-sm'
+                          : 'max-w-[78%] bg-violet-600 text-white rounded-2xl rounded-br-sm px-3.5 py-2 text-sm'">
+                        @if (msg.sender === 'visitor') {
+                          <p class="text-[10px] text-gray-400 font-semibold mb-1">{{ selectedConv.username }}</p>
+                        }
+                        <p class="break-words whitespace-pre-wrap">{{ msg.text }}</p>
+                        <p class="text-[10px] mt-1 opacity-60 text-right">{{ msg.sentAt | date:'HH:mm' }}</p>
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                <!-- Input de resposta -->
+                <div class="px-3 py-3 border-t border-gray-800/50 flex items-end gap-2 shrink-0">
+                  <textarea [(ngModel)]="convReplyText"
+                            name="convReply"
+                            (keydown)="onConvKeydown($event)"
+                            rows="1"
+                            class="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-3.5 py-2.5 text-white text-sm
+                                   placeholder-gray-500 focus:outline-none focus:border-violet-500 transition-colors
+                                   resize-none max-h-24 overflow-y-auto"
+                            placeholder="Responder como Enzo..."></textarea>
+                  <button (click)="sendConvReply()"
+                          [disabled]="!convReplyText.trim() || sendingConvReply"
+                          class="shrink-0 w-9 h-9 rounded-xl bg-violet-600 hover:bg-violet-500
+                                 disabled:opacity-40 disabled:cursor-not-allowed transition-colors
+                                 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                  </button>
+                </div>
+              }
+            </div>
+
+          </div>
+        </div>
+
       </main>
     </div>
   `,
@@ -828,6 +937,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
 
   private firebase = inject(FirebaseService);
   private cdr = inject(ChangeDetectorRef);
+  private zone = inject(NgZone);
+  @ViewChild('convMsgContainer') convMsgContainer?: ElementRef<HTMLDivElement>;
 
   aiMatches: AiMatchRecord[] = [];
   devMatches: DevMatchRecord[] = [];
@@ -873,6 +984,16 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   readonly legendSteps = [0.1, 0.3, 0.5, 0.75, 1.0];
   readonly cellSize = 18;
 
+  // ── Chat ────────────────────────────────────────────────────────────
+  conversations: ChatConversation[] = [];
+  selectedConv: ChatConversation | null = null;
+  convMessagesList: ChatMessage[] = [];
+  convReplyText = '';
+  sendingConvReply = false;
+  get totalUnread(): number { return this.conversations.reduce((s, c) => s + c.unreadByOwner, 0); }
+  private unsubConversations?: () => void;
+  private unsubConvMessages?: () => void;
+
   // ── Delete ──────────────────────────────────────────────────────────
   deleteTarget: AccessTableRow | null = null;
   deleting = false;
@@ -917,15 +1038,69 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
       this.initLineChart();
       this.initMap();
     }, 50);
+
+    // Listener em tempo real das conversas
+    this.unsubConversations = this.firebase.listenToConversations(convs => {
+      this.zone.run(() => {
+        this.conversations = convs;
+        this.cdr.detectChanges();
+      });
+    });
   }
 
   ngAfterViewInit(): void {}
+
+  // ── Chat methods ────────────────────────────────────────────────────────
+  selectConversation(conv: ChatConversation): void {
+    this.selectedConv = conv;
+    this.unsubConvMessages?.();
+    this.convMessagesList = [];
+    this.unsubConvMessages = this.firebase.listenToChatMessages(conv.id!, msgs => {
+      this.zone.run(() => {
+        this.convMessagesList = msgs;
+        this.scrollConvToBottom();
+        this.cdr.detectChanges();
+      });
+    });
+    if (conv.unreadByOwner > 0) {
+      void this.firebase.markConversationRead(conv.id!);
+      conv.unreadByOwner = 0;
+    }
+  }
+
+  async sendConvReply(): Promise<void> {
+    const text = this.convReplyText.trim();
+    if (!text || !this.selectedConv || this.sendingConvReply) return;
+    this.convReplyText = '';
+    this.sendingConvReply = true;
+    try {
+      await this.firebase.sendChatMessage(this.selectedConv.id!, text, 'owner');
+    } finally {
+      this.sendingConvReply = false;
+    }
+  }
+
+  onConvKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      void this.sendConvReply();
+    }
+  }
+
+  private scrollConvToBottom(): void {
+    window.setTimeout(() => {
+      const el = document.querySelector<HTMLDivElement>('[data-conv-msgs]');
+      if (el) el.scrollTop = el.scrollHeight;
+    }, 60);
+  }
 
   ngOnDestroy(): void {
     this.lineChartInstance?.destroy();
     this.themeObserver?.disconnect();
     this.leafletMap?.remove();
     this.mapMarkers.clear();
+    this.unsubConversations?.();
+    this.unsubConvMessages?.();
   }
 
   private isLightTheme(): boolean {
