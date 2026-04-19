@@ -843,12 +843,13 @@ interface TimeToActionRow {
                         class="w-full text-left px-4 py-3 hover:bg-gray-800/40 transition-colors border-b border-gray-800/30"
                         [class.bg-violet-500/10]="selectedConv?.id === conv.id">
                   <div class="flex items-start justify-between gap-2">
-                    <div class="min-w-0">
-                      <p class="text-sm font-medium text-gray-200 truncate">{{ conv.username }}</p>
-                      @if (conv.company) {
-                        <p class="text-xs text-gray-500 truncate">{{ conv.company }}</p>
-                      }
-                      <p class="text-[10px] text-gray-600 mt-0.5">{{ conv.lastMessageAt | date:'dd/MM HH:mm' }}</p>
+                    <div class="min-w-0 flex items-start gap-2">
+                      <span class="mt-1.5 shrink-0 inline-block w-2 h-2 rounded-full"
+                            [class]="conv.visitorOnline ? 'bg-green-400' : 'bg-gray-600'"></span>
+                      <div class="min-w-0">
+                        <p class="text-sm font-medium text-gray-200 truncate">{{ conv.company ? conv.company + ' · ' + conv.username : conv.username }}</p>
+                        <p class="text-[10px] text-gray-600 mt-0.5">{{ conv.lastMessageAt | date:'dd/MM HH:mm' }}</p>
+                      </div>
                     </div>
                     @if (conv.unreadByOwner > 0) {
                       <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-violet-500 text-white text-[10px] font-bold">
@@ -874,10 +875,11 @@ interface TimeToActionRow {
                     <span class="text-sm">💬</span>
                   </div>
                   <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-gray-200">{{ selectedConv.username }}</p>
-                    @if (selectedConv.company) {
-                      <p class="text-xs text-gray-500">{{ selectedConv.company }}</p>
-                    }
+                    <p class="text-sm font-medium text-gray-200">{{ selectedConv.company ? selectedConv.company + ' · ' + selectedConv.username : selectedConv.username }}</p>
+                    <p class="text-xs flex items-center gap-1" [class]="selectedConv.visitorOnline ? 'text-green-400' : 'text-gray-500'">
+                      <span class="inline-block w-1.5 h-1.5 rounded-full" [class]="selectedConv.visitorOnline ? 'bg-green-400' : 'bg-gray-500'"></span>
+                      {{ selectedConv.visitorOnline ? 'Online' : 'Offline' }}
+                    </p>
                   </div>
                   <p class="text-[10px] text-gray-600">{{ selectedConv.startedAt | date:'dd/MM/yy HH:mm' }}</p>
                 </div>

@@ -253,6 +253,7 @@ export class ContactComponent implements OnInit, OnDestroy {
   closeModal(): void { this.chatState.set('closed'); }
 
   closeChat(): void {
+    if (this.conversationId) void this.firebase.setVisitorOnline(this.conversationId, false);
     this.unsubMessages?.();
     this.unsubMessages = undefined;
     this.chatMessages.set([]);
@@ -285,6 +286,7 @@ export class ContactComponent implements OnInit, OnDestroy {
         }),
       );
       this.chatState.set('open');
+      void this.firebase.setVisitorOnline(this.conversationId, true);
     } catch (err) {
       console.error('[Chat] startChat error:', err);
       const msg = err instanceof Error ? err.message : String(err);

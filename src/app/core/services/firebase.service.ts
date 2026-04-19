@@ -58,6 +58,7 @@ export interface ChatConversation {
   startedAt: Date;
   lastMessageAt: Date;
   unreadByOwner: number;
+  visitorOnline?: boolean;
 }
 
 export interface ChatMessage {
@@ -333,8 +334,15 @@ export class FirebaseService {
         startedAt: d.data()['startedAt']?.toDate() ?? new Date(),
         lastMessageAt: d.data()['lastMessageAt']?.toDate() ?? new Date(),
         unreadByOwner: d.data()['unreadByOwner'] ?? 0,
+        visitorOnline: d.data()['visitorOnline'] ?? false,
       })));
     });
+  }
+
+  async setVisitorOnline(conversationId: string, online: boolean): Promise<void> {
+    try {
+      await updateDoc(doc(this.db, 'chat_conversations', conversationId), { visitorOnline: online });
+    } catch { /* ignora se doc não existe ainda */ }
   }
 
   async markConversationRead(conversationId: string): Promise<void> {
