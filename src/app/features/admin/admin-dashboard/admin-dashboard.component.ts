@@ -1446,11 +1446,20 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
       return;
     }
     this.pushPermStatus = Notification.permission as 'granted' | 'denied' | 'prompt';
+    if (this.pushPermStatus === 'granted') this.pushEnabled = true;
   }
 
   async requestPushPerm(): Promise<void> {
     const perm = await Notification.requestPermission();
     this.pushPermStatus = perm as 'granted' | 'denied' | 'prompt';
+    if (perm === 'granted') {
+      this.pushEnabled = true;
+      // Tenta registrar FCM token em background
+      void this.firebase.requestPushPermission().then(token => {
+        if (token) this.savedFcmToken = token;
+        this.cdr.detectChanges();
+      });
+    }
     this.cdr.detectChanges();
   }
 
