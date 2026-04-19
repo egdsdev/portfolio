@@ -214,7 +214,7 @@ function findSkillScore(input: string): number | null {
                       } @else {
                         <p class="text-cyan-300 text-xs font-semibold mb-2">🎯 Elias é uma excelente escolha!</p>
                       }
-                      <a href="#contato" (click)="onContactClick(); closeModal()"
+                      <a href="#contato" (click)="onContactClick('success'); closeModal()"
                          class="inline-block px-5 py-2 bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs font-bold rounded-full hover:scale-105 transition-transform">
                         Entrar em contato
                       </a>
@@ -224,7 +224,7 @@ function findSkillScore(input: string): number | null {
                     <div class="mt-4 p-3 rounded-xl bg-amber-500/8 border border-amber-500/20 text-center">
                       <p class="text-amber-300 text-xs font-semibold mb-1">🌱 Elias aprende tudo rapidamente</p>
                       <p class="text-gray-500 text-xs mb-2">O que não domino hoje, domino em semanas.</p>
-                      <a href="#contato" (click)="onContactClick(); closeModal()"
+                      <a href="#contato" (click)="onContactClick('surprise'); closeModal()"
                          class="inline-block px-5 py-2 border border-amber-500/40 text-amber-300 text-xs font-bold rounded-full hover:bg-amber-500/10 transition-all">
                         Vamos conversar mesmo assim?
                       </a>
@@ -318,7 +318,7 @@ function findSkillScore(input: string): number | null {
                                 class="flex-1 py-2 rounded-xl border border-gray-700 text-gray-400 hover:text-gray-200 transition-all text-xs">
                           Nova análise
                         </button>
-                        <a href="#contato" (click)="onContactClick(); closeModal()"
+                        <a href="#contato" (click)="onAiContactClick(); closeModal()"
                            class="flex-1 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs font-semibold text-center hover:scale-[1.02] transition-transform">
                           Entrar em contato
                         </a>
@@ -729,9 +729,18 @@ export class DevMatchComponent implements OnInit {
     this.skills.update(list => list.filter(sk => sk.name !== name));
   }
 
-  onContactClick(): void {
-    void this.analytics.trackCtaClick('dev_match_contact', 'dev-match', 'contact', {
+  onContactClick(kind: 'success' | 'surprise'): void {
+    void this.analytics.trackCtaClick(`dev_match_contact_${kind}`, 'dev-match', 'contact', {
+      kind,
       matchPercent: this.matchPercent(),
+    });
+    this.saveToFirebase();
+  }
+
+  onAiContactClick(): void {
+    void this.analytics.trackCtaClick('ai_match_contact', 'dev-match', 'contact', {
+      source: 'ai_result',
+      matchPercent: this.aiResult()?.matchPercentage ?? 0,
     });
     this.saveToFirebase();
   }
