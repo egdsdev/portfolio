@@ -2362,6 +2362,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
       contact_whatsapp: 'Contato · WhatsApp',
       dev_match_contact_success: 'Dev Match · CTA forte',
       dev_match_contact_surprise: 'Dev Match · CTA alternativo',
+      dev_match_contact: 'Dev Match · Contato (legado)',
       ai_match_contact: 'IA Match · Entrar em contato',
       'nav_dev-match': 'Header · Match',
       nav_projetos: 'Header · Projetos',
