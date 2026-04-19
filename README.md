@@ -57,3 +57,22 @@ Angular CLI does not come with an end-to-end testing framework by default. You c
 ## Additional Resources
 
 For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
+
+## GitHub Pages
+
+The canonical GitHub Pages routine is:
+
+```bash
+npm run pages:check
+```
+
+This command:
+
+- builds the app with the correct base href for `/portfolio/`
+- writes the static output directly to `docs/`
+- creates a `404.html` fallback for Angular routes on GitHub Pages
+- creates `.nojekyll` and fails fast if the Pages bundle is incomplete
+
+The workflow in [.github/workflows/deploy.yml](.github/workflows/deploy.yml) validates this bundle on pull requests and deploys it on pushes to `main`.
+
+One-time repository setting: in GitHub Pages, set **Source** to **GitHub Actions**. The workflow now fails fast if the repository is switched back to branch-based publishing, because that is what caused the `404 File not found` state.
