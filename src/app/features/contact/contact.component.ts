@@ -109,16 +109,19 @@ import { FirebaseService, ChatMessage } from '../../core/services/firebase.servi
             </div>
           </div>
 
+          @if (chatError()) {
+            <p class="text-red-400 text-xs text-center mt-3">{{ chatError() }}</p>
+          }
           <div class="flex gap-3 mt-6">
             <button (click)="closeModal()"
                     class="flex-1 py-2.5 rounded-xl border border-gray-700 text-gray-400
-                           hover:text-white hover:border-gray-600 transition-colors text-sm">
+                           hover:text-white hover:border-gray-600 transition-colors text-sm cursor-pointer">
               Cancelar
             </button>
             <button (click)="startChat()"
                     [disabled]="!chatUsername.trim() || isStartingChat()"
                     class="flex-1 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500
-                           disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium text-sm transition-colors">
+                           disabled:opacity-50 disabled:cursor-not-allowed text-white font-medium text-sm transition-colors cursor-pointer">
               @if (isStartingChat()) { Aguarde... } @else { Entrar no chat }
             </button>
           </div>
@@ -144,7 +147,7 @@ import { FirebaseService, ChatMessage } from '../../core/services/firebase.servi
             }
           </div>
           <button (click)="closeChat()"
-                  class="text-gray-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-gray-700/50 shrink-0">
+                  class="text-gray-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-gray-700/50 shrink-0 cursor-pointer">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -193,7 +196,7 @@ import { FirebaseService, ChatMessage } from '../../core/services/firebase.servi
                   [disabled]="!chatInput.trim() || isSendingMsg()"
                   class="shrink-0 w-9 h-9 rounded-xl bg-violet-600 hover:bg-violet-500
                          disabled:opacity-40 disabled:cursor-not-allowed transition-colors
-                         flex items-center justify-center">
+                         flex items-center justify-center cursor-pointer">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
             </svg>
@@ -215,6 +218,7 @@ export class ContactComponent implements OnDestroy {
   chatMessages = signal<ChatMessage[]>([]);
   isStartingChat = signal(false);
   isSendingMsg = signal(false);
+  chatError = signal('');
 
   chatUsername = '';
   chatCompany = '';
@@ -223,7 +227,7 @@ export class ContactComponent implements OnDestroy {
   private conversationId: string | null = null;
   private unsubMessages?: () => void;
 
-  openEntryModal(): void { this.chatState.set('entry'); }
+  openEntryModal(): void { this.chatError.set(''); this.chatState.set('entry'); }
   closeModal(): void { this.chatState.set('closed'); }
 
   closeChat(): void {
@@ -239,9 +243,11 @@ export class ContactComponent implements OnDestroy {
     if (!this.chatUsername.trim() || this.isStartingChat()) return;
     this.isStartingChat.set(true);
     try {
+      const ip = await this.analytics.getVisitorIp();
       this.conversationId = await this.firebase.createChatConversation({
         username: this.chatUsername.trim(),
         company: this.chatCompany.trim() || undefined,
+        ip,
       });
       this.unsubMessages = this.firebase.listenToChatMessages(
         this.conversationId,
@@ -252,7 +258,7 @@ export class ContactComponent implements OnDestroy {
       );
       this.chatState.set('open');
     } catch {
-      // permanece no modal
+      this.chatError.set('Não foi possível iniciar o chat. Tente novamente.');
     } finally {
       this.isStartingChat.set(false);
     }

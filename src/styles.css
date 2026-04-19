@@ -2,6 +2,10 @@
 
 /* You can add global styles to this file, and also import other style files */
 
+/* Garante cursor pointer em todos os botões interativos independente de versão do Tailwind/preflight */
+button:not(:disabled),
+a[role="button"]:not(:disabled) { cursor: pointer; }
+
 /* Estilos do Marquee */
 om-marquee {
   padding: 1rem 0;

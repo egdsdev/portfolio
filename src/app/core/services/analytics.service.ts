@@ -130,6 +130,15 @@ export class AnalyticsService {
     await this.trackCtaClick('resume_download', 'detalhes', 'resume');
   }
 
+  async getVisitorIp(): Promise<string> {
+    try {
+      const ctx = await this.ensureContext();
+      return ctx?.geo.ip ?? 'unknown';
+    } catch {
+      return 'unknown';
+    }
+  }
+
   async trackBruliasClick(): Promise<void> {
     try {
       const ctx = await this.ensureContext();

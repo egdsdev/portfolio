@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { initializeApp, FirebaseApp } from 'firebase/app';
 import {
-  getFirestore, Firestore, collection, addDoc, getDocs,
+  getFirestore, Firestore, collection, addDoc, getDocs, getDoc,
   query, orderBy, Timestamp, doc, setDoc, updateDoc, increment, deleteDoc, where, onSnapshot,
 } from 'firebase/firestore';
 import {
@@ -54,6 +54,7 @@ export interface ChatConversation {
   id?: string;
   username: string;
   company?: string;
+  ip?: string;
   startedAt: Date;
   lastMessageAt: Date;
   unreadByOwner: number;
@@ -261,14 +262,35 @@ export class FirebaseService {
   }
 
   // ---- Chat ----
-  async createChatConversation(data: { username: string; company?: string }): Promise<string> {
-    const ref = await addDoc(collection(this.db, 'chat_conversations'), {
-      ...data,
-      startedAt: Timestamp.now(),
-      lastMessageAt: Timestamp.now(),
-      unreadByOwner: 0,
-    });
-    return ref.id;
+  private ipToDocId(ip: string): string {
+    // Converte IP em ID válido para Firestore (sem pontos, dois-pontos ou barras)
+    return ip.replace(/[.:]/g, '_').replace(/[^a-zA-Z0-9_-]/g, '') || 'unknown';
+  }
+
+  async createChatConversation(data: { username: string; company?: string; ip: string }): Promise<string> {
+    const docId = this.ipToDocId(data.ip);
+    const ref = doc(this.db, 'chat_conversations', docId);
+    const existing = await getDoc(ref);
+
+    if (existing.exists()) {
+      // Mesma pessoa voltando: atualiza nome/empresa mas mantém o histórico
+      await updateDoc(ref, {
+        username: data.username,
+        ...(data.company ? { company: data.company } : {}),
+      });
+    } else {
+      // Novo visitante: cria a conversa com o IP como chave
+      await setDoc(ref, {
+        username: data.username,
+        ...(data.company ? { company: data.company } : {}),
+        ip: data.ip,
+        startedAt: Timestamp.now(),
+        lastMessageAt: Timestamp.now(),
+        unreadByOwner: 0,
+      });
+    }
+
+    return docId;
   }
 
   async sendChatMessage(conversationId: string, text: string, sender: 'visitor' | 'owner'): Promise<void> {
@@ -308,6 +330,7 @@ export class FirebaseService {
         id: d.id,
         username: d.data()['username'] ?? 'Anônimo',
         company: d.data()['company'],
+        ip: d.data()['ip'],
         startedAt: d.data()['startedAt']?.toDate() ?? new Date(),
         lastMessageAt: d.data()['lastMessageAt']?.toDate() ?? new Date(),
         unreadByOwner: d.data()['unreadByOwner'] ?? 0,
