@@ -43,6 +43,22 @@
               ],
               "outputHashing": "all"
             },
+            "netlify": {
+              "baseHref": "/",
+              "budgets": [
+                {
+                  "type": "initial",
+                  "maximumWarning": "1MB",
+                  "maximumError": "2MB"
+                },
+                {
+                  "type": "anyComponentStyle",
+                  "maximumWarning": "4kB",
+                  "maximumError": "8kB"
+                }
+              ],
+              "outputHashing": "all"
+            },
             "pages": {
               "baseHref": "/portfolio/",
               "outputPath": {
@@ -76,6 +92,9 @@
           "configurations": {
             "production": {
               "buildTarget": "portfolio:build:production"
+            },
+            "netlify": {
+              "buildTarget": "portfolio:build:netlify"
             },
             "development": {
               "buildTarget": "portfolio:build:development"
