@@ -4,6 +4,10 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
 
 permissions:
   contents: read
@@ -21,6 +25,31 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Configure Pages
+        uses: actions/configure-pages@v5
+
+      - name: Verify Pages source
+        if: github.event_name != 'pull_request'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            try {
+              const response = await github.request('GET /repos/{owner}/{repo}/pages', {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+              });
+              const buildType = response.data.build_type ?? 'legacy';
+
+              if (buildType !== 'workflow') {
+                core.setFailed(`GitHub Pages precisa usar Source = GitHub Actions. Configuracao atual: ${buildType}.`);
+                return;
+              }
+
+              core.info(`GitHub Pages OK: build_type=${buildType}`);
+            } catch (error) {
+              core.setFailed(`Nao foi possivel validar a configuracao do GitHub Pages. Ajuste Source = GitHub Actions e execute o workflow novamente. Detalhe: ${error.message}`);
+            }
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -30,16 +59,17 @@ jobs:
       - name: Install dependencies
         run: npm ci --legacy-peer-deps
 
-      - name: Build
-        run: npm run build -- --base-href /portfolio/
+      - name: Build and verify Pages bundle
+        run: npm run pages:check
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: dist/portfolio/browser
+          path: docs
 
   deploy:
     needs: build
+    if: github.event_name != 'pull_request'
     runs-on: ubuntu-latest
     environment:
       name: github-pages

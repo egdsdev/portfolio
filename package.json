@@ -5,6 +5,9 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
+    "build:pages": "ng build --configuration pages",
+    "pages:prepare": "node scripts/prepare-pages.js",
+    "pages:check": "npm run build:pages && npm run pages:prepare",
     "watch": "ng build --watch --configuration development",
     "test": "ng test"
   },
