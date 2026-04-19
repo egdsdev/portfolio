@@ -26,7 +26,7 @@ import { FirebaseService, ChatMessage } from '../../core/services/firebase.servi
              class="group p-6 bg-gray-800/50 rounded-2xl hover:bg-gray-800/70 transition-all duration-300
                     backdrop-blur-sm border border-gray-700/50 hover:border-cyan-500/30 hover:-translate-y-1">
             <div class="w-14 h-14 rounded-xl bg-cyan-500/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-cyan-500/20 transition-colors">
-              <span class="text-2xl">✉️</span>
+              <span class="text-2xl">✉️</span>
             </div>
             <h3 class="text-base font-semibold text-gray-200 mb-1">Email</h3>
             <p class="text-gray-400 text-sm">egds.dev&#64;gmail.com</p>
