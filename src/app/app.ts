@@ -109,6 +109,7 @@ export class App implements OnInit, OnDestroy {
         this.routerResolved.set(true);
         if (!admin) {
           this.analytics.trackVisit();
+          this.analytics.trackSitePresence();
         }
       }
     });

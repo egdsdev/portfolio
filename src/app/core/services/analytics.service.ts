@@ -139,6 +139,17 @@ export class AnalyticsService {
     }
   }
 
+  async trackSitePresence(): Promise<void> {
+    try {
+      const ip = await this.getVisitorIp();
+      if (ip === 'unknown') return;
+      await this.firebase.setVisitorPresenceByIp(ip, true);
+      const offline = () => { void this.firebase.setVisitorPresenceByIp(ip, false); };
+      window.addEventListener('beforeunload', offline);
+      window.addEventListener('pagehide', offline);
+    } catch { /* silencioso */ }
+  }
+
   async trackBruliasClick(): Promise<void> {
     try {
       const ctx = await this.ensureContext();

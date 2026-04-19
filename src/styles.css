@@ -6,6 +6,11 @@
 button:not(:disabled),
 a[role="button"]:not(:disabled) { cursor: pointer; }
 
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(1rem); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
 /* Estilos do Marquee */
 om-marquee {
   padding: 1rem 0;

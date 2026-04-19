@@ -205,6 +205,29 @@ import { FirebaseService, ChatMessage } from '../../core/services/firebase.servi
         </div>
       </div>
     }
+    <!-- ── Toast de nova mensagem ─────────────────────────────────── -->
+    @if (toastMsg()) {
+      <div class="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-gray-900 border border-violet-500/50
+                  rounded-2xl shadow-2xl px-4 py-3 max-w-xs animate-[slideUp_0.3s_ease-out]">
+        <div class="w-8 h-8 rounded-full bg-violet-500/20 flex items-center justify-center shrink-0">
+          <span class="text-sm">💬</span>
+        </div>
+        <div class="flex-1 min-w-0">
+          <p class="text-xs font-semibold text-violet-400">Enzo Gomes</p>
+          <p class="text-sm text-gray-200 truncate">{{ toastMsg() }}</p>
+        </div>
+        <button (click)="openChatFromToast()"
+                class="shrink-0 text-xs bg-violet-600 hover:bg-violet-500 text-white px-2.5 py-1 rounded-lg transition-colors cursor-pointer">
+          Abrir
+        </button>
+        <button (click)="dismissToast()"
+                class="shrink-0 text-gray-500 hover:text-white transition-colors cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    }
   `
 })
 export class ContactComponent implements OnInit, OnDestroy {
@@ -221,6 +244,7 @@ export class ContactComponent implements OnInit, OnDestroy {
   isSendingMsg = signal(false);
   chatError = signal('');
   isOwnerOnline = signal(false);
+  toastMsg = signal('');
 
   chatUsername = '';
   chatCompany = '';
@@ -228,14 +252,61 @@ export class ContactComponent implements OnInit, OnDestroy {
 
   private readonly STORAGE_NAME = 'portfolio-chat-name';
   private readonly STORAGE_COMPANY = 'portfolio-chat-company';
+  private readonly STORAGE_CONV = 'portfolio-chat-conv';
   private conversationId: string | null = null;
   private unsubMessages?: () => void;
   private unsubPresence?: () => void;
+  private unsubBackground?: () => void;
+  private toastTimer?: ReturnType<typeof setTimeout>;
 
   ngOnInit(): void {
     this.unsubPresence = this.firebase.listenToOwnerPresence(online =>
       this.zone.run(() => this.isOwnerOnline.set(online))
     );
+    this.startBackgroundListener();
+  }
+
+  private startBackgroundListener(): void {
+    const convId = localStorage.getItem(this.STORAGE_CONV);
+    if (!convId) return;
+    this.conversationId = convId;
+    this.unsubBackground = this.firebase.listenToChatMessages(convId, msgs =>
+      this.zone.run(() => {
+        if (this.chatState() === 'open') return;
+        const ownerMsgs = msgs.filter(m => m.sender === 'owner');
+        if (!ownerMsgs.length) return;
+        const last = ownerMsgs[ownerMsgs.length - 1];
+        const age = Date.now() - last.sentAt.getTime();
+        if (age < 60_000) this.showToast(last.text);
+      })
+    );
+  }
+
+  private showToast(text: string): void {
+    clearTimeout(this.toastTimer);
+    this.toastMsg.set(text);
+    this.toastTimer = setTimeout(() => this.toastMsg.set(''), 8000);
+  }
+
+  dismissToast(): void { clearTimeout(this.toastTimer); this.toastMsg.set(''); }
+
+  openChatFromToast(): void {
+    this.dismissToast();
+    const savedName = localStorage.getItem(this.STORAGE_NAME) ?? '';
+    if (savedName && this.conversationId) {
+      this.chatUsername = savedName;
+      this.chatCompany = localStorage.getItem(this.STORAGE_COMPANY) ?? '';
+      this.unsubBackground?.();
+      this.unsubBackground = undefined;
+      this.unsubMessages = this.firebase.listenToChatMessages(
+        this.conversationId,
+        msgs => this.zone.run(() => { this.chatMessages.set(msgs); this.scrollToBottom(); }),
+      );
+      this.chatState.set('open');
+      void this.firebase.setVisitorOnline(this.conversationId, true);
+    } else {
+      this.openEntryModal();
+    }
   }
 
   openEntryModal(): void {
@@ -258,8 +329,14 @@ export class ContactComponent implements OnInit, OnDestroy {
     this.unsubMessages = undefined;
     this.chatMessages.set([]);
     this.chatInput = '';
-    this.conversationId = null;
     this.chatState.set('closed');
+    // Retoma listener background para capturar novas mensagens
+    const convId = this.conversationId;
+    this.conversationId = null;
+    if (convId) {
+      this.conversationId = convId;
+      this.startBackgroundListener();
+    }
   }
 
   async startChat(): Promise<void> {
@@ -273,6 +350,7 @@ export class ContactComponent implements OnInit, OnDestroy {
         ip,
       });
       localStorage.setItem(this.STORAGE_NAME, this.chatUsername.trim());
+      localStorage.setItem(this.STORAGE_CONV, this.conversationId);
       if (this.chatCompany.trim()) {
         localStorage.setItem(this.STORAGE_COMPANY, this.chatCompany.trim());
       } else {
@@ -287,6 +365,9 @@ export class ContactComponent implements OnInit, OnDestroy {
       );
       this.chatState.set('open');
       void this.firebase.setVisitorOnline(this.conversationId, true);
+      // Cancela listener background pois o chat está aberto
+      this.unsubBackground?.();
+      this.unsubBackground = undefined;
     } catch (err) {
       console.error('[Chat] startChat error:', err);
       const msg = err instanceof Error ? err.message : String(err);
@@ -335,6 +416,8 @@ export class ContactComponent implements OnInit, OnDestroy {
   ngOnDestroy(): void {
     this.unsubMessages?.();
     this.unsubPresence?.();
+    this.unsubBackground?.();
+    clearTimeout(this.toastTimer);
   }
 
   onEmailClick(event: MouseEvent): void {

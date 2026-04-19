@@ -345,6 +345,13 @@ export class FirebaseService {
     } catch { /* ignora se doc não existe ainda */ }
   }
 
+  // Atualiza presença do visitante usando IP diretamente (sem precisar do conversationId)
+  async setVisitorPresenceByIp(ip: string, online: boolean): Promise<void> {
+    try {
+      await updateDoc(doc(this.db, 'chat_conversations', this.ipToDocId(ip)), { visitorOnline: online });
+    } catch { /* sem conversa ainda — silencioso */ }
+  }
+
   async markConversationRead(conversationId: string): Promise<void> {
     await updateDoc(doc(this.db, 'chat_conversations', conversationId), { unreadByOwner: 0 });
   }
