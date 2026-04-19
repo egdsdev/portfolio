@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { initializeApp, FirebaseApp } from 'firebase/app';
 import {
-  getFirestore, Firestore, collection, addDoc, getDocs, getDoc,
+  getFirestore, Firestore, collection, addDoc, getDocs,
   query, orderBy, Timestamp, doc, setDoc, updateDoc, increment, deleteDoc, where, onSnapshot,
 } from 'firebase/firestore';
 import {
@@ -270,16 +270,15 @@ export class FirebaseService {
   async createChatConversation(data: { username: string; company?: string; ip: string }): Promise<string> {
     const docId = this.ipToDocId(data.ip);
     const ref = doc(this.db, 'chat_conversations', docId);
-    const existing = await getDoc(ref);
 
-    if (existing.exists()) {
-      // Mesma pessoa voltando: atualiza nome/empresa mas mantém o histórico
+    try {
+      // Tenta atualizar documento existente (não requer permissão de leitura prévia)
       await updateDoc(ref, {
         username: data.username,
         ...(data.company ? { company: data.company } : {}),
       });
-    } else {
-      // Novo visitante: cria a conversa com o IP como chave
+    } catch {
+      // Documento não existe ainda — cria com todos os campos iniciais
       await setDoc(ref, {
         username: data.username,
         ...(data.company ? { company: data.company } : {}),

@@ -257,8 +257,10 @@ export class ContactComponent implements OnDestroy {
         }),
       );
       this.chatState.set('open');
-    } catch {
-      this.chatError.set('Não foi possível iniciar o chat. Tente novamente.');
+    } catch (err) {
+      console.error('[Chat] startChat error:', err);
+      const msg = err instanceof Error ? err.message : String(err);
+      this.chatError.set(`Não foi possível iniciar o chat. Detalhe: ${msg}`);
     } finally {
       this.isStartingChat.set(false);
     }
