@@ -2,11 +2,17 @@ import { Injectable } from '@angular/core';
 import { initializeApp, FirebaseApp } from 'firebase/app';
 import {
   getFirestore, Firestore, collection, addDoc, getDocs,
-  query, orderBy, Timestamp, doc, setDoc, updateDoc, increment, deleteDoc, where, onSnapshot,
+  query, orderBy, Timestamp, doc, setDoc, updateDoc, increment, deleteDoc, where, onSnapshot, deleteField, runTransaction,
 } from 'firebase/firestore';
 import {
   getAuth, Auth, signInWithEmailAndPassword, signOut, onAuthStateChanged,
 } from 'firebase/auth';
+import {
+  getMessaging, getToken, Messaging, isSupported,
+} from 'firebase/messaging';
+import {
+  getStorage, FirebaseStorage, ref as storageRef, uploadBytes, getDownloadURL,
+} from 'firebase/storage';
 import { environment } from '../../../environments/environment';
 
 export interface AiMatchRecord {
@@ -66,6 +72,16 @@ export interface ChatMessage {
   sender: 'visitor' | 'owner';
   text: string;
   sentAt: Date;
+  fileUrl?: string;
+  fileName?: string;
+  deletedAt?: Date;
+  editedAt?: Date;
+}
+
+export const CHAT_MESSAGE_EDIT_WINDOW_MS = 60 * 60 * 1000;
+
+export function isChatMessageWithinEditWindow(sentAt: Date, now: Date = new Date()): boolean {
+  return now.getTime() - sentAt.getTime() <= CHAT_MESSAGE_EDIT_WINDOW_MS;
 }
 
 export type AnalyticsMetadata = Record<string, string | number | boolean | null>;
@@ -91,11 +107,45 @@ export class FirebaseService {
   private app: FirebaseApp;
   private db: Firestore;
   private auth: Auth;
+  private messaging: Messaging | null = null;
+  private storage: FirebaseStorage;
 
   constructor() {
     this.app = initializeApp(environment.firebase);
     this.db = getFirestore(this.app);
     this.auth = getAuth(this.app);
+    this.storage = getStorage(this.app);
+    isSupported().then(supported => {
+      if (supported) this.messaging = getMessaging(this.app);
+    });
+  }
+
+  // ── FCM Push Notifications ────────────────────────────────────────────
+  async requestPushPermission(): Promise<string | null> {
+    try {
+      const supported = await isSupported();
+      if (!supported) return null;
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') return null;
+      if (!this.messaging) this.messaging = getMessaging(this.app);
+      const token = await getToken(this.messaging, { vapidKey: environment.firebase.vapidKey });
+      await setDoc(doc(this.db, 'admin_config', 'notifications'), { fcmToken: token, updatedAt: Timestamp.now() });
+      return token;
+    } catch (err) {
+      console.error('[FCM] requestPushPermission error:', err);
+      return null;
+    }
+  }
+
+  async getSavedFCMToken(): Promise<string | null> {
+    try {
+      const snap = await import('firebase/firestore').then(({ getDoc }) =>
+        getDoc(doc(this.db, 'admin_config', 'notifications'))
+      );
+      return snap.exists() ? (snap.data()['fcmToken'] as string) ?? null : null;
+    } catch {
+      return null;
+    }
   }
 
   // ---- Auth ----
@@ -111,6 +161,10 @@ export class FirebaseService {
     return new Promise(resolve => {
       onAuthStateChanged(this.auth, user => resolve(!!user));
     });
+  }
+
+  listenAuthState(callback: (loggedIn: boolean) => void): () => void {
+    return onAuthStateChanged(this.auth, user => callback(!!user));
   }
 
   // ---- AI Matches ----
@@ -293,16 +347,40 @@ export class FirebaseService {
     return docId;
   }
 
-  async sendChatMessage(conversationId: string, text: string, sender: 'visitor' | 'owner'): Promise<void> {
+  async updateChatConversationProfile(
+    conversationId: string,
+    data: { username: string; company?: string },
+  ): Promise<void> {
+    await updateDoc(doc(this.db, 'chat_conversations', conversationId), {
+      username: data.username,
+      ...(data.company ? { company: data.company } : { company: deleteField() }),
+    });
+  }
+
+  async sendChatMessage(
+    conversationId: string,
+    text: string,
+    sender: 'visitor' | 'owner',
+    file?: { url: string; name: string },
+  ): Promise<void> {
     await addDoc(collection(this.db, 'chat_conversations', conversationId, 'messages'), {
       sender,
       text,
+      ...(file ? { fileUrl: file.url, fileName: file.name } : {}),
       sentAt: Timestamp.now(),
     });
     await updateDoc(doc(this.db, 'chat_conversations', conversationId), {
       lastMessageAt: Timestamp.now(),
       ...(sender === 'visitor' ? { unreadByOwner: increment(1) } : {}),
     });
+  }
+
+  async uploadChatFile(conversationId: string, file: File): Promise<{ url: string; name: string }> {
+    const path = `chat_files/${conversationId}/${Date.now()}_${file.name}`;
+    const fileRef = storageRef(this.storage, path);
+    await uploadBytes(fileRef, file);
+    const url = await getDownloadURL(fileRef);
+    return { url, name: file.name };
   }
 
   listenToChatMessages(conversationId: string, callback: (messages: ChatMessage[]) => void): () => void {
@@ -316,8 +394,45 @@ export class FirebaseService {
         sender: d.data()['sender'] as 'visitor' | 'owner',
         text: d.data()['text'] as string,
         sentAt: d.data()['sentAt']?.toDate() ?? new Date(),
+        fileUrl: d.data()['fileUrl'] as string | undefined,
+        fileName: d.data()['fileName'] as string | undefined,
+        deletedAt: d.data()['deletedAt']?.toDate() as Date | undefined,
+        editedAt: d.data()['editedAt']?.toDate() as Date | undefined,
       })));
     });
+  }
+
+  async updateChatMessage(conversationId: string, messageId: string, text: string): Promise<void> {
+    const msgRef = doc(this.db, 'chat_conversations', conversationId, 'messages', messageId);
+    const editsCol = collection(this.db, 'chat_conversations', conversationId, 'messages', messageId, 'edits');
+
+    await runTransaction(this.db, async transaction => {
+      const snapshot = await transaction.get(msgRef);
+      if (!snapshot.exists()) throw new Error('MESSAGE_NOT_FOUND');
+
+      const currentData = snapshot.data();
+      const sentAt = currentData['sentAt']?.toDate() as Date | undefined;
+      const oldText = currentData['text'] as string | undefined;
+
+      if (!sentAt || !isChatMessageWithinEditWindow(sentAt)) {
+        throw new Error('EDIT_WINDOW_EXPIRED');
+      }
+
+      if (typeof oldText !== 'string' || oldText === text) return;
+
+      const now = Timestamp.now();
+      const editRef = doc(editsCol);
+
+      transaction.set(editRef, { text: oldText, archivedAt: now });
+      transaction.update(msgRef, { text, editedAt: now });
+    });
+  }
+
+  async softDeleteChatMessage(conversationId: string, messageId: string): Promise<void> {
+    await updateDoc(
+      doc(this.db, 'chat_conversations', conversationId, 'messages', messageId),
+      { deletedAt: Timestamp.now() },
+    );
   }
 
   listenToConversations(callback: (convs: ChatConversation[]) => void): () => void {

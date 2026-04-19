@@ -29,8 +29,13 @@ export class RevealDirective implements OnInit, OnDestroy {
         if (entries[0].isIntersecting) {
           el.style.opacity = '1';
           el.style.transform = 'translate(0, 0)';
-          // Limpa o will-change após a animação para liberar memória GPU
-          setTimeout(() => { el.style.willChange = 'auto'; }, 700 + this.revealDelay);
+          // Limpa o will-change e o transform após a animação:
+          // transform: translate(0,0) cria um containing block que quebra position:fixed
+          setTimeout(() => {
+            el.style.willChange = 'auto';
+            el.style.transition = '';
+            el.style.transform = '';
+          }, 700 + this.revealDelay);
           this.observer?.disconnect();
         }
       },

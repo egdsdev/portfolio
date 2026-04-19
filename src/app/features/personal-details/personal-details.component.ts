@@ -44,14 +44,17 @@ import { AnalyticsService } from '../../core/services/analytics.service';
         <div class="mt-10 flex flex-wrap justify-center gap-4">
           <a href="#contato"
              (click)="onHeroContactClick()"
-             class="inline-block px-10 py-3.5 bg-linear-to-r from-blue-500 to-cyan-500 text-white font-semibold rounded-full
-                    transform hover:scale-105 transition-all duration-300 hover:shadow-xl hover:shadow-cyan-500/40 text-sm tracking-wide contact-btn">
+             class="inline-flex items-center gap-2 px-10 py-3.5 bg-linear-to-r from-blue-500 to-cyan-500 text-white font-bold rounded-xl
+                    transform hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-cyan-500/50 text-sm tracking-wide contact-btn ring-2 ring-cyan-500/30">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
             Entre em Contato
           </a>
           <a href="curriculo-elias-gomes.pdf"
              download="Curriculo-Elias-Gomes-da-Silva.pdf"
              (click)="onResumeDownload($event)"
-             class="inline-flex items-center gap-2 px-8 py-3.5 border border-cyan-500/50 text-cyan-300 font-semibold rounded-full
+             class="inline-flex items-center gap-2 px-8 py-3.5 border border-cyan-500/50 text-cyan-300 font-semibold rounded-xl
                     transform hover:scale-105 transition-all duration-300 hover:bg-cyan-500/10 hover:border-cyan-400 text-sm tracking-wide">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
