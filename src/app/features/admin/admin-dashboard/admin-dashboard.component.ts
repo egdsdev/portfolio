@@ -75,13 +75,39 @@ interface TimeToActionRow {
   imports: [DatePipe, FormsModule],
   template: `
     <div class="admin-page min-h-screen pt-20">
-      <main class="max-w-7xl mx-auto px-4 pb-12 space-y-8">
+      <main class="max-w-7xl mx-auto px-4 pb-12 space-y-6">
 
         <!-- Título -->
         <div class="pt-6">
           <h1 class="text-2xl font-bold tracking-tight">Dashboard</h1>
           <p class="text-xs text-gray-500 mt-1">{{ today | date:'dd/MM/yyyy' }}</p>
         </div>
+
+        <!-- Tabs de navegação -->
+        <div class="flex gap-1 bg-gray-800/50 border border-gray-700/50 rounded-xl p-1 w-fit">
+          <button (click)="activeTab = 'analytics'"
+                  [class.bg-gray-700]="activeTab === 'analytics'"
+                  [class.text-white]="activeTab === 'analytics'"
+                  [class.text-gray-500]="activeTab !== 'analytics'"
+                  class="px-5 py-2 rounded-lg text-sm font-medium transition-all duration-150">
+            Analytics
+          </button>
+          <button (click)="activeTab = 'chat'"
+                  [class.bg-gray-700]="activeTab === 'chat'"
+                  [class.text-white]="activeTab === 'chat'"
+                  [class.text-gray-500]="activeTab !== 'chat'"
+                  class="px-5 py-2 rounded-lg text-sm font-medium transition-all duration-150 flex items-center gap-2">
+            Conversas
+            @if (totalUnread > 0) {
+              <span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-violet-500 text-white text-[9px] font-bold">
+                {{ totalUnread > 9 ? '9+' : totalUnread }}
+              </span>
+            }
+          </button>
+        </div>
+
+        <!-- ── Aba: Analytics ─────────────────────────────────────────────── -->
+        <div [class.hidden]="activeTab !== 'analytics'" class="space-y-8">
 
         <!-- 4 Cards resumo -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -788,6 +814,12 @@ interface TimeToActionRow {
           </div>
         </div>
 
+        </div>
+        <!-- fim: Aba Analytics -->
+
+        <!-- ── Aba: Conversas ───────────────────────────────────────────── -->
+        <div [class.hidden]="activeTab !== 'chat'">
+
         <!-- ── Conversas do Chat ──────────────────────────────────────────── -->
         <div>
           <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold mb-4">Conversas do Chat</p>
@@ -896,6 +928,9 @@ interface TimeToActionRow {
           </div>
         </div>
 
+        </div>
+        <!-- fim: Aba Conversas -->
+
       </main>
     </div>
   `,
@@ -983,6 +1018,9 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   funnelSteps: { label: string; value: number; color: string }[] = [];
   readonly legendSteps = [0.1, 0.3, 0.5, 0.75, 1.0];
   readonly cellSize = 18;
+
+  // ── Tabs ─────────────────────────────────────────────────────────────
+  activeTab: 'analytics' | 'chat' = 'analytics';
 
   // ── Chat ────────────────────────────────────────────────────────────
   conversations: ChatConversation[] = [];
