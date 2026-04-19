@@ -1454,16 +1454,15 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     this.cdr.detectChanges();
   }
 
-  async sendTestPush(): Promise<void> {
+  sendTestPush(): void {
     if (this.pushSending || !this.testPushTitle.trim() || this.pushPermStatus !== 'granted') return;
     this.pushSending = true;
     this.testPushResult = '';
     try {
       new Notification(this.testPushTitle, {
         body: this.testPushBody,
-        icon: '/portfolio/manifest.json',
+        icon: '/portfolio/icons/icon-192x192.png',
       });
-      await this.firebase.queueTestPushNotification(this.testPushTitle, this.testPushBody);
       this.testPushResult = 'ok';
     } catch (err) {
       this.testPushResult = err instanceof Error ? err.message : 'Erro ao enviar notificação';
