@@ -1,6 +1,7 @@
-﻿import { Component, inject, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef, ElementRef, ViewChild } from '@angular/core';
+﻿import { Component, inject, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef, ElementRef, ViewChild, NgZone } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { FirebaseService, AiMatchRecord, VisitorRecord, DevMatchRecord, AnalyticsEventRecord } from '../../../core/services/firebase.service';
+import { FormsModule } from '@angular/forms';
+import { FirebaseService, AiMatchRecord, VisitorRecord, DevMatchRecord, AnalyticsEventRecord, ChatConversation, ChatMessage } from '../../../core/services/firebase.service';
 import * as L from 'leaflet';
 import { Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip } from 'chart.js';
 
@@ -71,16 +72,42 @@ interface TimeToActionRow {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [DatePipe],
+  imports: [DatePipe, FormsModule],
   template: `
     <div class="admin-page min-h-screen pt-20">
-      <main class="max-w-7xl mx-auto px-4 pb-12 space-y-8">
+      <main class="max-w-7xl mx-auto px-4 pb-12 space-y-6">
 
         <!-- Título -->
         <div class="pt-6">
           <h1 class="text-2xl font-bold tracking-tight">Dashboard</h1>
           <p class="text-xs text-gray-500 mt-1">{{ today | date:'dd/MM/yyyy' }}</p>
         </div>
+
+        <!-- Tabs de navegação -->
+        <div class="flex gap-1 bg-gray-800/50 border border-gray-700/50 rounded-xl p-1 w-fit">
+          <button (click)="activeTab = 'analytics'"
+                  [class.bg-gray-700]="activeTab === 'analytics'"
+                  [class.text-white]="activeTab === 'analytics'"
+                  [class.text-gray-500]="activeTab !== 'analytics'"
+                  class="px-5 py-2 rounded-lg text-sm font-medium transition-all duration-150">
+            Analytics
+          </button>
+          <button (click)="activeTab = 'chat'"
+                  [class.bg-gray-700]="activeTab === 'chat'"
+                  [class.text-white]="activeTab === 'chat'"
+                  [class.text-gray-500]="activeTab !== 'chat'"
+                  class="px-5 py-2 rounded-lg text-sm font-medium transition-all duration-150 flex items-center gap-2">
+            Conversas
+            @if (totalUnread > 0) {
+              <span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-violet-500 text-white text-[9px] font-bold">
+                {{ totalUnread > 9 ? '9+' : totalUnread }}
+              </span>
+            }
+          </button>
+        </div>
+
+        <!-- ── Aba: Analytics ─────────────────────────────────────────────── -->
+        <div [class.hidden]="activeTab !== 'analytics'" class="space-y-8">
 
         <!-- 4 Cards resumo -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-3">
@@ -125,7 +152,7 @@ interface TimeToActionRow {
                     <th class="text-left px-4 py-3 whitespace-nowrap">Data</th>
                     <th class="text-left px-4 py-3">Localizacao</th>
                     <th class="text-left px-4 py-3">Dispositivo</th>
-                    <th class="text-left px-4 py-3">IP</th>
+                    <th class="text-left px-4 py-3">IP / Rede</th>
                     <th class="text-left px-4 py-3 whitespace-nowrap">Acessos</th>
                     <th class="text-left px-4 py-3 border-l border-gray-800/60">Match IA</th>
                     <th class="text-left px-4 py-3">Resposta IA</th>
@@ -158,7 +185,22 @@ interface TimeToActionRow {
                           <span class="text-gray-600"> {{ r.visitor.screenWidth }}x{{ r.visitor.screenHeight }}</span>
                         } @else { <span class="text-gray-600">-</span> }
                       </td>
-                      <td class="px-4 py-3 text-xs text-gray-600 font-mono whitespace-nowrap">{{ r.ip ?? '-' }}</td>
+                      <td class="px-4 py-3 text-xs align-top">
+                        <div class="text-gray-600 font-mono whitespace-nowrap">{{ r.ip ?? '-' }}</div>
+                        @if (r.visitor && hasNetworkInfo(r.visitor)) {
+                          <div class="mt-1 space-y-1">
+                            <div class="text-[10px] text-gray-400 max-w-44 truncate" [title]="networkSummary(r.visitor)">
+                              {{ networkSummary(r.visitor) }}
+                            </div>
+                            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                                  [style.background-color]="networkKindBackground(r.visitor)"
+                                  [style.color]="networkKindForeground(r.visitor)"
+                                  [attr.title]="networkKindTitle(r.visitor)">
+                              {{ networkKindLabel(r.visitor) }}
+                            </span>
+                          </div>
+                        }
+                      </td>
                       <td class="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
                         @if (r.visitorIds.length > 0) {
                           <span class="inline-flex items-center gap-1 rounded-full px-2 py-1 bg-cyan-500/10 text-cyan-400 font-semibold">
@@ -549,7 +591,7 @@ interface TimeToActionRow {
               }
             </div>
             <p class="text-[11px] text-gray-600 mb-4">
-              {{ usingFallback ? 'Origem dos visitantes por campo referrer. Cliques em CTA disponíveis após acumulação de eventos.' : 'Sessões por canal e quantas delas geram projeto, contato e currículo.' }}
+              {{ usingFallback ? 'Origem dos visitantes por campo referrer. Cliques em CTA disponíveis após acumulação de eventos.' : 'Sessões por canal e quantas delas geram projeto, contato e download de currículo.' }}
             </p>
             @if (!loading && sourceConversions.length > 0) {
               <div class="overflow-x-auto">
@@ -562,7 +604,7 @@ interface TimeToActionRow {
                         <th class="text-right py-2 px-2">Projetos</th>
                         <th class="text-right py-2 px-2">Contato</th>
                         <th class="text-right py-2 px-2">Direto</th>
-                        <th class="text-right py-2 px-2">CV</th>
+                        <th class="text-right py-2 px-2">Currículo</th>
                         <th class="text-right py-2 pl-2">Conv.</th>
                       }
                     </tr>
@@ -668,7 +710,7 @@ interface TimeToActionRow {
 
           <div class="admin-card border rounded-xl p-5">
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">CTR por CTA</p>
-            <p class="text-[11px] text-gray-600 mb-4">Cliques únicos sobre quem efetivamente viu a seção.</p>
+            <p class="text-[11px] text-gray-600 mb-4">CTA = botão ou link de ação. Ex.: contato, currículo, WhatsApp, projetos e atalhos do header.</p>
             @if (!loading && ctaPerformance.length > 0) {
               <div class="space-y-3">
                 @for (row of ctaPerformance; track row.key) {
@@ -683,7 +725,7 @@ interface TimeToActionRow {
                     <div class="h-1.5 bg-gray-800 rounded-full overflow-hidden">
                       <div class="h-full rounded-full transition-all duration-700"
                            [style.width.%]="row.ctr"
-                           [style.background-color]="row.category === 'project' ? '#a855f7' : row.category === 'direct_contact' ? '#22c55e' : row.category === 'resume' ? '#f59e0b' : '#22d3ee'">
+                           [style.background-color]="row.category === 'project' ? '#a855f7' : row.category === 'direct_contact' ? '#22c55e' : row.category === 'resume' ? '#f59e0b' : row.category === 'navigation' ? '#94a3b8' : '#22d3ee'">
                       </div>
                     </div>
                   </div>
@@ -772,6 +814,123 @@ interface TimeToActionRow {
           </div>
         </div>
 
+        </div>
+        <!-- fim: Aba Analytics -->
+
+        <!-- ── Aba: Conversas ───────────────────────────────────────────── -->
+        <div [class.hidden]="activeTab !== 'chat'">
+
+        <!-- ── Conversas do Chat ──────────────────────────────────────────── -->
+        <div>
+          <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold mb-4">Conversas do Chat</p>
+          <div class="grid md:grid-cols-5 gap-4">
+
+            <!-- Lista de conversas -->
+            <div class="admin-card border rounded-xl overflow-hidden md:col-span-2">
+              <div class="px-4 py-3 border-b border-gray-800 flex items-center justify-between">
+                <p class="text-xs text-gray-500 font-semibold">{{ conversations.length }} conversa(s)</p>
+                @if (totalUnread > 0) {
+                  <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-violet-500 text-white text-[10px] font-bold">
+                    {{ totalUnread }} não lida(s)
+                  </span>
+                }
+              </div>
+              @if (conversations.length === 0) {
+                <div class="p-8 text-center text-gray-600 text-sm">Nenhuma conversa iniciada ainda.</div>
+              }
+              @for (conv of conversations; track conv.id) {
+                <button (click)="selectConversation(conv)"
+                        class="w-full text-left px-4 py-3 hover:bg-gray-800/40 transition-colors border-b border-gray-800/30"
+                        [class.bg-violet-500/10]="selectedConv?.id === conv.id">
+                  <div class="flex items-start justify-between gap-2">
+                    <div class="min-w-0">
+                      <p class="text-sm font-medium text-gray-200 truncate">{{ conv.username }}</p>
+                      @if (conv.company) {
+                        <p class="text-xs text-gray-500 truncate">{{ conv.company }}</p>
+                      }
+                      <p class="text-[10px] text-gray-600 mt-0.5">{{ conv.lastMessageAt | date:'dd/MM HH:mm' }}</p>
+                    </div>
+                    @if (conv.unreadByOwner > 0) {
+                      <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-violet-500 text-white text-[10px] font-bold">
+                        {{ conv.unreadByOwner > 9 ? '9+' : conv.unreadByOwner }}
+                      </span>
+                    }
+                  </div>
+                </button>
+              }
+            </div>
+
+            <!-- Painel de mensagens -->
+            <div class="admin-card border rounded-xl flex flex-col overflow-hidden md:col-span-3" style="height:500px">
+              @if (!selectedConv) {
+                <div class="flex-1 flex flex-col items-center justify-center text-gray-600 text-sm">
+                  <span class="text-3xl mb-2">💬</span>
+                  Selecione uma conversa para ler as mensagens.
+                </div>
+              } @else {
+                <!-- Header da conversa -->
+                <div class="px-4 py-3 border-b border-gray-800 flex items-center gap-3 shrink-0">
+                  <div class="w-8 h-8 rounded-full bg-violet-500/20 flex items-center justify-center shrink-0">
+                    <span class="text-sm">💬</span>
+                  </div>
+                  <div class="flex-1 min-w-0">
+                    <p class="text-sm font-medium text-gray-200">{{ selectedConv.username }}</p>
+                    @if (selectedConv.company) {
+                      <p class="text-xs text-gray-500">{{ selectedConv.company }}</p>
+                    }
+                  </div>
+                  <p class="text-[10px] text-gray-600">{{ selectedConv.startedAt | date:'dd/MM/yy HH:mm' }}</p>
+                </div>
+
+                <!-- Mensagens -->
+                <div #convMsgContainer data-conv-msgs class="flex-1 overflow-y-auto px-4 py-3 space-y-2">
+                  @if (convMessagesList.length === 0) {
+                    <div class="flex items-center justify-center h-full text-gray-600 text-sm">Sem mensagens ainda.</div>
+                  }
+                  @for (msg of convMessagesList; track msg.id) {
+                    <div [class]="msg.sender === 'visitor' ? 'flex justify-start' : 'flex justify-end'">
+                      <div [class]="msg.sender === 'visitor'
+                          ? 'max-w-[78%] bg-gray-700/80 text-gray-100 rounded-2xl rounded-bl-sm px-3.5 py-2 text-sm'
+                          : 'max-w-[78%] bg-violet-600 text-white rounded-2xl rounded-br-sm px-3.5 py-2 text-sm'">
+                        @if (msg.sender === 'visitor') {
+                          <p class="text-[10px] text-gray-400 font-semibold mb-1">{{ selectedConv.username }}</p>
+                        }
+                        <p class="break-words whitespace-pre-wrap">{{ msg.text }}</p>
+                        <p class="text-[10px] mt-1 opacity-60 text-right">{{ msg.sentAt | date:'HH:mm' }}</p>
+                      </div>
+                    </div>
+                  }
+                </div>
+
+                <!-- Input de resposta -->
+                <div class="px-3 py-3 border-t border-gray-800/50 flex items-end gap-2 shrink-0">
+                  <textarea [(ngModel)]="convReplyText"
+                            name="convReply"
+                            (keydown)="onConvKeydown($event)"
+                            rows="1"
+                            class="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-3.5 py-2.5 text-white text-sm
+                                   placeholder-gray-500 focus:outline-none focus:border-violet-500 transition-colors
+                                   resize-none max-h-24 overflow-y-auto"
+                            placeholder="Responder como Enzo..."></textarea>
+                  <button (click)="sendConvReply()"
+                          [disabled]="!convReplyText.trim() || sendingConvReply"
+                          class="shrink-0 w-9 h-9 rounded-xl bg-violet-600 hover:bg-violet-500
+                                 disabled:opacity-40 disabled:cursor-not-allowed transition-colors
+                                 flex items-center justify-center">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
+                    </svg>
+                  </button>
+                </div>
+              }
+            </div>
+
+          </div>
+        </div>
+
+        </div>
+        <!-- fim: Aba Conversas -->
+
       </main>
     </div>
   `,
@@ -813,6 +972,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
 
   private firebase = inject(FirebaseService);
   private cdr = inject(ChangeDetectorRef);
+  private zone = inject(NgZone);
+  @ViewChild('convMsgContainer') convMsgContainer?: ElementRef<HTMLDivElement>;
 
   aiMatches: AiMatchRecord[] = [];
   devMatches: DevMatchRecord[] = [];
@@ -858,6 +1019,19 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   readonly legendSteps = [0.1, 0.3, 0.5, 0.75, 1.0];
   readonly cellSize = 18;
 
+  // ── Tabs ─────────────────────────────────────────────────────────────
+  activeTab: 'analytics' | 'chat' = 'analytics';
+
+  // ── Chat ────────────────────────────────────────────────────────────
+  conversations: ChatConversation[] = [];
+  selectedConv: ChatConversation | null = null;
+  convMessagesList: ChatMessage[] = [];
+  convReplyText = '';
+  sendingConvReply = false;
+  get totalUnread(): number { return this.conversations.reduce((s, c) => s + c.unreadByOwner, 0); }
+  private unsubConversations?: () => void;
+  private unsubConvMessages?: () => void;
+
   // ── Delete ──────────────────────────────────────────────────────────
   deleteTarget: AccessTableRow | null = null;
   deleting = false;
@@ -902,15 +1076,69 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
       this.initLineChart();
       this.initMap();
     }, 50);
+
+    // Listener em tempo real das conversas
+    this.unsubConversations = this.firebase.listenToConversations(convs => {
+      this.zone.run(() => {
+        this.conversations = convs;
+        this.cdr.detectChanges();
+      });
+    });
   }
 
   ngAfterViewInit(): void {}
+
+  // ── Chat methods ────────────────────────────────────────────────────────
+  selectConversation(conv: ChatConversation): void {
+    this.selectedConv = conv;
+    this.unsubConvMessages?.();
+    this.convMessagesList = [];
+    this.unsubConvMessages = this.firebase.listenToChatMessages(conv.id!, msgs => {
+      this.zone.run(() => {
+        this.convMessagesList = msgs;
+        this.scrollConvToBottom();
+        this.cdr.detectChanges();
+      });
+    });
+    if (conv.unreadByOwner > 0) {
+      void this.firebase.markConversationRead(conv.id!);
+      conv.unreadByOwner = 0;
+    }
+  }
+
+  async sendConvReply(): Promise<void> {
+    const text = this.convReplyText.trim();
+    if (!text || !this.selectedConv || this.sendingConvReply) return;
+    this.convReplyText = '';
+    this.sendingConvReply = true;
+    try {
+      await this.firebase.sendChatMessage(this.selectedConv.id!, text, 'owner');
+    } finally {
+      this.sendingConvReply = false;
+    }
+  }
+
+  onConvKeydown(event: KeyboardEvent): void {
+    if (event.key === 'Enter' && !event.shiftKey) {
+      event.preventDefault();
+      void this.sendConvReply();
+    }
+  }
+
+  private scrollConvToBottom(): void {
+    window.setTimeout(() => {
+      const el = document.querySelector<HTMLDivElement>('[data-conv-msgs]');
+      if (el) el.scrollTop = el.scrollHeight;
+    }, 60);
+  }
 
   ngOnDestroy(): void {
     this.lineChartInstance?.destroy();
     this.themeObserver?.disconnect();
     this.leafletMap?.remove();
     this.mapMarkers.clear();
+    this.unsubConversations?.();
+    this.unsubConvMessages?.();
   }
 
   private isLightTheme(): boolean {
@@ -1390,7 +1618,6 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     }).sort((a, b) => b.visits - a.visits || b.directContacts - a.directContacts);
 
     this.ctaPerformance = [...ctaRows.entries()]
-      .filter(([, row]) => row.category !== 'navigation')
       .map(([key, row]) => {
         const impressions = row.section === 'detalhes'
           ? totalVisitSessions
@@ -1406,8 +1633,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
           ctr: impressions > 0 ? Math.round((uniqueSessions / impressions) * 100) : 0,
         } satisfies CtaPerformanceRow;
       })
-      .sort((a, b) => b.uniqueSessions - a.uniqueSessions || b.clicks - a.clicks)
-      .slice(0, 8);
+      .sort((a, b) => b.uniqueSessions - a.uniqueSessions || b.clicks - a.clicks);
 
     const orderedSections = [
       'detalhes',
@@ -1584,7 +1810,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   private ctaLabel(target: string): string {
     const labels: Record<string, string> = {
       hero_contact: 'Hero · Contato',
-      resume_download: 'Hero · Currículo',
+      resume_download: 'Hero · Baixar currículo',
       project_brulias: 'Projeto · Brulias',
       contact_email: 'Contato · Email',
       contact_whatsapp: 'Contato · WhatsApp',
@@ -1610,6 +1836,92 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
       contato: 'Contato',
     };
     return labels[section] ?? section;
+  }
+
+  hasNetworkInfo(visitor?: VisitorRecord): boolean {
+    return !!visitor && !!(
+      visitor.networkOrg?.trim()
+      || visitor.networkAsn?.trim()
+      || visitor.networkType?.trim()
+    );
+  }
+
+  networkSummary(visitor?: VisitorRecord): string {
+    if (!visitor) return '';
+
+    const owner = visitor.networkOrg?.trim();
+    const asn = visitor.networkAsn?.trim();
+    return [owner, asn].filter(Boolean).join(' · ');
+  }
+
+  networkKindLabel(visitor?: VisitorRecord): string {
+    switch (this.networkKind(visitor)) {
+      case 'business':
+        return 'Empresa provável';
+      case 'isp':
+        return 'ISP / operadora';
+      case 'hosting':
+        return 'Hosting / cloud';
+      case 'education':
+        return 'Instituição de ensino';
+      default:
+        return 'Rede atribuída';
+    }
+  }
+
+  networkKindTitle(visitor?: VisitorRecord): string {
+    const summary = this.networkSummary(visitor);
+    const suffix = summary ? ` Rede detectada: ${summary}.` : '';
+    return `Estimativa baseada na organização dona do bloco de IP, não na empresa real do visitante.${suffix}`;
+  }
+
+  networkKindBackground(visitor?: VisitorRecord): string {
+    switch (this.networkKind(visitor)) {
+      case 'business':
+        return 'rgba(34, 197, 94, 0.14)';
+      case 'isp':
+        return 'rgba(56, 189, 248, 0.14)';
+      case 'hosting':
+        return 'rgba(168, 85, 247, 0.14)';
+      case 'education':
+        return 'rgba(245, 158, 11, 0.14)';
+      default:
+        return 'rgba(148, 163, 184, 0.14)';
+    }
+  }
+
+  networkKindForeground(visitor?: VisitorRecord): string {
+    switch (this.networkKind(visitor)) {
+      case 'business':
+        return '#4ade80';
+      case 'isp':
+        return '#38bdf8';
+      case 'hosting':
+        return '#c084fc';
+      case 'education':
+        return '#fbbf24';
+      default:
+        return '#94a3b8';
+    }
+  }
+
+  private networkKind(visitor?: VisitorRecord): 'business' | 'isp' | 'hosting' | 'education' | 'unknown' {
+    const explicitType = visitor?.networkType?.trim().toLowerCase();
+    if (explicitType) {
+      if (/(business|enterprise|company|corp)/.test(explicitType)) return 'business';
+      if (/(isp|carrier|mobile|telecom)/.test(explicitType)) return 'isp';
+      if (/(hosting|cloud|proxy|datacenter)/.test(explicitType)) return 'hosting';
+      if (/(education|edu|university|school|college)/.test(explicitType)) return 'education';
+    }
+
+    const owner = visitor?.networkOrg?.trim().toLowerCase() ?? '';
+    if (!owner) return 'unknown';
+
+    if (/(univers|college|school|institut|\bedu\b)/.test(owner)) return 'education';
+    if (/(amazon|aws|google cloud|microsoft|azure|cloudflare|digitalocean|linode|vultr|oracle cloud|ovh|contabo|hostinger|server|hosting|datacenter|cloud)/.test(owner)) return 'hosting';
+    if (/(claro|vivo|telef[oô]nica|telefonica|tim|oi|algar|embratel|comcast|verizon|at&t|telecom|internet|fibra|broadband|wireless|mobile|carrier|\bisp\b|communications?)/.test(owner)) return 'isp';
+    if (/(\bltda\b|\bs\.a\.?\b|\bsa\b|\bllc\b|\binc\b|\bcorp\b|corporation|company|empresa|grupo|group|solutions?|solu[cç]oes|tecnologia|tech|systems?|software|holding|industr(?:y|ia))/ .test(owner)) return 'business';
+    return 'unknown';
   }
 
   isMobile(ua?: string): boolean {
@@ -1726,15 +2038,19 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     const location = [visitor.city, visitor.region, visitor.country].filter(Boolean).join(', ') || 'Local não identificado';
     const lastAccess = this.formatMapAccessTime(visitor.lastSeen);
     const visitLabel = `${visitor.visitCount} ${visitor.visitCount === 1 ? 'visita' : 'visitas'}`;
+    const networkSummary = this.networkSummary(visitor);
+    const networkKind = this.hasNetworkInfo(visitor) ? this.networkKindLabel(visitor) : '';
 
     return [
       '<div style="min-width: 220px; line-height: 1.45;">',
       `  <div style="font-weight: 700; margin-bottom: 4px;">${this.escapeHtml(location)}</div>`,
       `  <div><strong>IP:</strong> ${this.escapeHtml(visitor.ip || 'indisponível')}</div>`,
+      networkSummary ? `  <div><strong>Rede:</strong> ${this.escapeHtml(networkSummary)}</div>` : '',
+      networkKind ? `  <div><strong>Tipo:</strong> ${this.escapeHtml(networkKind)}</div>` : '',
       `  <div><strong>Último acesso:</strong> ${this.escapeHtml(lastAccess)}</div>`,
       `  <div><strong>Visitas:</strong> ${this.escapeHtml(visitLabel)}</div>`,
       '</div>',
-    ].join('');
+    ].filter(Boolean).join('');
   }
 
   private formatMapAccessTime(value: Date | string | undefined): string {
