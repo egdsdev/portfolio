@@ -195,7 +195,7 @@ import { FirebaseService, ChatMessage } from '../../core/services/firebase.servi
                     placeholder="Digite sua mensagem..."></textarea>
           <button (click)="sendMessage()"
                   [disabled]="!chatInput.trim() || isSendingMsg()"
-                  class="shrink-0 w-9 h-9 rounded-xl bg-violet-600 hover:bg-violet-500
+                  class="shrink-0 w-9 self-stretch rounded-xl bg-violet-600 hover:bg-violet-500
                          disabled:opacity-40 disabled:cursor-not-allowed transition-colors
                          flex items-center justify-center cursor-pointer">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
