@@ -341,6 +341,20 @@ export class FirebaseService {
     await updateDoc(doc(this.db, 'chat_conversations', conversationId), { unreadByOwner: 0 });
   }
 
+  // ── Owner presence ──────────────────────────────────────────────────────
+  async setOwnerOnline(online: boolean): Promise<void> {
+    await setDoc(doc(this.db, 'presence', 'owner'), {
+      online,
+      updatedAt: Timestamp.now(),
+    });
+  }
+
+  listenToOwnerPresence(callback: (online: boolean) => void): () => void {
+    return onSnapshot(doc(this.db, 'presence', 'owner'), snap => {
+      callback(snap.exists() ? (snap.data()['online'] as boolean ?? false) : false);
+    });
+  }
+
   async trackVisitor(visitorId: string, isFirstVisit: boolean, data: Omit<VisitorRecord, 'id' | 'visitCount' | 'firstSeen' | 'lastSeen'>): Promise<void> {
     // Firestore rejeita campos undefined; remove-os antes de gravar
     const clean = Object.fromEntries(

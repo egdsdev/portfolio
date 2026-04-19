@@ -1037,6 +1037,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   deleting = false;
 
   async ngOnInit(): Promise<void> {
+    void this.firebase.setOwnerOnline(true);
     const settle = <T>(p: Promise<T>, fallback: T) =>
       p.catch((err: unknown) => { console.error('[Dashboard]', err); return fallback; });
 
@@ -1133,6 +1134,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   }
 
   ngOnDestroy(): void {
+    void this.firebase.setOwnerOnline(false);
     this.lineChartInstance?.destroy();
     this.themeObserver?.disconnect();
     this.leafletMap?.remove();

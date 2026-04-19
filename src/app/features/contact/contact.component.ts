@@ -1,4 +1,4 @@
-﻿import { Component, inject, signal, OnDestroy, NgZone } from '@angular/core';
+﻿import { Component, inject, signal, OnInit, OnDestroy, NgZone } from '@angular/core';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { FormsModule } from '@angular/forms';
@@ -141,10 +141,11 @@ import { FirebaseService, ChatMessage } from '../../core/services/firebase.servi
             <span class="text-sm">💬</span>
           </div>
           <div class="flex-1 min-w-0 text-left">
-            <p class="text-sm font-medium text-white truncate">{{ chatUsername }}</p>
-            @if (chatCompany) {
-              <p class="text-xs text-gray-400 truncate">{{ chatCompany }}</p>
-            }
+            <p class="text-sm font-medium text-white truncate">{{ chatCompany ? chatCompany + ' · ' + chatUsername : chatUsername }}</p>
+            <p class="text-xs flex items-center gap-1" [class]="isOwnerOnline() ? 'text-green-400' : 'text-gray-500'">
+              <span class="inline-block w-1.5 h-1.5 rounded-full" [class]="isOwnerOnline() ? 'bg-green-400' : 'bg-gray-500'"></span>
+              {{ isOwnerOnline() ? 'Online' : 'Offline' }}
+            </p>
           </div>
           <button (click)="closeChat()"
                   class="text-gray-400 hover:text-white transition-colors p-1 rounded-lg hover:bg-gray-700/50 shrink-0 cursor-pointer">
@@ -206,7 +207,7 @@ import { FirebaseService, ChatMessage } from '../../core/services/firebase.servi
     }
   `
 })
-export class ContactComponent implements OnDestroy {
+export class ContactComponent implements OnInit, OnDestroy {
   private analytics = inject(AnalyticsService);
   private firebase = inject(FirebaseService);
   private zone = inject(NgZone);
@@ -219,15 +220,36 @@ export class ContactComponent implements OnDestroy {
   isStartingChat = signal(false);
   isSendingMsg = signal(false);
   chatError = signal('');
+  isOwnerOnline = signal(false);
 
   chatUsername = '';
   chatCompany = '';
   chatInput = '';
 
+  private readonly STORAGE_NAME = 'portfolio-chat-name';
+  private readonly STORAGE_COMPANY = 'portfolio-chat-company';
   private conversationId: string | null = null;
   private unsubMessages?: () => void;
+  private unsubPresence?: () => void;
 
-  openEntryModal(): void { this.chatError.set(''); this.chatState.set('entry'); }
+  ngOnInit(): void {
+    this.unsubPresence = this.firebase.listenToOwnerPresence(online =>
+      this.zone.run(() => this.isOwnerOnline.set(online))
+    );
+  }
+
+  openEntryModal(): void {
+    this.chatError.set('');
+    const savedName = localStorage.getItem(this.STORAGE_NAME) ?? '';
+    if (savedName) {
+      this.chatUsername = savedName;
+      this.chatCompany = localStorage.getItem(this.STORAGE_COMPANY) ?? '';
+      void this.startChat();
+    } else {
+      this.chatState.set('entry');
+    }
+  }
+
   closeModal(): void { this.chatState.set('closed'); }
 
   closeChat(): void {
@@ -249,6 +271,12 @@ export class ContactComponent implements OnDestroy {
         company: this.chatCompany.trim() || undefined,
         ip,
       });
+      localStorage.setItem(this.STORAGE_NAME, this.chatUsername.trim());
+      if (this.chatCompany.trim()) {
+        localStorage.setItem(this.STORAGE_COMPANY, this.chatCompany.trim());
+      } else {
+        localStorage.removeItem(this.STORAGE_COMPANY);
+      }
       this.unsubMessages = this.firebase.listenToChatMessages(
         this.conversationId,
         msgs => this.zone.run(() => {
@@ -302,7 +330,10 @@ export class ContactComponent implements OnDestroy {
     }, 60);
   }
 
-  ngOnDestroy(): void { this.unsubMessages?.(); }
+  ngOnDestroy(): void {
+    this.unsubMessages?.();
+    this.unsubPresence?.();
+  }
 
   onEmailClick(event: MouseEvent): void {
     void this.trackAndFollowLink(event, this.analytics.trackContactClick('email'));
