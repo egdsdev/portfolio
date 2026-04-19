@@ -1,12 +1,22 @@
-﻿import { Component, OnInit, inject, signal, computed } from '@angular/core';
+﻿import { Component, OnInit, inject, signal, computed, ChangeDetectorRef } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { AnalyticsService } from '../../core/services/analytics.service';
 import { FirebaseService } from '../../core/services/firebase.service';
+import { environment } from '../../../environments/environment';
+import { GoogleGenAI } from '@google/genai';
 
 interface SkillEntry {
   name: string;
   matched: boolean;
   score: number;
+}
+
+interface AiMatchResult {
+  matchPercentage: number;
+  summary: string;
+  strengths: string[];
+  gaps: string[];
+  recommendation: string;
 }
 
 const ELIAS_SKILLS: Record<string, number> = {
@@ -71,13 +81,27 @@ function findSkillScore(input: string): number | null {
                     overflow-hidden flex flex-col max-h-[92vh] animate-modal-in"
              (click)="$event.stopPropagation()">
 
-          <div class="flex items-center justify-between px-6 py-4 border-b border-gray-800 shrink-0">
+          <div class="flex items-center justify-between px-6 py-4 border-b border-gray-800 shrink-0 flex-wrap gap-y-3">
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-sm">🧙</div>
               <div>
                 <h2 class="text-white font-bold text-base leading-none">Monte seu Dev Ideal</h2>
                 <p class="text-gray-500 text-xs mt-0.5">Descubra o match com Elias</p>
               </div>
+            </div>
+            <div class="flex items-center gap-1 bg-gray-800/70 rounded-xl p-1">
+              <button (click)="activeTab.set('tags')"
+                      class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200"
+                      [class.tab-active]="activeTab() === 'tags'"
+                      [class.tab-inactive]="activeTab() !== 'tags'">
+                🏷️ Por tags
+              </button>
+              <button (click)="activeTab.set('ai')"
+                      class="px-3 py-1.5 rounded-lg text-xs font-semibold transition-all duration-200"
+                      [class.tab-active]="activeTab() === 'ai'"
+                      [class.tab-inactive]="activeTab() !== 'ai'">
+                🤖 Por IA
+              </button>
             </div>
             <button (click)="closeModal()"
                     class="w-8 h-8 flex items-center justify-center rounded-xl text-gray-600 hover:text-gray-300 hover:bg-gray-800 transition-all text-lg leading-none">
@@ -88,8 +112,10 @@ function findSkillScore(input: string): number | null {
           <div class="flex flex-col lg:flex-row flex-1 overflow-hidden">
 
             <div class="lg:w-1/2 flex flex-col p-6 border-b lg:border-b-0 lg:border-r border-gray-800 overflow-y-auto">
-              <p class="text-gray-400 text-sm mb-4 leading-relaxed">
-                Digite as tecnologias, frameworks ou habilidades que a vaga exige. Pressione
+
+              @if (activeTab() === 'tags') {
+                <p class="text-gray-400 text-sm mb-4 leading-relaxed">
+                  Digite as tecnologias, frameworks ou habilidades que a vaga exige. Pressione
                 <kbd class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-mono border border-gray-700 text-gray-400">Enter</kbd>
                 ou vírgula para adicionar.
               </p>
@@ -206,16 +232,123 @@ function findSkillScore(input: string): number | null {
                   }
                 </div>
               }
+              }
+
+              @if (activeTab() === 'ai') {
+                <div class="flex flex-col flex-1">
+                  @if (!aiLoading() && !aiResult()) {
+                    <p class="text-gray-400 text-sm mb-4 leading-relaxed">
+                      Cole a descrição da vaga e a <span class="text-cyan-400 font-semibold">IA</span> analisa o match com o perfil de Elias.
+                    </p>
+                    <textarea
+                      [(ngModel)]="aiJobDescription"
+                      rows="8"
+                      placeholder="Ex: Procuramos dev fullstack com experiência em Laravel, Vue.js, PostgreSQL, Docker..."
+                      class="w-full bg-gray-800/60 border border-gray-700/60 rounded-xl px-4 py-3 text-sm text-gray-200 placeholder-gray-600 outline-none focus:border-cyan-500/60 transition-colors resize-none"
+                      maxlength="5000"
+                    ></textarea>
+                    <div class="flex justify-between items-center mt-2">
+                      <span class="text-xs text-gray-600 font-mono">{{ aiJobDescription.length }}/5000</span>
+                      <button (click)="analyzeWithAi()"
+                              [disabled]="aiJobDescription.trim().length < 20"
+                              class="ai-analyze-btn px-5 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                          <path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 18.75l-.813-2.846a4.5 4.5 0 00-3.09-3.09L2.25 12l2.846-.813a4.5 4.5 0 003.09-3.09L9 5.25l.813 2.846a4.5 4.5 0 003.09 3.09L15.75 12l-2.846.813a4.5 4.5 0 00-3.09 3.09zm8.446-7.189L18 9.75l-.259-1.035a3.375 3.375 0 00-2.456-2.456L14.25 6l1.035-.259a3.375 3.375 0 002.456-2.456L18 2.25l.259 1.035a3.375 3.375 0 002.456 2.456L21.75 6l-1.035.259a3.375 3.375 0 00-2.456 2.456z"/>
+                        </svg>
+                        Analisar com IA
+                      </button>
+                    </div>
+                  }
+
+                  @if (aiLoading()) {
+                    <div class="flex flex-col items-center justify-center py-12 space-y-4">
+                      <div class="ai-loading-ring"></div>
+                      <p class="text-cyan-300 text-sm font-semibold animate-pulse">IA analisando a vaga...</p>
+                      <p class="text-gray-600 text-xs">Isso leva alguns segundos</p>
+                    </div>
+                  }
+
+                  @if (aiResult()) {
+                    <div class="space-y-4 animate-fade-in">
+                      <div class="text-center">
+                        <div class="inline-flex items-center justify-center w-20 h-20 rounded-full border-3 mb-2"
+                             [class.border-green-500]="aiResult()!.matchPercentage >= 70"
+                             [class.border-yellow-500]="aiResult()!.matchPercentage >= 50 && aiResult()!.matchPercentage < 70"
+                             [class.border-red-500]="aiResult()!.matchPercentage < 50">
+                          <span class="text-2xl font-bold text-white">{{ aiResult()!.matchPercentage }}%</span>
+                        </div>
+                        <p class="text-xs font-semibold"
+                           [class.text-green-400]="aiResult()!.matchPercentage >= 70"
+                           [class.text-yellow-400]="aiResult()!.matchPercentage >= 50 && aiResult()!.matchPercentage < 70"
+                           [class.text-red-400]="aiResult()!.matchPercentage < 50">
+                          {{ aiResult()!.matchPercentage >= 85 ? '🚀 Match excelente!' : aiResult()!.matchPercentage >= 70 ? '🎯 Ótimo match!' : aiResult()!.matchPercentage >= 50 ? '💡 Match parcial' : '🔍 Match baixo' }}
+                        </p>
+                      </div>
+                      <div class="bg-gray-800/50 rounded-xl p-3 border border-gray-700/40">
+                        <p class="text-gray-300 text-xs leading-relaxed">{{ aiResult()!.summary }}</p>
+                      </div>
+                      @if (aiResult()!.strengths.length > 0) {
+                        <div>
+                          <h4 class="text-xs font-semibold text-green-400 uppercase tracking-wider mb-1.5">✓ Pontos fortes</h4>
+                          @for (s of aiResult()!.strengths; track s) {
+                            <div class="flex items-start gap-2 text-xs mb-1">
+                              <span class="text-green-500 shrink-0 mt-0.5">●</span>
+                              <span class="text-gray-300">{{ s }}</span>
+                            </div>
+                          }
+                        </div>
+                      }
+                      @if (aiResult()!.gaps.length > 0) {
+                        <div>
+                          <h4 class="text-xs font-semibold text-amber-400 uppercase tracking-wider mb-1.5">△ Pontos de atenção</h4>
+                          @for (g of aiResult()!.gaps; track g) {
+                            <div class="flex items-start gap-2 text-xs mb-1">
+                              <span class="text-amber-500 shrink-0 mt-0.5">●</span>
+                              <span class="text-gray-300">{{ g }}</span>
+                            </div>
+                          }
+                        </div>
+                      }
+                      <div class="bg-cyan-500/8 rounded-xl p-3 border border-cyan-500/20">
+                        <p class="text-xs font-semibold text-cyan-300 mb-1">💡 Recomendação</p>
+                        <p class="text-gray-300 text-xs leading-relaxed">{{ aiResult()!.recommendation }}</p>
+                      </div>
+                      <div class="flex gap-2 pt-1">
+                        <button (click)="resetAi()"
+                                class="flex-1 py-2 rounded-xl border border-gray-700 text-gray-400 hover:text-gray-200 transition-all text-xs">
+                          Nova análise
+                        </button>
+                        <a href="#contato" (click)="onContactClick(); closeModal()"
+                           class="flex-1 py-2 rounded-xl bg-gradient-to-r from-blue-500 to-cyan-500 text-white text-xs font-semibold text-center hover:scale-[1.02] transition-transform">
+                          Entrar em contato
+                        </a>
+                      </div>
+                    </div>
+                  }
+
+                  @if (aiError()) {
+                    <div class="text-center py-8 space-y-3">
+                      <span class="text-3xl">⚠️</span>
+                      <p class="text-red-300 text-sm">{{ aiError() }}</p>
+                      <button (click)="resetAi()"
+                              class="px-4 py-2 rounded-xl border border-gray-700 text-gray-400 hover:text-gray-200 transition-all text-sm">
+                        Tentar novamente
+                      </button>
+                    </div>
+                  }
+                </div>
+              } <!-- end @if ai -->
+
             </div>
 
             <div class="lg:w-1/2 flex flex-col items-center justify-center p-6 bg-gray-900/50 relative overflow-hidden min-h-[320px]">
               <div class="absolute inset-0 pointer-events-none transition-all duration-1000"
                    [style.background]="'radial-gradient(ellipse at 50% 80%, ' + matchColor() + '18 0%, transparent 65%)'"></div>
 
-              @if (skills().length > 0) {
+              @if (displayPercent() > 0) {
                 <div class="absolute top-4 right-4 text-right animate-fade-in">
                   <div class="text-3xl font-black leading-none transition-colors duration-700" [style.color]="matchColor()">
-                    {{ matchPercent() }}<span class="text-base font-semibold">%</span>
+                    {{ displayPercent() }}<span class="text-base font-semibold">%</span>
                   </div>
                   <div class="text-gray-500 text-[10px] uppercase tracking-widest font-mono">match</div>
                 </div>
@@ -245,15 +378,15 @@ function findSkillScore(input: string): number | null {
                     C122,70 110,68 100,68 C90,68 78,70 68,72 Z
                   " fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
 
-                  <rect x="0" [attr.y]="340 - matchPercent() * 3.4" width="200" [attr.height]="matchPercent() * 3.4"
+                  <rect x="0" [attr.y]="340 - displayPercent() * 3.4" width="200" [attr.height]="displayPercent() * 3.4"
                         [attr.fill]="matchColor()"
                         opacity="0.7"
                         clip-path="url(#silhouette-clip)"
                         style="transition: y 0.8s ease, height 0.8s ease, fill 0.5s ease"/>
 
-                  @if (skills().length > 0 && matchPercent() > 0 && matchPercent() < 100) {
-                    <line [attr.y1]="340 - matchPercent() * 3.4"
-                          [attr.y2]="340 - matchPercent() * 3.4"
+                  @if (displayPercent() > 0 && displayPercent() < 100) {
+                    <line [attr.y1]="340 - displayPercent() * 3.4"
+                          [attr.y2]="340 - displayPercent() * 3.4"
                           x1="20" x2="180"
                           [attr.stroke]="matchColor()"
                           stroke-width="1.5"
@@ -272,7 +405,7 @@ function findSkillScore(input: string): number | null {
                 }
               </div>
 
-              @if (skills().length > 0) {
+              @if (activeTab() === 'tags' && skills().length > 0) {
                 <div class="flex flex-wrap justify-center gap-1.5 mt-2 max-w-[220px]">
                   @for (skill of skills(); track skill.name) {
                     <span class="text-[10px] px-2 py-0.5 rounded-full font-mono transition-all duration-500"
@@ -282,6 +415,11 @@ function findSkillScore(input: string): number | null {
                     </span>
                   }
                 </div>
+              }
+              @if (activeTab() === 'ai' && aiResult()) {
+                <p class="text-[10px] text-center mt-2 font-mono" [style.color]="matchColor()">
+                  {{ aiResult()!.matchPercentage >= 85 ? '🚀 Perfeito' : aiResult()!.matchPercentage >= 70 ? '🎯 Ótimo' : aiResult()!.matchPercentage >= 50 ? '💡 Parcial' : '🔍 Baixo' }}
+                </p>
               }
             </div>
 
@@ -343,15 +481,59 @@ function findSkillScore(input: string): number | null {
       color: #64748b;
       border: 1px solid rgba(100, 116, 139, 0.2);
     }
+
+    .tab-active {
+      background: linear-gradient(135deg, #3b82f6, #06b6d4);
+      color: #ffffff;
+    }
+    .tab-inactive {
+      color: #94a3b8;
+    }
+    .tab-inactive:hover { color: #e2e8f0; }
+
+    .ai-analyze-btn {
+      background: linear-gradient(135deg, #3b82f6, #06b6d4);
+      box-shadow: 0 4px 16px rgba(6,182,212,0.25);
+      color: #ffffff;
+      cursor: pointer;
+    }
+    .ai-analyze-btn:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 6px 20px rgba(6,182,212,0.4);
+    }
+    .ai-analyze-btn:active:not(:disabled) { transform: translateY(0); }
+
+    .ai-loading-ring {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      border: 3px solid rgba(6,182,212,0.15);
+      border-top-color: #06b6d4;
+      animation: aiSpin 0.8s linear infinite;
+    }
+    @keyframes aiSpin { to { transform: rotate(360deg); } }
+
+    .border-3 { border-width: 3px; }
   `]
 })
 export class DevMatchComponent implements OnInit {
   private analytics = inject(AnalyticsService);
   private firebaseService = inject(FirebaseService);
+  private cdr = inject(ChangeDetectorRef);
 
   modalOpen = signal(false);
+  activeTab = signal<'tags' | 'ai'>('tags');
   skills = signal<SkillEntry[]>([]);
   currentInput = signal('');
+
+  // ---- AI ----
+  aiJobDescription = '';
+  aiLoading = signal(false);
+  aiResult = signal<AiMatchResult | null>(null);
+  aiError = signal<string | null>(null);
+
+  private readonly AI_CACHE_KEY = 'portfolio-ai-match-cache';
+  private readonly AI_CACHE_MAX = 20;
 
   readonly suggestions = [
     'Laravel', 'Vue.js', 'Angular', 'React', 'Node.js',
@@ -366,8 +548,13 @@ export class DevMatchComponent implements OnInit {
     return Math.round(total / list.length);
   });
 
+  displayPercent = computed(() => {
+    if (this.activeTab() === 'ai') return this.aiResult()?.matchPercentage ?? 0;
+    return this.matchPercent();
+  });
+
   matchColor = computed(() => {
-    const p = this.matchPercent();
+    const p = this.displayPercent();
     if (p === 0) return '#334155';
     if (p < 40)  return '#f87171';
     if (p < 65)  return '#fbbf24';
@@ -393,9 +580,103 @@ export class DevMatchComponent implements OnInit {
 
   closeModal(): void {
     this.modalOpen.set(false);
-    if (this.skills().length > 0) {
+    if (this.skills().length > 0 || this.aiResult()) {
       this.saveToFirebase();
     }
+  }
+
+  // ---- AI methods ----
+  resetAi(): void {
+    this.aiResult.set(null);
+    this.aiError.set(null);
+    this.aiLoading.set(false);
+    this.aiJobDescription = '';
+  }
+
+  async analyzeWithAi(): Promise<void> {
+    if (this.aiJobDescription.trim().length < 20) return;
+
+    const cacheKey = this.aiJobDescription.toLowerCase().replace(/\s+/g, ' ').trim();
+    const cache = this.loadAiCache();
+    if (cache[cacheKey]) {
+      this.aiResult.set(cache[cacheKey]);
+      return;
+    }
+
+    this.aiLoading.set(true);
+    this.aiError.set(null);
+    this.aiResult.set(null);
+
+    const profile = this.buildEliasProfile();
+    const prompt = `Você é especialista em recrutamento tech. Analise a compatibilidade entre o candidato e a vaga.\n\n${profile}\n\n---\nDESCRIÇÃO DA VAGA:\n${this.aiJobDescription.trim()}\n\n---\nINSTRUÇÕES:\n1. Compare cada requisito com as habilidades de Elias\n2. Calcule um match realista (0-100%)\n3. Seja justo: reduza o match para habilidades que Elias não domina\n\nResponda EXCLUSIVAMENTE em JSON válido (sem markdown):\n{\n  "matchPercentage": <0-100>,\n  "summary": "<2-3 frases>",\n  "strengths": ["<ponto 1>", ...],\n  "gaps": ["<lacuna 1>", ...],\n  "recommendation": "<1-2 frases>"\n}\nResposta em português brasileiro.`;
+
+    const ai = new GoogleGenAI({ apiKey: environment.geminiApiKey });
+    const models = ['gemini-2.5-flash', 'gemini-2.5-flash-lite'];
+    let lastError: Error | null = null;
+
+    for (const model of models) {
+      try {
+        const response = await ai.models.generateContent({
+          model,
+          contents: prompt,
+          config: { temperature: 0.7, responseMimeType: 'application/json' },
+        });
+        const text = response.text;
+        if (!text) throw new Error('Resposta vazia da IA');
+        const parsed = JSON.parse(text) as AiMatchResult;
+        if (typeof parsed.matchPercentage !== 'number' || !Array.isArray(parsed.strengths)) {
+          throw new Error('Formato de resposta inválido');
+        }
+        parsed.matchPercentage = Math.max(0, Math.min(100, Math.round(parsed.matchPercentage)));
+        this.aiResult.set(parsed);
+        this.aiLoading.set(false);
+        this.cdr.detectChanges();
+        const updatedCache = this.loadAiCache();
+        const entries = Object.entries(updatedCache);
+        if (entries.length >= this.AI_CACHE_MAX) delete updatedCache[entries[0][0]];
+        updatedCache[cacheKey] = parsed;
+        localStorage.setItem(this.AI_CACHE_KEY, JSON.stringify(updatedCache));
+        const _vid = localStorage.getItem('portfolio-vid') ?? undefined;
+        if (_vid) this.firebaseService.touchVisitor(_vid);
+        this.firebaseService.saveAiMatch({
+          visitorId: _vid,
+          jobDescription: this.aiJobDescription.trim(),
+          aiResponse: parsed.recommendation ?? text,
+          matchPercentage: parsed.matchPercentage,
+        }).catch(() => {});
+        void this.analytics.trackFeatureComplete('ai_match', parsed.matchPercentage, { source: 'dev_match_modal' });
+        lastError = null;
+        break;
+      } catch (err: unknown) {
+        const msg = err instanceof Error ? err.message : '';
+        if (msg.includes('429') || msg.includes('RESOURCE_EXHAUSTED')) {
+          lastError = new Error('Limite de requisições atingido. Aguarde e tente novamente.');
+          await new Promise(r => setTimeout(r, 2000));
+          continue;
+        }
+        lastError = err instanceof Error ? err : new Error('Erro ao analisar com IA. Tente novamente.');
+        break;
+      }
+    }
+
+    if (lastError) {
+      this.aiError.set(lastError.message);
+      this.aiLoading.set(false);
+      this.cdr.detectChanges();
+    }
+  }
+
+  private buildEliasProfile(): string {
+    const skills = Object.entries(ELIAS_SKILLS)
+      .filter(([, v]) => v >= 70)
+      .map(([k, v]) => `${k} (${v}%)`)
+      .join(', ');
+    return `PERFIL DE ELIAS (Desenvolvedor Fullstack Sênior, 8+ anos):\n- Habilidades fortes: ${skills}\n- Trabalho remoto: SIM\n- Scrum/Kanban: SIM\n- Mentoria de juniores: SIM\n- Sistemas multi-tenant, SaaS, migração legados: SIM`;
+  }
+
+  private loadAiCache(): Record<string, AiMatchResult> {
+    try { return JSON.parse(localStorage.getItem(this.AI_CACHE_KEY) ?? '{}'); }
+    catch { return {}; }
   }
 
   onKeydown(event: KeyboardEvent): void {
