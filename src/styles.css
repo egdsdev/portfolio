@@ -529,7 +529,7 @@ html.light .admin-page {
 }
 html.light .admin-card {
   background: #ffffff !important;
-  border-color: #ede9fe !important;
+  border-color: #e2d9f3 !important;
   box-shadow: 0 2px 12px rgba(109,40,217,0.08) !important;
 }
 html.light .admin-input {
@@ -539,6 +539,150 @@ html.light .admin-input {
 }
 html.light .admin-input::placeholder { color: #9ca3af !important; }
 html.light .admin-input:focus { border-color: rgba(124,58,237,0.5) !important; }
+
+/* ── Tabs (Analytics / Conversas) ────────────────────────────────────── */
+/* Wrapper das tabs: fundo cinza-violeta suave */
+html.light .admin-page .bg-gray-800\/50 {
+  background-color: #ede9fe !important;
+  border-color: #c4b5fd !important;
+}
+/* Tab inativa */
+html.light .admin-page .text-gray-500 {
+  color: #6b7280 !important;
+}
+/* Tab ativa — precisa de fundo visível */
+html.light .admin-page [class*="bg-gray-700"] {
+  background-color: #ffffff !important;
+  color: #4c1d95 !important;
+  box-shadow: 0 1px 4px rgba(109,40,217,0.15) !important;
+}
+/* Texto ativo (text-white) dentro das tabs */
+html.light .admin-page .text-white {
+  color: #4c1d95 !important;
+}
+
+/* ── Botão Push (inativo) ─────────────────────────────────────────────── */
+html.light .admin-page .border-gray-700 {
+  border-color: #c4b5fd !important;
+}
+html.light .admin-page .bg-gray-800\/50 .text-gray-400,
+html.light .admin-page > * .text-gray-400 {
+  color: #6b7280 !important;
+}
+
+/* ── Lista de conversas ───────────────────────────────────────────────── */
+/* Hover em linhas da lista */
+html.light .admin-page .hover\:bg-gray-800\/40:hover {
+  background-color: rgba(124,58,237,0.06) !important;
+}
+/* Conversa selecionada */
+html.light .admin-page .bg-violet-500\/10 {
+  background-color: rgba(124,58,237,0.1) !important;
+}
+/* Separadores border-gray-800 (qualquer variante de opacidade) */
+html.light .admin-page .border-gray-800,
+html.light .admin-page [class*="border-gray-800"] {
+  border-color: #ede9fe !important;
+}
+/* Divisórias das tabelas via elemento (garante cobertura total) */
+html.light .admin-page table thead tr,
+html.light .admin-page table tbody tr,
+html.light .admin-page table tfoot tr {
+  border-color: #ede9fe !important;
+}
+html.light .admin-page table th,
+html.light .admin-page table td {
+  border-color: #ede9fe !important;
+}
+/* Texto dos nomes na lista */
+html.light .admin-page .text-gray-200 {
+  color: #3b3558 !important;
+}
+/* Bolinha offline da conversa */
+html.light .admin-page .bg-gray-600 {
+  background-color: #9ca3af !important;
+}
+/* Data da conversa */
+html.light .admin-page .text-gray-600 {
+  color: #9ca3af !important;
+}
+
+/* ── Área de mensagens ───────────────────────────────────────────────── */
+/* Balonzinho do visitante: cinza escuro → lilás suave */
+html.light .admin-page [class*="bg-gray-700\/80"] {
+  background-color: #ede9fe !important;
+  color: #3b3558 !important;
+}
+/* Label do nome do visitante no balonzinho */
+html.light .admin-page .text-gray-400 {
+  color: #7c3aed !important;
+}
+/* Fundo da área de mensagens quando vazia */
+html.light .admin-page .text-gray-600 {
+  color: #9ca3af !important;
+}
+
+/* ── Input de resposta ───────────────────────────────────────────────── */
+/* Borda separadora acima do input */
+html.light .admin-page [class*="border-gray-800\/50"] {
+  border-color: #e2d9f3 !important;
+}
+/* Textarea de resposta */
+html.light .admin-page textarea {
+  background-color: #f5f3ff !important;
+  border-color: #ddd6fe !important;
+  color: #3b3558 !important;
+}
+html.light .admin-page textarea::placeholder { color: #a78bfa !important; }
+html.light .admin-page textarea:focus { border-color: #7c3aed !important; }
+/* Botão clipe */
+html.light .admin-page .border-gray-700.bg-gray-800\/50 {
+  background-color: #f5f3ff !important;
+  border-color: #ddd6fe !important;
+  color: #7c3aed !important;
+}
+/* Arquivo selecionado (chip) */
+html.light .admin-page [class*="bg-gray-700\/60"] {
+  background-color: #ede9fe !important;
+  color: #4c1d95 !important;
+}
+
+/* ---- Live Chat — modo claro ----------------------------------------- */
+/* Janela e modal: borda e sombra visíveis */
+html.light .chat-window {
+  border-color: #c4b5fd !important;
+  box-shadow: 0 8px 32px rgba(124,58,237,0.15), 0 2px 8px rgba(0,0,0,0.06) !important;
+}
+html.light .chat-modal {
+  border-color: #c4b5fd !important;
+  box-shadow: 0 8px 32px rgba(124,58,237,0.15) !important;
+}
+/* Balonzinho do owner: lilás claro em vez de cinza escuro */
+html.light .chat-msg-owner {
+  background-color: #ede9fe !important;
+}
+/* Label "Elias" no balonzinho do owner */
+html.light .chat-owner-label { color: #7c3aed !important; }
+/* Timestamp do owner: visível no fundo lilás */
+html.light .chat-msg-owner .text-gray-400 { color: #8b5cf6 !important; }
+/* Balonzinho do visitante: manter texto branco sobre fundo violeta */
+html.light .chat-msg-visitor,
+html.light .chat-msg-visitor p { color: #ffffff !important; }
+/* Fechar: hover subtil violeta */
+html.light .chat-close-btn:hover {
+  background-color: rgba(124,58,237,0.1) !important;
+  color: #7c3aed !important;
+}
+/* Botão enviar: branco */
+html.light .chat-send-btn { color: #ffffff !important; }
+/* Botões primários (bg-violet-600) na modal */
+html.light .chat-modal .bg-violet-600 { color: #ffffff !important; }
+/* Focus em campos */
+html.light .chat-modal input:focus { border-color: #7c3aed !important; }
+html.light .chat-window textarea:focus { border-color: #7c3aed !important; }
+/* Toast: borda violeta + nome legível */
+html.light .chat-toast { border-color: rgba(124,58,237,0.45) !important; }
+html.light .chat-toast .text-violet-400 { color: #7c3aed !important; }
 
 /* Theme toggle icon: white in dark, gray in light */
 .header-theme-icon {

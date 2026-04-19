@@ -2,6 +2,7 @@ import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
 import { AnalyticsService } from './core/services/analytics.service';
+import { FirebaseService } from './core/services/firebase.service';
 import { HeaderComponent } from './features/header/header.component';
 import { PersonalDetailsComponent } from './features/personal-details/personal-details.component';
 import { EducationComponent } from './features/education/education.component';
@@ -80,6 +81,22 @@ import { RevealDirective } from './shared/directives/reveal.directive';
           </div>
           <app-footer></app-footer>
         </div>
+        <!-- Botão flutuante de chat (só fora da rota admin e não autenticado) -->
+        @if (!isAdminRoute() && !isAuthenticated()) {
+          <button (click)="openChat()"
+                  class="fixed bottom-6 right-6 z-40 flex items-center gap-2 px-4 py-2.5 rounded-xl
+                         bg-violet-600 hover:bg-violet-500 active:scale-95 text-white text-sm font-medium
+                         shadow-lg shadow-violet-900/40 transition-all duration-200 cursor-pointer border border-violet-500/30">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+            </svg>
+            <div class="flex flex-col items-start leading-tight">
+              <span>Fale comigo</span>
+              <span class="text-[10px] font-normal opacity-70">Chat Local</span>
+            </div>
+          </button>
+        }
         <router-outlet></router-outlet>
       }
     }
@@ -88,17 +105,22 @@ import { RevealDirective } from './shared/directives/reveal.directive';
 })
 export class App implements OnInit, OnDestroy {
   private themeObserver?: MutationObserver;
+  private unsubAuth?: () => void;
   private router = inject(Router);
   private analytics = inject(AnalyticsService);
+  private firebase = inject(FirebaseService);
 
   routerResolved = signal(false);
   isAdmin = signal(false);
+  isAuthenticated = signal(false);
 
   isAdminRoute(): boolean {
     return this.isAdmin();
   }
 
   ngOnInit() {
+    this.unsubAuth = this.firebase.listenAuthState(loggedIn => this.isAuthenticated.set(loggedIn));
+
     this.router.events.pipe(
       filter(e => e instanceof NavigationEnd),
     ).subscribe((e) => {
@@ -127,7 +149,12 @@ export class App implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
+    this.unsubAuth?.();
     this.themeObserver?.disconnect();
     this.analytics.destroyPageTracking();
+  }
+
+  openChat(): void {
+    window.dispatchEvent(new CustomEvent('open-chat'));
   }
 }
