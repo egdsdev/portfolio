@@ -50,7 +50,7 @@ import { AnalyticsService } from '../../core/services/analytics.service';
           </a>
           <a href="curriculo-elias-gomes.pdf"
              download="Curriculo-Elias-Gomes-da-Silva.pdf"
-             (click)="onResumeDownload()"
+             (click)="onResumeDownload($event)"
              class="inline-flex items-center gap-2 px-8 py-3.5 border border-cyan-500/50 text-cyan-300 font-semibold rounded-full
                     transform hover:scale-105 transition-all duration-300 hover:bg-cyan-500/10 hover:border-cyan-400 text-sm tracking-wide">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -120,7 +120,34 @@ export class PersonalDetailsComponent implements OnInit, OnDestroy {
     void this.analytics.trackCtaClick('hero_contact', 'detalhes', 'contact');
   }
 
-  onResumeDownload(): void {
-    void this.analytics.trackResumeDownload();
+  onResumeDownload(event: MouseEvent): void {
+    const anchor = event.currentTarget;
+    if (!(anchor instanceof HTMLAnchorElement)) return;
+
+    event.preventDefault();
+    void this.waitForTracking(this.analytics.trackResumeDownload())
+      .finally(() => this.triggerDownload(anchor));
+  }
+
+  private waitForTracking(tracking: Promise<void>, timeoutMs = 400): Promise<void> {
+    return Promise.race([
+      tracking.catch(() => undefined),
+      new Promise<void>(resolve => window.setTimeout(resolve, timeoutMs)),
+    ]);
+  }
+
+  private triggerDownload(anchor: HTMLAnchorElement): void {
+    const downloadLink = document.createElement('a');
+    downloadLink.href = anchor.href;
+
+    const fileName = anchor.getAttribute('download');
+    if (fileName) {
+      downloadLink.download = fileName;
+    }
+
+    downloadLink.style.display = 'none';
+    document.body.appendChild(downloadLink);
+    downloadLink.click();
+    downloadLink.remove();
   }
 }

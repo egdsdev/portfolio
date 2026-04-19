@@ -6,6 +6,9 @@ interface GeoPayload {
   city?: string;
   country?: string;
   region?: string;
+  networkOrg?: string;
+  networkAsn?: string;
+  networkType?: string;
   lat?: number;
   lng?: number;
   timezone?: string;
@@ -56,6 +59,9 @@ export class AnalyticsService {
         city: ctx.geo.city,
         country: ctx.geo.country,
         region: ctx.geo.region,
+        networkOrg: ctx.geo.networkOrg,
+        networkAsn: ctx.geo.networkAsn,
+        networkType: ctx.geo.networkType,
         lat: ctx.geo.lat,
         lng: ctx.geo.lng,
         timezone: ctx.geo.timezone,
@@ -245,7 +251,7 @@ export class AnalyticsService {
 
       this.sectionObserver = new IntersectionObserver((entries) => {
         for (const entry of entries) {
-          if (!entry.isIntersecting || entry.intersectionRatio < 0.35) continue;
+          if (!this.shouldTrackSectionEntry(entry)) continue;
           const sectionId = entry.target.id;
           if (!sectionId || this.trackedSections.has(sectionId)) continue;
 
@@ -257,10 +263,24 @@ export class AnalyticsService {
             target: sectionId,
           });
         }
-      }, { threshold: [0.35, 0.6] });
+      }, { threshold: [0, 0.12, 0.35, 0.6] });
 
       sectionEls.forEach(section => this.sectionObserver?.observe(section));
     }, attempt === 0 ? 250 : 450);
+  }
+
+  private shouldTrackSectionEntry(entry: IntersectionObserverEntry): boolean {
+    if (!entry.isIntersecting) return false;
+
+    const viewportHeight = entry.rootBounds?.height ?? window.innerHeight;
+    const visibleHeight = Math.max(entry.intersectionRect.height, 0);
+
+    if (entry.intersectionRatio >= 0.12) return true;
+    if (visibleHeight >= Math.min(240, viewportHeight * 0.28)) return true;
+
+    const viewportMidpoint = viewportHeight / 2;
+    return entry.boundingClientRect.top <= viewportMidpoint
+      && entry.boundingClientRect.bottom >= viewportMidpoint;
   }
 
   private resolveTrafficSource(): { source: string; sourceDetail?: string } {
@@ -304,13 +324,18 @@ export class AnalyticsService {
 
   private async fetchIpGeo(): Promise<GeoPayload> {
     try {
-      const data = await fetch('https://ipinfo.io/json').then(r => r.json());
-      const [lat, lng] = (data['loc'] ?? ',').split(',').map(Number);
+      const data = await fetch('https://ipinfo.io/json').then(r => r.json()) as Record<string, unknown>;
+      const loc = typeof data['loc'] === 'string' ? data['loc'] : ',';
+      const [lat, lng] = loc.split(',').map(Number);
+      const networkInfo = this.parseNetworkInfo(data);
       return {
         ip: data['ip'] as string | undefined,
         city: data['city'] as string | undefined,
         country: data['country'] as string | undefined,
         region: data['region'] as string | undefined,
+        networkOrg: networkInfo.networkOrg,
+        networkAsn: networkInfo.networkAsn,
+        networkType: networkInfo.networkType,
         lat: isNaN(lat) ? undefined : lat,
         lng: isNaN(lng) ? undefined : lng,
         timezone: data['timezone'] as string | undefined,
@@ -318,6 +343,48 @@ export class AnalyticsService {
     } catch {
       return {};
     }
+  }
+
+  private parseNetworkInfo(data: Record<string, unknown>): Pick<GeoPayload, 'networkOrg' | 'networkAsn' | 'networkType'> {
+    const company = typeof data['company'] === 'object' && data['company'] != null
+      ? data['company'] as Record<string, unknown>
+      : undefined;
+    const asData = typeof data['as'] === 'object' && data['as'] != null
+      ? data['as'] as Record<string, unknown>
+      : undefined;
+
+    let networkOrg = typeof company?.['name'] === 'string' ? company['name'].trim() : undefined;
+    let networkType = typeof company?.['type'] === 'string' ? company['type'].trim().toLowerCase() : undefined;
+    let networkAsn = typeof asData?.['asn'] === 'string' ? asData['asn'].trim().toUpperCase() : undefined;
+
+    if (!networkOrg && typeof asData?.['name'] === 'string') {
+      networkOrg = asData['name'].trim();
+    }
+
+    const org = typeof data['org'] === 'string' ? data['org'].trim() : undefined;
+    if (org) {
+      const match = org.match(/^(AS\d+)\s+(.+)$/i);
+      if (match) {
+        networkAsn ??= match[1].toUpperCase();
+        networkOrg ??= match[2].trim();
+      } else {
+        networkOrg ??= org;
+      }
+    }
+
+    if (!networkAsn && typeof data['asn'] === 'string') {
+      networkAsn = data['asn'].trim().toUpperCase();
+    }
+
+    if (!networkOrg && typeof data['as_name'] === 'string') {
+      networkOrg = data['as_name'].trim();
+    }
+
+    return {
+      networkOrg,
+      networkAsn,
+      networkType,
+    };
   }
 
   private requestPreciseLocation(): Promise<GeolocationCoordinates | null> {

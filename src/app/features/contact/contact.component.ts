@@ -18,7 +18,7 @@ import { AnalyticsService } from '../../core/services/analytics.service';
         </div>
         <div class="grid md:grid-cols-3 gap-6">
           <a href="mailto:egds.dev@gmail.com"
-             (click)="onEmailClick()"
+             (click)="onEmailClick($event)"
              class="group p-6 bg-gray-800/50 rounded-2xl hover:bg-gray-800/70 transition-all duration-300
                     backdrop-blur-sm border border-gray-700/50 hover:border-cyan-500/30 hover:-translate-y-1">
             <div class="w-14 h-14 rounded-xl bg-cyan-500/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-cyan-500/20 transition-colors">
@@ -31,7 +31,7 @@ import { AnalyticsService } from '../../core/services/analytics.service';
           <a href="https://wa.me/5564992726932"
              target="_blank"
              rel="noopener noreferrer"
-             (click)="onWhatsappClick()"
+             (click)="onWhatsappClick($event)"
              class="group p-6 bg-gray-800/50 rounded-2xl hover:bg-gray-800/70 transition-all duration-300
                     backdrop-blur-sm border border-gray-700/50 hover:border-green-500/30 hover:-translate-y-1">
             <div class="w-14 h-14 rounded-xl bg-green-500/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-green-500/20 transition-colors">
@@ -61,11 +61,25 @@ export class ContactComponent {
 
   whatsappIcon = faWhatsapp;
 
-  onEmailClick(): void {
-    void this.analytics.trackContactClick('email');
+  onEmailClick(event: MouseEvent): void {
+    void this.trackAndFollowLink(event, this.analytics.trackContactClick('email'));
   }
 
-  onWhatsappClick(): void {
+  onWhatsappClick(_event: MouseEvent): void {
     void this.analytics.trackContactClick('whatsapp');
+  }
+
+  private async trackAndFollowLink(event: MouseEvent, tracking: Promise<void>): Promise<void> {
+    const anchor = event.currentTarget;
+    if (!(anchor instanceof HTMLAnchorElement)) return;
+
+    event.preventDefault();
+
+    await Promise.race([
+      tracking.catch(() => undefined),
+      new Promise<void>(resolve => window.setTimeout(resolve, 400)),
+    ]);
+
+    window.location.href = anchor.href;
   }
 }

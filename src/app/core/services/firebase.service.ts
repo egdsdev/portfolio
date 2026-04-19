@@ -33,6 +33,9 @@ export interface VisitorRecord {
   city?: string;
   country?: string;
   region?: string;
+  networkOrg?: string;
+  networkAsn?: string;
+  networkType?: string;
   language?: string;
   timezone?: string;
   lat?: number;
@@ -150,6 +153,9 @@ export class FirebaseService {
         city: data['city'],
         country: data['country'],
         region: data['region'],
+        networkOrg: data['networkOrg'],
+        networkAsn: data['networkAsn'],
+        networkType: data['networkType'],
         language: data['language'],
         timezone: data['timezone'],
         lat: data['lat'],
