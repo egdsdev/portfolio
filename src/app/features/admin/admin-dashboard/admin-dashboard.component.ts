@@ -106,6 +106,13 @@ interface TimeToActionRow {
               </span>
             }
           </button>
+          <button (click)="activeTab = 'tests'"
+                  [class.bg-gray-700]="activeTab === 'tests'"
+                  [class.text-white]="activeTab === 'tests'"
+                  [class.text-gray-500]="activeTab !== 'tests'"
+                  class="px-5 py-2 rounded-lg text-sm font-medium transition-all duration-150">
+            🛠️ Testes
+          </button>
           </div>
 
           <!-- Botão de notificações push -->
@@ -996,6 +1003,152 @@ interface TimeToActionRow {
         </div>
         <!-- fim: Aba Conversas -->
 
+        <!-- ── Aba: Testes ───────────────────────────────────────────── -->
+        <div [class.hidden]="activeTab !== 'tests'" class="space-y-6">
+          <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Ferramentas de teste</p>
+
+          <div class="grid md:grid-cols-2 gap-6">
+
+            <!-- Card: Push Notification -->
+            <div class="admin-card border rounded-xl p-6 space-y-4">
+              <div class="flex items-center gap-3 mb-1">
+                <div class="w-9 h-9 rounded-xl bg-violet-500/15 flex items-center justify-center text-lg">🔔</div>
+                <div>
+                  <h3 class="text-white font-semibold text-sm">Push Notification</h3>
+                  <p class="text-gray-500 text-xs">Envia uma notificação de teste para este dispositivo</p>
+                </div>
+              </div>
+
+              <!-- Status da permissão -->
+              <div class="flex items-center gap-2 px-3 py-2 rounded-lg bg-gray-800/60 text-xs">
+                <span class="w-2 h-2 rounded-full shrink-0"
+                      [class.bg-green-400]="pushPermStatus === 'granted'"
+                      [class.bg-yellow-400]="pushPermStatus === 'prompt'"
+                      [class.bg-red-400]="pushPermStatus === 'denied'"
+                      [class.bg-gray-500]="pushPermStatus === 'unknown'"></span>
+                <span class="text-gray-400">Permissão:
+                  <span class="font-semibold"
+                        [class.text-green-400]="pushPermStatus === 'granted'"
+                        [class.text-yellow-400]="pushPermStatus === 'prompt'"
+                        [class.text-red-400]="pushPermStatus === 'denied'">
+                    {{ pushPermStatus === 'granted' ? 'Concedida' : pushPermStatus === 'denied' ? 'Negada' : pushPermStatus === 'prompt' ? 'Aguardando' : 'Desconhecido' }}
+                  </span>
+                </span>
+              </div>
+
+              <div class="space-y-3">
+                <div>
+                  <label class="text-xs text-gray-400 mb-1 block">Título</label>
+                  <input type="text" [(ngModel)]="testPushTitle" maxlength="80"
+                         placeholder="Ex: Nova mensagem recebida"
+                         class="w-full bg-gray-800/70 border border-gray-700/60 rounded-xl px-3 py-2 text-sm text-gray-200 placeholder-gray-600 outline-none focus:border-violet-500/60 transition-colors" />
+                </div>
+                <div>
+                  <label class="text-xs text-gray-400 mb-1 block">Corpo</label>
+                  <textarea [(ngModel)]="testPushBody" rows="3" maxlength="200"
+                            placeholder="Ex: Um visitante iniciou uma conversa."
+                            class="w-full bg-gray-800/70 border border-gray-700/60 rounded-xl px-3 py-2 text-sm text-gray-200 placeholder-gray-600 outline-none focus:border-violet-500/60 transition-colors resize-none"></textarea>
+                </div>
+              </div>
+
+              @if (testPushResult) {
+                <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs"
+                     [class.bg-green-500/10]="testPushResult === 'ok'"
+                     [class.border-green-500/20]="testPushResult === 'ok'"
+                     [class.bg-red-500/10]="testPushResult !== 'ok'"
+                     [class.border-red-500/20]="testPushResult !== 'ok'"
+                     style="border-width:1px">
+                  <span>{{ testPushResult === 'ok' ? '✅ Notificação enviada!' : '❌ ' + testPushResult }}</span>
+                </div>
+              }
+
+              <div class="flex gap-2">
+                @if (pushPermStatus !== 'granted') {
+                  <button (click)="requestPushPerm()"
+                          class="flex-1 py-2.5 rounded-xl bg-violet-500/20 border border-violet-500/40 text-violet-300 text-sm font-semibold hover:bg-violet-500/30 transition-all">
+                    Conceder permissão
+                  </button>
+                }
+                <button (click)="sendTestPush()"
+                        [disabled]="pushSending || !testPushTitle.trim() || pushPermStatus !== 'granted'"
+                        class="flex-1 py-2.5 rounded-xl bg-violet-600 text-white text-sm font-semibold hover:bg-violet-500 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                  @if (pushSending) {
+                    <span class="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                    Enviando...
+                  } @else {
+                    🔔 Enviar notificação
+                  }
+                </button>
+              </div>
+            </div>
+
+            <!-- Card: Email -->
+            <div class="admin-card border rounded-xl p-6 space-y-4">
+              <div class="flex items-center gap-3 mb-1">
+                <div class="w-9 h-9 rounded-xl bg-cyan-500/15 flex items-center justify-center text-lg">📧</div>
+                <div>
+                  <h3 class="text-white font-semibold text-sm">Email de teste</h3>
+                  <p class="text-gray-500 text-xs">Abre um rascunho no seu cliente de email padrão</p>
+                </div>
+              </div>
+
+              <div class="space-y-3">
+                <div>
+                  <label class="text-xs text-gray-400 mb-1 block">Destinatário</label>
+                  <input type="email" [(ngModel)]="testEmailTo" maxlength="100"
+                         placeholder="voce@email.com"
+                         class="w-full bg-gray-800/70 border border-gray-700/60 rounded-xl px-3 py-2 text-sm text-gray-200 placeholder-gray-600 outline-none focus:border-cyan-500/60 transition-colors" />
+                </div>
+                <div>
+                  <label class="text-xs text-gray-400 mb-1 block">Assunto</label>
+                  <input type="text" [(ngModel)]="testEmailSubject" maxlength="100"
+                         placeholder="Ex: Teste de contato — Portfolio Elias"
+                         class="w-full bg-gray-800/70 border border-gray-700/60 rounded-xl px-3 py-2 text-sm text-gray-200 placeholder-gray-600 outline-none focus:border-cyan-500/60 transition-colors" />
+                </div>
+                <div>
+                  <label class="text-xs text-gray-400 mb-1 block">Mensagem</label>
+                  <textarea [(ngModel)]="testEmailBody" rows="4" maxlength="1000"
+                            placeholder="Corpo do email de teste..."
+                            class="w-full bg-gray-800/70 border border-gray-700/60 rounded-xl px-3 py-2 text-sm text-gray-200 placeholder-gray-600 outline-none focus:border-cyan-500/60 transition-colors resize-none"></textarea>
+                </div>
+              </div>
+
+              @if (testEmailResult) {
+                <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs bg-green-500/10 border border-green-500/20">
+                  <span>{{ testEmailResult }}</span>
+                </div>
+              }
+
+              <button (click)="sendTestEmail()"
+                      [disabled]="!testEmailTo.trim() || !testEmailSubject.trim()"
+                      class="w-full py-2.5 rounded-xl bg-cyan-600 text-white text-sm font-semibold hover:bg-cyan-500 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
+                📧 Abrir rascunho de email
+              </button>
+
+              <p class="text-xs text-gray-600 text-center">Abre no cliente padrão (Gmail, Outlook, etc.)</p>
+            </div>
+
+          </div>
+
+          <!-- Card: Info FCM Token -->
+          <div class="admin-card border rounded-xl p-5">
+            <div class="flex items-center justify-between mb-3">
+              <h3 class="text-white font-semibold text-sm">Token FCM</h3>
+              <button (click)="copyFcmToken()" [disabled]="!savedFcmToken"
+                      class="text-xs px-3 py-1 rounded-lg border border-gray-700 text-gray-400 hover:text-white hover:border-gray-600 transition-all disabled:opacity-40">
+                {{ fcmCopied ? '✅ Copiado!' : 'Copiar' }}
+              </button>
+            </div>
+            @if (savedFcmToken) {
+              <p class="text-xs font-mono text-gray-500 break-all leading-relaxed">{{ savedFcmToken }}</p>
+            } @else {
+              <p class="text-xs text-gray-600">Nenhum token salvo. Ative o Push na aba principal primeiro.</p>
+            }
+          </div>
+
+        </div>
+        <!-- fim: Aba Testes -->
+
       </main>
 
       <!-- Dropdown flutuante do menu de mensagem (admin) -->
@@ -1142,7 +1295,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   readonly cellSize = 18;
 
   // ── Tabs ─────────────────────────────────────────────────────────────
-  activeTab: 'analytics' | 'chat' = 'analytics';
+  activeTab: 'analytics' | 'chat' | 'tests' = 'analytics';
 
   // ── Chat ────────────────────────────────────────────────────────────
   conversations: ChatConversation[] = [];
@@ -1164,6 +1317,19 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   pushEnabled = false;
   pushLoading = false;
   get totalUnread(): number { return this.conversations.reduce((s, c) => s + c.unreadByOwner, 0); }
+
+  // ── Painel de Testes ─────────────────────────────────────────────────
+  testPushTitle = 'Notificação de teste';
+  testPushBody = 'Tudo certo! O push do portfolio está funcionando.';
+  testPushResult = '';
+  pushSending = false;
+  pushPermStatus: 'granted' | 'denied' | 'prompt' | 'unknown' = 'unknown';
+  savedFcmToken: string | null = null;
+  fcmCopied = false;
+  testEmailTo = '';
+  testEmailSubject = 'Teste de contato — Portfolio Elias';
+  testEmailBody = 'Esta é uma mensagem de teste enviada pelo painel administrativo do portfolio.';
+  testEmailResult = '';
   private unsubConversations?: () => void;
   private unsubConvMessages?: () => void;
 
@@ -1184,6 +1350,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     // Verifica se já tem token FCM salvo
     const token = await this.firebase.getSavedFCMToken();
     this.pushEnabled = !!token;
+    this.savedFcmToken = token;
+    this.checkPushPermission();
     const settle = <T>(p: Promise<T>, fallback: T) =>
       p.catch((err: unknown) => { console.error('[Dashboard]', err); return fallback; });
 
@@ -1259,11 +1427,68 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     try {
       const token = await this.firebase.requestPushPermission();
       this.pushEnabled = !!token;
-      if (!token) alert('Permissão negada ou navegador não suportado.');
+      if (token) {
+        this.savedFcmToken = token;
+        this.pushPermStatus = 'granted';
+      } else {
+        alert('Permissão negada ou navegador não suportado.');
+      }
     } finally {
       this.pushLoading = false;
       this.cdr.detectChanges();
     }
+  }
+
+  // ── Métodos do Painel de Testes ───────────────────────────────────────
+  private checkPushPermission(): void {
+    if (!('Notification' in window)) {
+      this.pushPermStatus = 'unknown';
+      return;
+    }
+    this.pushPermStatus = Notification.permission as 'granted' | 'denied' | 'prompt';
+  }
+
+  async requestPushPerm(): Promise<void> {
+    const perm = await Notification.requestPermission();
+    this.pushPermStatus = perm as 'granted' | 'denied' | 'prompt';
+    this.cdr.detectChanges();
+  }
+
+  async sendTestPush(): Promise<void> {
+    if (this.pushSending || !this.testPushTitle.trim() || this.pushPermStatus !== 'granted') return;
+    this.pushSending = true;
+    this.testPushResult = '';
+    try {
+      new Notification(this.testPushTitle, {
+        body: this.testPushBody,
+        icon: '/portfolio/manifest.json',
+      });
+      await this.firebase.queueTestPushNotification(this.testPushTitle, this.testPushBody);
+      this.testPushResult = 'ok';
+    } catch (err) {
+      this.testPushResult = err instanceof Error ? err.message : 'Erro ao enviar notificação';
+    } finally {
+      this.pushSending = false;
+      this.cdr.detectChanges();
+    }
+    setTimeout(() => { this.testPushResult = ''; this.cdr.detectChanges(); }, 5000);
+  }
+
+  sendTestEmail(): void {
+    if (!this.testEmailTo.trim() || !this.testEmailSubject.trim()) return;
+    const subject = encodeURIComponent(this.testEmailSubject);
+    const body = encodeURIComponent(this.testEmailBody);
+    window.open(`mailto:${this.testEmailTo}?subject=${subject}&body=${body}`, '_blank');
+    this.testEmailResult = '✅ Rascunho aberto no seu cliente de email!';
+    setTimeout(() => { this.testEmailResult = ''; this.cdr.detectChanges(); }, 5000);
+  }
+
+  async copyFcmToken(): Promise<void> {
+    if (!this.savedFcmToken) return;
+    await navigator.clipboard.writeText(this.savedFcmToken);
+    this.fcmCopied = true;
+    this.cdr.detectChanges();
+    setTimeout(() => { this.fcmCopied = false; this.cdr.detectChanges(); }, 2500);
   }
 
   // ── Chat methods ────────────────────────────────────────────────────────

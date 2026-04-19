@@ -148,6 +148,16 @@ export class FirebaseService {
     }
   }
 
+  /** Envia push de teste ao token FCM salvo via Firestore trigger (lida por Cloud Function ou ServiceWorker) */
+  async queueTestPushNotification(title: string, body: string): Promise<void> {
+    await addDoc(collection(this.db, 'test_notifications'), {
+      title,
+      body,
+      sentAt: Timestamp.now(),
+      status: 'pending',
+    });
+  }
+
   // ---- Auth ----
   async login(email: string, password: string): Promise<void> {
     await signInWithEmailAndPassword(this.auth, email, password);
