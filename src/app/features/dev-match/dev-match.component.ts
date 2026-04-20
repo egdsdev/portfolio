@@ -9,6 +9,7 @@ interface SkillEntry {
   name: string;
   matched: boolean;
   score: number;
+  weight: number;
 }
 
 interface AiMatchResult {
@@ -85,7 +86,27 @@ function findSkillScore(input: string): number | null {
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-sm">🧙</div>
               <div>
-                <h2 class="text-white font-bold text-base leading-none">Veja se me Encaixo no Seu Time</h2>
+                <h2 class="text-white font-bold text-base leading-none flex items-center gap-1.5">
+                  Veja se me Encaixo no Seu Time
+                  <span class="match-info-wrapper relative inline-flex">
+                    <button (click)="showMatchInfo.set(!showMatchInfo())"
+                            (mouseleave)="showMatchInfo.set(false)"
+                            class="w-4 h-4 rounded-full border border-gray-500 text-gray-400 hover:border-cyan-400 hover:text-cyan-400 transition-colors flex items-center justify-center text-[10px] font-bold leading-none cursor-pointer shrink-0">
+                      i
+                    </button>
+                    @if (showMatchInfo()) {
+                      <div class="match-tooltip absolute top-full left-0 mt-2 w-80 bg-gray-800 border border-gray-700 rounded-xl p-3 text-left shadow-xl z-50 text-gray-300 text-[11px] leading-relaxed">
+                        <p class="font-semibold text-white mb-1.5">📐 Como o % é calculado</p>
+                        <p class="mb-2">Cada tecnologia é comparada com o perfil de Elias e recebe uma nota de <span class="text-cyan-400 font-semibold">0–100%</span>. Skills desconhecidas recebem <span class="text-red-400 font-semibold">0%</span>.</p>
+                        <p class="mb-1.5">Sem pesos, o match é a <span class="text-cyan-400 font-semibold">média simples</span>:</p>
+                        <p class="text-gray-500 mb-2 pl-2 border-l border-gray-700">Laravel (95%) + Docker (80%) + Desconhecida (0%) → <span class="text-gray-300">(95+80+0) ÷ 3 = <strong class="text-cyan-400">58%</strong></span></p>
+                        <p class="mb-1.5">Com <span class="text-amber-400 font-semibold">pesos</span>, cada nota é multiplicada antes de tirar a média ponderada:</p>
+                        <p class="text-gray-500 pl-2 border-l border-gray-700">Laravel (95%, <span class="text-amber-400">×3</span>) + Docker (80%, ×1) + Desconhecida (0%, ×1) → <span class="text-gray-300">(95×3 + 80×1 + 0×1) ÷ (3+1+1) = <strong class="text-cyan-400">57%</strong></span></p>
+                        <p class="text-gray-600 mt-2">Use pesos de 1 a 10. Quanto maior o peso, mais aquela skill influencia o resultado final.</p>
+                      </div>
+                    }
+                  </span>
+                </h2>
                 <p class="text-gray-500 text-xs mt-0.5">Descubra o match com Elias</p>
               </div>
             </div>
@@ -120,22 +141,32 @@ function findSkillScore(input: string): number | null {
                 ou vírgula para adicionar.
               </p>
 
-              <div class="relative mb-4">
+              <div class="flex gap-2 mb-4 items-end">
                 <input
                   type="text"
                   [value]="currentInput()"
                   (input)="onRawInput($event)"
                   (keydown)="onKeydown($event)"
-                  placeholder="Ex: Laravel, Vue.js, Docker..."
+                  placeholder="Ex: Laravel, Vue.js..."
                   maxlength="40"
-                  class="w-full bg-gray-800/70 border border-gray-700/60 rounded-xl px-4 py-3 pr-10 text-sm text-gray-200 placeholder-gray-600 outline-none focus:border-blue-500/60 transition-colors"
+                  class="flex-1 min-w-0 bg-gray-800/70 border border-gray-700/60 rounded-xl px-3 py-2.5 text-sm text-gray-200 placeholder-gray-600 outline-none focus:border-blue-500/60 transition-colors"
                 />
-                @if (currentInput().length > 0) {
-                  <button (click)="addCurrentInput()"
-                          class="absolute right-3 top-1/2 -translate-y-1/2 text-blue-400 hover:text-blue-300 transition-colors text-xs font-bold">
-                    ↵
-                  </button>
-                }
+                <div class="flex flex-col gap-0.5 shrink-0">
+                  <label class="text-[10px] text-gray-600 text-center">Peso</label>
+                  <input
+                    type="number"
+                    [value]="currentWeight()"
+                    (input)="onWeightInput($event)"
+                    (keydown.enter)="addCurrentInput()"
+                    min="1" max="10"
+                    class="w-14 bg-gray-800/70 border border-gray-700/60 rounded-xl px-2 py-2.5 text-sm text-gray-200 outline-none focus:border-blue-500/60 transition-colors text-center"
+                  />
+                </div>
+                <button (click)="addCurrentInput()"
+                        [disabled]="!currentInput().trim()"
+                        class="shrink-0 w-9 h-9 rounded-xl bg-blue-600/20 hover:bg-blue-600/40 disabled:opacity-30 disabled:cursor-not-allowed text-blue-400 hover:text-blue-300 transition-colors text-sm font-bold flex items-center justify-center">
+                  ↵
+                </button>
               </div>
 
               @if (skills().length > 0) {
@@ -149,6 +180,9 @@ function findSkillScore(input: string): number | null {
                         @if (skill.matched) { {{ skill.score }}% }
                         @else { ✗ }
                       </span>
+                      @if (skill.weight > 1) {
+                        <span class="text-[9px] font-bold opacity-70">×{{ skill.weight }}</span>
+                      }
                       <button (click)="removeSkill(skill.name)"
                               class="skill-remove-btn w-3.5 h-3.5 rounded-full flex items-center justify-center text-[9px] leading-none ml-0.5 shrink-0">
                         ×
@@ -354,6 +388,14 @@ function findSkillScore(input: string): number | null {
                 </div>
               }
 
+              @if (skills().length === 0) {
+                <div class="absolute top-16 left-6 text-left">
+                  <p class="text-gray-600 text-xs leading-relaxed">
+                    ← Digite tecnologias<br>para ver o match
+                  </p>
+                </div>
+              }
+
               <div class="relative flex items-center justify-center" style="width: 200px; height: 340px;">
                 <svg viewBox="0 0 200 340" width="200" height="340" xmlns="http://www.w3.org/2000/svg">
                   <defs>
@@ -376,7 +418,7 @@ function findSkillScore(input: string): number | null {
                     L124,276 C126,284 134,288 142,286 C150,284 154,276 152,268 L138,180 L138,120 L147,155
                     C149,162 156,166 163,164 C170,162 174,155 172,148 L160,104 C156,88 148,76 132,72
                     C122,70 110,68 100,68 C90,68 78,70 68,72 Z
-                  " fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
+                  " class="silhouette-bg" fill="#0f172a" stroke="#334155" stroke-width="1.5"/>
 
                   <rect x="0" [attr.y]="340 - displayPercent() * 3.4" width="200" [attr.height]="displayPercent() * 3.4"
                         [attr.fill]="matchColor()"
@@ -396,13 +438,6 @@ function findSkillScore(input: string): number | null {
                   }
                 </svg>
 
-                @if (skills().length === 0) {
-                  <div class="absolute bottom-8 text-center">
-                    <p class="text-gray-600 text-xs leading-relaxed">
-                      ← Digite tecnologias<br>para ver o match
-                    </p>
-                  </div>
-                }
               </div>
 
               @if (activeTab() === 'tags' && skills().length > 0) {
@@ -429,6 +464,11 @@ function findSkillScore(input: string): number | null {
     }
   `,
   styles: [`
+    :host-context(html.light) .silhouette-bg {
+      fill: #f1f5f9;
+      stroke: #cbd5e1;
+    }
+
     .dev-match-open-btn {
       background: linear-gradient(135deg, #3b82f6, #06b6d4);
       box-shadow: 0 4px 24px rgba(6, 182, 212, 0.3);
@@ -525,6 +565,8 @@ export class DevMatchComponent implements OnInit {
   activeTab = signal<'tags' | 'ai'>('tags');
   skills = signal<SkillEntry[]>([]);
   currentInput = signal('');
+  currentWeight = signal<number>(1);
+  showMatchInfo = signal(false);
 
   // ---- AI ----
   aiJobDescription = '';
@@ -544,8 +586,9 @@ export class DevMatchComponent implements OnInit {
   matchPercent = computed(() => {
     const list = this.skills();
     if (list.length === 0) return 0;
-    const total = list.reduce((s, sk) => s + (sk.matched ? sk.score : 0), 0);
-    return Math.round(total / list.length);
+    const totalWeight = list.reduce((s, sk) => s + sk.weight, 0);
+    const totalScore = list.reduce((s, sk) => s + (sk.matched ? sk.score * sk.weight : 0), 0);
+    return Math.round(totalScore / totalWeight);
   });
 
   displayPercent = computed(() => {
@@ -708,21 +751,28 @@ export class DevMatchComponent implements OnInit {
 
   addCurrentInput(): void {
     const val = this.currentInput().trim().replace(/,/g, '');
-    if (val) this.addSkill(val);
+    if (val) this.addSkill(val, this.currentWeight());
     this.currentInput.set('');
+    this.currentWeight.set(1);
+  }
+
+  onWeightInput(event: Event): void {
+    const val = parseInt((event.target as HTMLInputElement).value, 10);
+    this.currentWeight.set(isNaN(val) ? 1 : Math.max(1, Math.min(10, val)));
   }
 
   addSuggestion(s: string): void {
     this.addSkill(s);
   }
 
-  private addSkill(name: string): void {
+  private addSkill(name: string, weight = 1): void {
     if (!name) return;
     const normalized = name.trim();
     if (this.skills().some(sk => sk.name.toLowerCase() === normalized.toLowerCase())) return;
     const score = findSkillScore(normalized);
     const matched = score !== null;
-    this.skills.update(list => [...list, { name: normalized, matched, score: score ?? 0 }]);
+    const w = Math.max(1, Math.min(10, Math.round(weight)));
+    this.skills.update(list => [...list, { name: normalized, matched, score: score ?? 0, weight: w }]);
   }
 
   removeSkill(name: string): void {
