@@ -821,7 +821,7 @@ interface TimeToActionRow {
               }
               @for (conv of conversations; track conv.id) {
                 <button (click)="selectConversation(conv)"
-                        class="w-full text-left px-4 py-3 hover:bg-gray-800/40 transition-colors border-b border-gray-800/30"
+                        class="group w-full text-left px-4 py-3 hover:bg-gray-800/40 transition-colors border-b border-gray-800/30"
                         [class.bg-violet-500/10]="selectedConv?.id === conv.id">
                   <div class="flex items-start justify-between gap-2">
                     <div class="min-w-0 flex items-start gap-2">
@@ -832,11 +832,20 @@ interface TimeToActionRow {
                         <p class="text-[10px] text-gray-600 mt-0.5">{{ conv.lastMessageAt | date:'dd/MM HH:mm' }}</p>
                       </div>
                     </div>
+                  <div class="flex items-center gap-2 shrink-0">
                     @if (conv.unreadByOwner > 0) {
-                      <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-violet-500 text-white text-[10px] font-bold">
+                      <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-violet-500 text-white text-[10px] font-bold">
                         {{ conv.unreadByOwner > 9 ? '9+' : conv.unreadByOwner }}
                       </span>
                     }
+                    <button (click)="$event.stopPropagation(); askDeleteConv(conv)"
+                            class="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
+                            title="Excluir conversa">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
                   </div>
                 </button>
               }
@@ -863,6 +872,13 @@ interface TimeToActionRow {
                     </p>
                   </div>
                   <p class="text-[10px] text-gray-600">{{ selectedConv.startedAt | date:'dd/MM/yy HH:mm' }}</p>
+                  <button (click)="askDeleteConv(selectedConv)"
+                          class="ml-1 p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
+                          title="Excluir conversa">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
                 </div>
 
                 <!-- Mensagens -->
@@ -1088,21 +1104,15 @@ interface TimeToActionRow {
                 <div class="w-9 h-9 rounded-xl bg-cyan-500/15 flex items-center justify-center text-lg">📧</div>
                 <div>
                   <h3 class="text-white font-semibold text-sm">Email de teste</h3>
-                  <p class="text-gray-500 text-xs">Abre um rascunho no seu cliente de email padrão</p>
+                  <p class="text-gray-500 text-xs">Envia um email real para <span class="text-cyan-400 font-mono">egds.dev&#64;gmail.com</span></p>
                 </div>
               </div>
 
               <div class="space-y-3">
                 <div>
-                  <label class="text-xs text-gray-400 mb-1 block">Destinatário</label>
-                  <input type="email" [(ngModel)]="testEmailTo" maxlength="100"
-                         placeholder="voce@email.com"
-                         class="w-full bg-gray-800/70 border border-gray-700/60 rounded-xl px-3 py-2 text-sm text-gray-200 placeholder-gray-600 outline-none focus:border-cyan-500/60 transition-colors" />
-                </div>
-                <div>
                   <label class="text-xs text-gray-400 mb-1 block">Assunto</label>
                   <input type="text" [(ngModel)]="testEmailSubject" maxlength="100"
-                         placeholder="Ex: Teste de contato — Portfolio Elias"
+                         placeholder="Ex: Teste de email — Portfolio Admin"
                          class="w-full bg-gray-800/70 border border-gray-700/60 rounded-xl px-3 py-2 text-sm text-gray-200 placeholder-gray-600 outline-none focus:border-cyan-500/60 transition-colors" />
                 </div>
                 <div>
@@ -1114,18 +1124,28 @@ interface TimeToActionRow {
               </div>
 
               @if (testEmailResult) {
-                <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs bg-green-500/10 border border-green-500/20">
+                <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs"
+                     [class.bg-green-500/10]="testEmailResult.startsWith('✅')"
+                     [class.border-green-500/20]="testEmailResult.startsWith('✅')"
+                     [class.bg-yellow-500/10]="testEmailResult.startsWith('⏳')"
+                     [class.border-yellow-500/20]="testEmailResult.startsWith('⏳')"
+                     [class.bg-red-500/10]="testEmailResult.startsWith('❌')"
+                     [class.border-red-500/20]="testEmailResult.startsWith('❌')"
+                     style="border-width:1px">
                   <span>{{ testEmailResult }}</span>
                 </div>
               }
 
               <button (click)="sendTestEmail()"
-                      [disabled]="!testEmailTo.trim() || !testEmailSubject.trim()"
+                      [disabled]="emailSending || !testEmailSubject.trim()"
                       class="w-full py-2.5 rounded-xl bg-cyan-600 text-white text-sm font-semibold hover:bg-cyan-500 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                📧 Abrir rascunho de email
+                @if (emailSending) {
+                  <span class="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  Enviando...
+                } @else {
+                  📧 Enviar email de teste
+                }
               </button>
-
-              <p class="text-xs text-gray-600 text-center">Abre no cliente padrão (Gmail, Outlook, etc.)</p>
             </div>
 
           </div>
@@ -1183,6 +1203,17 @@ interface TimeToActionRow {
           cancelLabel="Cancelar"
           (confirmed)="confirmDeleteConvMessage()"
           (cancelled)="cancelDeleteConvMessage()" />
+      }
+
+      <!-- Dialog: confirmar exclusão de conversa -->
+      @if (convToDelete) {
+        <app-confirm-dialog
+          title="Excluir conversa"
+          [message]="'Tem certeza que deseja excluir a conversa de ' + (convToDelete.company ? convToDelete.username + ' · ' + convToDelete.company : convToDelete.username) + '? Todas as mensagens serão removidas permanentemente.'"
+          confirmLabel="Excluir"
+          cancelLabel="Cancelar"
+          (confirmed)="confirmDeleteConv()"
+          (cancelled)="convToDelete = null" />
       }
 
       <!-- Toast: nova mensagem de visitante -->
@@ -1326,10 +1357,11 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   pushPermStatus: 'granted' | 'denied' | 'prompt' | 'unknown' = 'unknown';
   savedFcmToken: string | null = null;
   fcmCopied = false;
-  testEmailTo = '';
-  testEmailSubject = 'Teste de contato — Portfolio Elias';
+  testEmailSubject = '🧪 Teste de email — Portfolio Admin';
   testEmailBody = 'Esta é uma mensagem de teste enviada pelo painel administrativo do portfolio.';
   testEmailResult = '';
+  emailSending = false;
+  private unsubTestEmail?: () => void;
   private unsubConversations?: () => void;
   private unsubConvMessages?: () => void;
 
@@ -1344,6 +1376,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   // ── Delete ──────────────────────────────────────────────────────────
   deleteTarget: AccessTableRow | null = null;
   deleting = false;
+  convToDelete: ChatConversation | null = null;
+  deletingConv = false;
 
   async ngOnInit(): Promise<void> {
     void this.firebase.setOwnerOnline(true);
@@ -1482,13 +1516,43 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     setTimeout(() => { this.testPushResult = ''; this.cdr.detectChanges(); }, 5000);
   }
 
-  sendTestEmail(): void {
-    if (!this.testEmailTo.trim() || !this.testEmailSubject.trim()) return;
-    const subject = encodeURIComponent(this.testEmailSubject);
-    const body = encodeURIComponent(this.testEmailBody);
-    window.open(`mailto:${this.testEmailTo}?subject=${subject}&body=${body}`, '_blank');
-    this.testEmailResult = '✅ Rascunho aberto no seu cliente de email!';
-    setTimeout(() => { this.testEmailResult = ''; this.cdr.detectChanges(); }, 5000);
+  async sendTestEmail(): Promise<void> {
+    if (this.emailSending || !this.testEmailSubject.trim()) return;
+    this.emailSending = true;
+    this.testEmailResult = '⏳ Enviando via Cloud Function...';
+    this.cdr.detectChanges();
+
+    // Cancela listener anterior se houver
+    this.unsubTestEmail?.();
+
+    try {
+      const docId = await this.firebase.queueTestEmail(this.testEmailSubject, this.testEmailBody);
+
+      // Aguarda status da Cloud Function (timeout de 15s)
+      const timeout = setTimeout(() => {
+        this.unsubTestEmail?.();
+        this.emailSending = false;
+        this.testEmailResult = '⏳ Email enfileirado — verifique sua caixa em breve';
+        this.cdr.detectChanges();
+        setTimeout(() => { this.testEmailResult = ''; this.cdr.detectChanges(); }, 8000);
+      }, 15000);
+
+      this.unsubTestEmail = this.firebase.listenTestNotificationStatus(docId, (status, error) => {
+        clearTimeout(timeout);
+        this.unsubTestEmail?.();
+        this.emailSending = false;
+        this.testEmailResult = status === 'sent'
+          ? '✅ Email enviado para egds.dev@gmail.com!'
+          : `❌ Erro: ${error ?? 'falha no envio'}`;
+        this.cdr.detectChanges();
+        setTimeout(() => { this.testEmailResult = ''; this.cdr.detectChanges(); }, 8000);
+      });
+    } catch (err) {
+      this.emailSending = false;
+      this.testEmailResult = `❌ ${err instanceof Error ? err.message : 'Erro ao enfileirar email'}`;
+      this.cdr.detectChanges();
+      setTimeout(() => { this.testEmailResult = ''; this.cdr.detectChanges(); }, 8000);
+    }
   }
 
   async copyFcmToken(): Promise<void> {
@@ -1573,6 +1637,28 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     await this.firebase.softDeleteChatMessage(this.selectedConvId, msg.id);
   }
 
+  askDeleteConv(conv: ChatConversation): void {
+    this.convToDelete = conv;
+  }
+
+  async confirmDeleteConv(): Promise<void> {
+    const conv = this.convToDelete;
+    if (!conv?.id || this.deletingConv) return;
+    this.deletingConv = true;
+    this.convToDelete = null;
+    try {
+      if (this.selectedConvId === conv.id) {
+        this.selectedConvId = null;
+        this.unsubConvMessages?.();
+        this.convMessagesList = [];
+      }
+      await this.firebase.deleteConversation(conv.id);
+    } finally {
+      this.deletingConv = false;
+      this.cdr.detectChanges();
+    }
+  }
+
   toggleConvMessageMenu(msg: ChatMessage, event: MouseEvent): void {
     event.stopPropagation();
     if (!msg.id) return;
@@ -1654,6 +1740,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     this.mapMarkers.clear();
     this.unsubConversations?.();
     this.unsubConvMessages?.();
+    this.unsubTestEmail?.();
     clearTimeout(this.adminToastTimer);
     this.knownUnreadByConv.clear();
   }

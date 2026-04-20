@@ -76,9 +76,7 @@ import { RevealDirective } from './shared/directives/reveal.directive';
           <div appReveal="up" [revealDelay]="0">
             <app-certifications></app-certifications>
           </div>
-          <div appReveal="up" [revealDelay]="0">
-            <app-contact></app-contact>
-          </div>
+          <app-contact></app-contact>
           <app-footer></app-footer>
         </div>
         <!-- Botão flutuante de chat (só fora da rota admin e não autenticado) -->
@@ -91,10 +89,7 @@ import { RevealDirective } from './shared/directives/reveal.directive';
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                     d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
-            <div class="flex flex-col items-start leading-tight">
-              <span>Fale comigo</span>
-              <span class="text-[10px] font-normal opacity-70">Chat Local</span>
-            </div>
+            <span>Fale Comigo<span class="hidden sm:inline"> Aqui</span></span>
           </button>
         }
         <router-outlet></router-outlet>
