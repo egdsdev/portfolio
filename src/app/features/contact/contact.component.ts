@@ -527,12 +527,10 @@ export class ContactComponent implements OnInit, OnDestroy {
       );
       this.chatState.set('open');
       void this.firebase.setVisitorOnline(savedConvId, true);
-    } else if (savedName) {
-      // Tem nome mas sem conversa: cria nova
+    } else {
+      // Sem conversa existente: mostra modal com campos pré-preenchidos (se houver)
       this.chatUsername = savedName;
       this.chatCompany = localStorage.getItem(this.STORAGE_COMPANY) ?? '';
-      void this.startChat();
-    } else {
       this.chatState.set('entry');
     }
   }
