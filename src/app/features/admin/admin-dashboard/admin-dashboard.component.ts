@@ -821,7 +821,7 @@ interface TimeToActionRow {
               }
               @for (conv of conversations; track conv.id) {
                 <button (click)="selectConversation(conv)"
-                        class="w-full text-left px-4 py-3 hover:bg-gray-800/40 transition-colors border-b border-gray-800/30"
+                        class="group w-full text-left px-4 py-3 hover:bg-gray-800/40 transition-colors border-b border-gray-800/30"
                         [class.bg-violet-500/10]="selectedConv?.id === conv.id">
                   <div class="flex items-start justify-between gap-2">
                     <div class="min-w-0 flex items-start gap-2">
@@ -832,11 +832,20 @@ interface TimeToActionRow {
                         <p class="text-[10px] text-gray-600 mt-0.5">{{ conv.lastMessageAt | date:'dd/MM HH:mm' }}</p>
                       </div>
                     </div>
+                  <div class="flex items-center gap-2 shrink-0">
                     @if (conv.unreadByOwner > 0) {
-                      <span class="shrink-0 inline-flex items-center justify-center w-5 h-5 rounded-full bg-violet-500 text-white text-[10px] font-bold">
+                      <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-violet-500 text-white text-[10px] font-bold">
                         {{ conv.unreadByOwner > 9 ? '9+' : conv.unreadByOwner }}
                       </span>
                     }
+                    <button (click)="$event.stopPropagation(); askDeleteConv(conv)"
+                            class="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
+                            title="Excluir conversa">
+                      <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
                   </div>
                 </button>
               }
@@ -863,6 +872,13 @@ interface TimeToActionRow {
                     </p>
                   </div>
                   <p class="text-[10px] text-gray-600">{{ selectedConv.startedAt | date:'dd/MM/yy HH:mm' }}</p>
+                  <button (click)="askDeleteConv(selectedConv)"
+                          class="ml-1 p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
+                          title="Excluir conversa">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                    </svg>
+                  </button>
                 </div>
 
                 <!-- Mensagens -->
@@ -1189,6 +1205,17 @@ interface TimeToActionRow {
           (cancelled)="cancelDeleteConvMessage()" />
       }
 
+      <!-- Dialog: confirmar exclusão de conversa -->
+      @if (convToDelete) {
+        <app-confirm-dialog
+          title="Excluir conversa"
+          [message]="'Tem certeza que deseja excluir a conversa de ' + (convToDelete.company ? convToDelete.username + ' · ' + convToDelete.company : convToDelete.username) + '? Todas as mensagens serão removidas permanentemente.'"
+          confirmLabel="Excluir"
+          cancelLabel="Cancelar"
+          (confirmed)="confirmDeleteConv()"
+          (cancelled)="convToDelete = null" />
+      }
+
       <!-- Toast: nova mensagem de visitante -->
       @if (adminToastMsg) {
         <div class="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-gray-900 border border-violet-500/50
@@ -1349,6 +1376,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   // ── Delete ──────────────────────────────────────────────────────────
   deleteTarget: AccessTableRow | null = null;
   deleting = false;
+  convToDelete: ChatConversation | null = null;
+  deletingConv = false;
 
   async ngOnInit(): Promise<void> {
     void this.firebase.setOwnerOnline(true);
@@ -1606,6 +1635,28 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     if (!msg?.id || !this.selectedConvId) { this.convMsgToDelete = null; return; }
     this.convMsgToDelete = null;
     await this.firebase.softDeleteChatMessage(this.selectedConvId, msg.id);
+  }
+
+  askDeleteConv(conv: ChatConversation): void {
+    this.convToDelete = conv;
+  }
+
+  async confirmDeleteConv(): Promise<void> {
+    const conv = this.convToDelete;
+    if (!conv?.id || this.deletingConv) return;
+    this.deletingConv = true;
+    this.convToDelete = null;
+    try {
+      if (this.selectedConvId === conv.id) {
+        this.selectedConvId = null;
+        this.unsubConvMessages?.();
+        this.convMessagesList = [];
+      }
+      await this.firebase.deleteConversation(conv.id);
+    } finally {
+      this.deletingConv = false;
+      this.cdr.detectChanges();
+    }
   }
 
   toggleConvMessageMenu(msg: ChatMessage, event: MouseEvent): void {

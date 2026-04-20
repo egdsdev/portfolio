@@ -460,6 +460,19 @@ export class FirebaseService {
     );
   }
 
+  async deleteConversation(conversationId: string): Promise<void> {
+    // Deleta todas as mensagens primeiro, depois a conversa
+    const msgsSnap = await import('firebase/firestore').then(({ getDocs }) =>
+      getDocs(collection(this.db, 'chat_conversations', conversationId, 'messages'))
+    );
+    const batch = (await import('firebase/firestore')).writeBatch(this.db);
+    for (const msgDoc of msgsSnap.docs) {
+      batch.delete(msgDoc.ref);
+    }
+    batch.delete(doc(this.db, 'chat_conversations', conversationId));
+    await batch.commit();
+  }
+
   listenToConversations(callback: (convs: ChatConversation[]) => void): () => void {
     const q = query(
       collection(this.db, 'chat_conversations'),
