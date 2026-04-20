@@ -148,6 +148,31 @@ export class FirebaseService {
     }
   }
 
+  /** Enfileira um email de teste. Retorna o docId para monitorar o status. */
+  async queueTestEmail(subject: string, body: string): Promise<string> {
+    const ref = await addDoc(collection(this.db, 'test_notifications'), {
+      type: 'email',
+      subject,
+      body,
+      sentAt: Timestamp.now(),
+      status: 'pending',
+    });
+    return ref.id;
+  }
+
+  /** Escuta atualizações de status de um test_notification. Retorna unsubscribe. */
+  listenTestNotificationStatus(
+    docId: string,
+    callback: (status: string, error?: string) => void,
+  ): () => void {
+    return onSnapshot(doc(this.db, 'test_notifications', docId), snap => {
+      const d = snap.data();
+      if (d?.['status'] && d['status'] !== 'pending') {
+        callback(d['status'] as string, d['error'] as string | undefined);
+      }
+    });
+  }
+
   // ---- Auth ----
   async login(email: string, password: string): Promise<void> {
     await signInWithEmailAndPassword(this.auth, email, password);

@@ -1088,21 +1088,15 @@ interface TimeToActionRow {
                 <div class="w-9 h-9 rounded-xl bg-cyan-500/15 flex items-center justify-center text-lg">📧</div>
                 <div>
                   <h3 class="text-white font-semibold text-sm">Email de teste</h3>
-                  <p class="text-gray-500 text-xs">Abre um rascunho no seu cliente de email padrão</p>
+                  <p class="text-gray-500 text-xs">Envia um email real para <span class="text-cyan-400 font-mono">egds.dev&#64;gmail.com</span></p>
                 </div>
               </div>
 
               <div class="space-y-3">
                 <div>
-                  <label class="text-xs text-gray-400 mb-1 block">Destinatário</label>
-                  <input type="email" [(ngModel)]="testEmailTo" maxlength="100"
-                         placeholder="voce@email.com"
-                         class="w-full bg-gray-800/70 border border-gray-700/60 rounded-xl px-3 py-2 text-sm text-gray-200 placeholder-gray-600 outline-none focus:border-cyan-500/60 transition-colors" />
-                </div>
-                <div>
                   <label class="text-xs text-gray-400 mb-1 block">Assunto</label>
                   <input type="text" [(ngModel)]="testEmailSubject" maxlength="100"
-                         placeholder="Ex: Teste de contato — Portfolio Elias"
+                         placeholder="Ex: Teste de email — Portfolio Admin"
                          class="w-full bg-gray-800/70 border border-gray-700/60 rounded-xl px-3 py-2 text-sm text-gray-200 placeholder-gray-600 outline-none focus:border-cyan-500/60 transition-colors" />
                 </div>
                 <div>
@@ -1114,18 +1108,28 @@ interface TimeToActionRow {
               </div>
 
               @if (testEmailResult) {
-                <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs bg-green-500/10 border border-green-500/20">
+                <div class="flex items-center gap-2 px-3 py-2 rounded-lg text-xs"
+                     [class.bg-green-500/10]="testEmailResult.startsWith('✅')"
+                     [class.border-green-500/20]="testEmailResult.startsWith('✅')"
+                     [class.bg-yellow-500/10]="testEmailResult.startsWith('⏳')"
+                     [class.border-yellow-500/20]="testEmailResult.startsWith('⏳')"
+                     [class.bg-red-500/10]="testEmailResult.startsWith('❌')"
+                     [class.border-red-500/20]="testEmailResult.startsWith('❌')"
+                     style="border-width:1px">
                   <span>{{ testEmailResult }}</span>
                 </div>
               }
 
               <button (click)="sendTestEmail()"
-                      [disabled]="!testEmailTo.trim() || !testEmailSubject.trim()"
+                      [disabled]="emailSending || !testEmailSubject.trim()"
                       class="w-full py-2.5 rounded-xl bg-cyan-600 text-white text-sm font-semibold hover:bg-cyan-500 transition-all disabled:opacity-40 disabled:cursor-not-allowed flex items-center justify-center gap-2">
-                📧 Abrir rascunho de email
+                @if (emailSending) {
+                  <span class="inline-block w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></span>
+                  Enviando...
+                } @else {
+                  📧 Enviar email de teste
+                }
               </button>
-
-              <p class="text-xs text-gray-600 text-center">Abre no cliente padrão (Gmail, Outlook, etc.)</p>
             </div>
 
           </div>
@@ -1326,10 +1330,11 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   pushPermStatus: 'granted' | 'denied' | 'prompt' | 'unknown' = 'unknown';
   savedFcmToken: string | null = null;
   fcmCopied = false;
-  testEmailTo = '';
-  testEmailSubject = 'Teste de contato — Portfolio Elias';
+  testEmailSubject = '🧪 Teste de email — Portfolio Admin';
   testEmailBody = 'Esta é uma mensagem de teste enviada pelo painel administrativo do portfolio.';
   testEmailResult = '';
+  emailSending = false;
+  private unsubTestEmail?: () => void;
   private unsubConversations?: () => void;
   private unsubConvMessages?: () => void;
 
@@ -1482,13 +1487,43 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     setTimeout(() => { this.testPushResult = ''; this.cdr.detectChanges(); }, 5000);
   }
 
-  sendTestEmail(): void {
-    if (!this.testEmailTo.trim() || !this.testEmailSubject.trim()) return;
-    const subject = encodeURIComponent(this.testEmailSubject);
-    const body = encodeURIComponent(this.testEmailBody);
-    window.open(`mailto:${this.testEmailTo}?subject=${subject}&body=${body}`, '_blank');
-    this.testEmailResult = '✅ Rascunho aberto no seu cliente de email!';
-    setTimeout(() => { this.testEmailResult = ''; this.cdr.detectChanges(); }, 5000);
+  async sendTestEmail(): Promise<void> {
+    if (this.emailSending || !this.testEmailSubject.trim()) return;
+    this.emailSending = true;
+    this.testEmailResult = '⏳ Enviando via Cloud Function...';
+    this.cdr.detectChanges();
+
+    // Cancela listener anterior se houver
+    this.unsubTestEmail?.();
+
+    try {
+      const docId = await this.firebase.queueTestEmail(this.testEmailSubject, this.testEmailBody);
+
+      // Aguarda status da Cloud Function (timeout de 15s)
+      const timeout = setTimeout(() => {
+        this.unsubTestEmail?.();
+        this.emailSending = false;
+        this.testEmailResult = '⏳ Email enfileirado — verifique sua caixa em breve';
+        this.cdr.detectChanges();
+        setTimeout(() => { this.testEmailResult = ''; this.cdr.detectChanges(); }, 8000);
+      }, 15000);
+
+      this.unsubTestEmail = this.firebase.listenTestNotificationStatus(docId, (status, error) => {
+        clearTimeout(timeout);
+        this.unsubTestEmail?.();
+        this.emailSending = false;
+        this.testEmailResult = status === 'sent'
+          ? '✅ Email enviado para egds.dev@gmail.com!'
+          : `❌ Erro: ${error ?? 'falha no envio'}`;
+        this.cdr.detectChanges();
+        setTimeout(() => { this.testEmailResult = ''; this.cdr.detectChanges(); }, 8000);
+      });
+    } catch (err) {
+      this.emailSending = false;
+      this.testEmailResult = `❌ ${err instanceof Error ? err.message : 'Erro ao enfileirar email'}`;
+      this.cdr.detectChanges();
+      setTimeout(() => { this.testEmailResult = ''; this.cdr.detectChanges(); }, 8000);
+    }
   }
 
   async copyFcmToken(): Promise<void> {
@@ -1654,6 +1689,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     this.mapMarkers.clear();
     this.unsubConversations?.();
     this.unsubConvMessages?.();
+    this.unsubTestEmail?.();
     clearTimeout(this.adminToastTimer);
     this.knownUnreadByConv.clear();
   }

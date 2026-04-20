@@ -33,7 +33,7 @@ var __importStar = (this && this.__importStar) || (function () {
     };
 })();
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.onNewChatMessage = void 0;
+exports.onNewChatMessage = exports.onTestNotification = void 0;
 const admin = __importStar(require("firebase-admin"));
 const firestore_1 = require("firebase-functions/v2/firestore");
 const params_1 = require("firebase-functions/params");
@@ -42,6 +42,75 @@ admin.initializeApp();
 const gmailPass = (0, params_1.defineSecret)('GMAIL_APP_PASSWORD');
 const ADMIN_EMAIL = 'egds.dev@gmail.com';
 const ADMIN_URL = 'https://egdsdev.github.io/portfolio/admin';
+// ── Teste de email/push disparado pelo painel admin ──────────────────────────
+exports.onTestNotification = (0, firestore_1.onDocumentCreated)({
+    document: 'test_notifications/{docId}',
+    secrets: [gmailPass],
+    region: 'us-central1',
+}, async (event) => {
+    var _a, _b, _c;
+    const data = (_a = event.data) === null || _a === void 0 ? void 0 : _a.data();
+    if (!data)
+        return;
+    const db = admin.firestore();
+    const docRef = db.doc(`test_notifications/${event.params['docId']}`);
+    const type = (_b = data['type']) !== null && _b !== void 0 ? _b : 'email';
+    try {
+        // ── Push ───────────────────────────────────────────────────────────
+        if (type === 'push' || type === 'both') {
+            const tokenSnap = await db.doc('admin_config/notifications').get();
+            const fcmToken = (_c = tokenSnap.data()) === null || _c === void 0 ? void 0 : _c['fcmToken'];
+            if (fcmToken) {
+                await admin.messaging().send({
+                    token: fcmToken,
+                    notification: {
+                        title: data['title'] || '🧪 Teste de push',
+                        body: data['body'] || 'Push notification funcionando!',
+                    },
+                    webpush: { fcmOptions: { link: ADMIN_URL } },
+                });
+            }
+        }
+        // ── Email ──────────────────────────────────────────────────────────
+        if (type === 'email' || type === 'both') {
+            const subject = data['subject'] || '🧪 Teste de email — Portfolio Admin';
+            const bodyText = data['body'] || 'Email de teste funcionando!';
+            const transporter = nodemailer.createTransport({
+                service: 'gmail',
+                auth: { user: ADMIN_EMAIL, pass: gmailPass.value() },
+            });
+            await transporter.sendMail({
+                from: `"Portfolio Admin" <${ADMIN_EMAIL}>`,
+                to: ADMIN_EMAIL,
+                subject,
+                html: `
+            <div style="font-family:ui-sans-serif,sans-serif;max-width:500px;margin:0 auto">
+              <div style="background:#0e7490;padding:20px 24px;border-radius:12px 12px 0 0">
+                <h2 style="color:#fff;margin:0;font-size:18px">🧪 Email de teste — Admin</h2>
+              </div>
+              <div style="background:#0f172a;padding:20px 24px;border-radius:0 0 12px 12px">
+                <p style="color:#94a3b8;margin:0 0 4px;font-size:13px;font-weight:600">ASSUNTO</p>
+                <p style="color:#fff;margin:0 0 16px;font-size:15px">${subject}</p>
+                <p style="color:#94a3b8;margin:0 0 4px;font-size:13px;font-weight:600">MENSAGEM</p>
+                <p style="color:#e2e8f0;margin:0 0 20px;font-size:14px;line-height:1.6">${bodyText}</p>
+                <a href="${ADMIN_URL}"
+                   style="display:inline-block;background:#0e7490;color:#fff;padding:10px 22px;border-radius:8px;text-decoration:none;font-size:14px;font-weight:600">
+                  Abrir painel Admin →
+                </a>
+              </div>
+            </div>
+          `,
+            });
+        }
+        await docRef.update({ status: 'sent' });
+        console.log(`[TestNotification] type=${type} enviado com sucesso`);
+    }
+    catch (err) {
+        console.error('[TestNotification] Erro:', err);
+        await docRef.update({ status: 'error', error: String(err) });
+    }
+});
+// ── Nova mensagem de chat ─────────────────────────────────────────────────────
 exports.onNewChatMessage = (0, firestore_1.onDocumentCreated)({
     document: 'chat_conversations/{convId}/messages/{msgId}',
     secrets: [gmailPass],
