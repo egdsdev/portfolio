@@ -66,7 +66,7 @@ function findSkillScore(input: string): number | null {
           <path stroke-linecap="round" stroke-linejoin="round"
                 d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z" />
         </svg>
-        Monte seu Dev Ideal
+        Veja se me Encaixo no Seu Time
         <span class="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full animate-ping opacity-75"></span>
         <span class="absolute -top-1 -right-1 w-3 h-3 bg-cyan-400 rounded-full"></span>
       </button>
@@ -85,7 +85,7 @@ function findSkillScore(input: string): number | null {
             <div class="flex items-center gap-3">
               <div class="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center text-sm">🧙</div>
               <div>
-                <h2 class="text-white font-bold text-base leading-none">Monte seu Dev Ideal</h2>
+                <h2 class="text-white font-bold text-base leading-none">Veja se me Encaixo no Seu Time</h2>
                 <p class="text-gray-500 text-xs mt-0.5">Descubra o match com Elias</p>
               </div>
             </div>
