@@ -363,7 +363,17 @@ interface TimeToActionRow {
           <div class="admin-card border rounded-xl p-5">
             <!-- Cabeçalho com título + filtro de datas -->
             <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
-              <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Acessos por Período</p>
+              <div class="flex items-center gap-1">
+                <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Acessos por Período</p>
+                <span class="relative inline-flex items-center">
+                  <button (click)="toggleInfo('chart_line')" (mouseleave)="closeInfo('chart_line')" class="w-4 h-4 rounded-full border border-gray-700 text-gray-600 hover:border-cyan-400 hover:text-cyan-400 transition-colors flex items-center justify-center text-[10px] font-bold cursor-pointer shrink-0">i</button>
+                  @if (infoOpen['chart_line']) {
+                    <div class="absolute bottom-full left-0 mb-2 w-64 bg-gray-800 border border-gray-700 rounded-xl p-3 text-[11px] text-gray-300 leading-relaxed shadow-xl z-50">
+                      Visitantes únicos registrados por dia no período selecionado. Cada IP diferente conta como um visitante único. Use os presets ou os campos de data para ajustar o intervalo.
+                    </div>
+                  }
+                </span>
+              </div>
               <div class="flex flex-wrap items-center gap-2">
                 <!-- Presets -->
                 <div class="flex gap-1">
@@ -393,7 +403,17 @@ interface TimeToActionRow {
 
           <!-- Mapa Leaflet -->
           <div class="admin-card border rounded-xl p-5">
-            <p class="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">Localização dos Acessos</p>
+            <div class="flex items-center gap-1 mb-1">
+              <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Localização dos Acessos</p>
+              <span class="relative inline-flex items-center">
+                <button (click)="toggleInfo('map')" (mouseleave)="closeInfo('map')" class="w-4 h-4 rounded-full border border-gray-700 text-gray-600 hover:border-cyan-400 hover:text-cyan-400 transition-colors flex items-center justify-center text-[10px] font-bold cursor-pointer shrink-0">i</button>
+                @if (infoOpen['map']) {
+                  <div class="absolute bottom-full left-0 mb-2 w-64 bg-gray-800 border border-gray-700 rounded-xl p-3 text-[11px] text-gray-300 leading-relaxed shadow-xl z-50">
+                    Posição geográfica aproximada dos visitantes, derivada do IP. Não é precisa ao endereço. Clique em uma linha da tabela para centralizar o mapa naquele acesso.
+                  </div>
+                }
+              </span>
+            </div>
             <p class="text-[11px] text-gray-600 mb-4">Clique em uma linha da tabela para aproximar o mapa nesse acesso.</p>
             @if (loading) {
               <div class="h-64 flex items-center justify-center text-gray-600 text-sm animate-pulse">Carregando mapa...</div>
@@ -408,7 +428,17 @@ interface TimeToActionRow {
 
         <!-- ── Heatmap de Horários ──────────────────────────────────────── -->
         <div class="admin-card border rounded-xl p-5">
-          <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Heatmap de Acesso</p>
+          <div class="flex items-center gap-1 mb-1">
+            <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Heatmap de Acesso</p>
+            <span class="relative inline-flex items-center">
+              <button (click)="toggleInfo('heatmap')" (mouseleave)="closeInfo('heatmap')" class="w-4 h-4 rounded-full border border-gray-700 text-gray-600 hover:border-cyan-400 hover:text-cyan-400 transition-colors flex items-center justify-center text-[10px] font-bold cursor-pointer shrink-0">i</button>
+              @if (infoOpen['heatmap']) {
+                <div class="absolute bottom-full left-0 mb-2 w-64 bg-gray-800 border border-gray-700 rounded-xl p-3 text-[11px] text-gray-300 leading-relaxed shadow-xl z-50">
+                  Grade de intensidade cruzando dia da semana (linhas) × hora do dia (colunas). Células mais escuras = mais acessos. Útil para saber quando o portfolio recebe mais visitas.
+                </div>
+              }
+            </span>
+          </div>
           <p class="text-[11px] text-gray-600 mb-4">Dia da semana × hora — todas as interações registradas</p>
           @if (!loading && visitors.length > 0) {
             <div class="flex gap-8 flex-wrap lg:flex-nowrap">
@@ -497,7 +527,17 @@ interface TimeToActionRow {
 
           <!-- Dispositivos (Donut) -->
           <div class="admin-card border rounded-xl p-5 flex flex-col">
-            <p class="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">Dispositivos</p>
+            <div class="flex items-center gap-1 mb-4">
+              <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Dispositivos</p>
+              <span class="relative inline-flex items-center">
+                <button (click)="toggleInfo('devices')" (mouseleave)="closeInfo('devices')" class="w-4 h-4 rounded-full border border-gray-700 text-gray-600 hover:border-cyan-400 hover:text-cyan-400 transition-colors flex items-center justify-center text-[10px] font-bold cursor-pointer shrink-0">i</button>
+                @if (infoOpen['devices']) {
+                  <div class="absolute bottom-full left-0 mb-2 w-64 bg-gray-800 border border-gray-700 rounded-xl p-3 text-[11px] text-gray-300 leading-relaxed shadow-xl z-50">
+                    Proporção de visitantes desktop vs. mobile, identificada pelo user-agent do navegador. O número central é o total de IPs únicos registrados.
+                  </div>
+                }
+              </span>
+            </div>
             @if (!loading && visitors.length > 0) {
               <div class="flex-1 flex flex-col items-center justify-center gap-5">
                 <svg viewBox="0 0 140 140" class="w-40 h-40 shrink-0">
@@ -539,7 +579,17 @@ interface TimeToActionRow {
 
           <!-- Taxa de Retorno -->
           <div class="admin-card border rounded-xl p-5">
-            <p class="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">Taxa de Retorno</p>
+            <div class="flex items-center gap-1 mb-4">
+              <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Taxa de Retorno</p>
+              <span class="relative inline-flex items-center">
+                <button (click)="toggleInfo('return_rate')" (mouseleave)="closeInfo('return_rate')" class="w-4 h-4 rounded-full border border-gray-700 text-gray-600 hover:border-cyan-400 hover:text-cyan-400 transition-colors flex items-center justify-center text-[10px] font-bold cursor-pointer shrink-0">i</button>
+                @if (infoOpen['return_rate']) {
+                  <div class="absolute bottom-full left-0 mb-2 w-64 bg-gray-800 border border-gray-700 rounded-xl p-3 text-[11px] text-gray-300 leading-relaxed shadow-xl z-50">
+                    Percentual de visitantes que acessaram o portfolio mais de uma vez. Identificação por IP persistente — pode variar com VPN ou troca de rede.
+                  </div>
+                }
+              </span>
+            </div>
             @if (!loading && visitors.length > 0) {
               <div class="flex items-end gap-6 mb-5">
                 <div>
@@ -585,7 +635,17 @@ interface TimeToActionRow {
 
           <div class="admin-card border rounded-xl p-5 xl:col-span-2">
             <div class="flex items-center justify-between gap-3 mb-1">
-              <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Origem com Conversão</p>
+              <div class="flex items-center gap-1">
+                <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Origem com Conversão</p>
+                <span class="relative inline-flex items-center">
+                  <button (click)="toggleInfo('source_conv')" (mouseleave)="closeInfo('source_conv')" class="w-4 h-4 rounded-full border border-gray-700 text-gray-600 hover:border-cyan-400 hover:text-cyan-400 transition-colors flex items-center justify-center text-[10px] font-bold cursor-pointer shrink-0">i</button>
+                  @if (infoOpen['source_conv']) {
+                    <div class="absolute bottom-full left-0 mb-2 w-72 bg-gray-800 border border-gray-700 rounded-xl p-3 text-[11px] text-gray-300 leading-relaxed shadow-xl z-50">
+                      Canal de origem dos visitantes (Google, LinkedIn, direto etc.) e taxa de conversão: quantos desse canal clicaram em projeto, iniciaram contato ou baixaram o currículo. Conv. = (contatos diretos ÷ sessões) × 100.
+                    </div>
+                  }
+                </span>
+              </div>
               @if (!loading) {
                 <span class="text-[10px] px-2 py-0.5 rounded-full border"
                       [class.border-amber-500/30]="usingFallback"
@@ -641,7 +701,17 @@ interface TimeToActionRow {
           </div>
 
           <div class="admin-card border rounded-xl p-5">
-            <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Tempo até Primeira Ação</p>
+            <div class="flex items-center gap-1 mb-1">
+              <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Tempo até Primeira Ação</p>
+              <span class="relative inline-flex items-center">
+                <button (click)="toggleInfo('time_action')" (mouseleave)="closeInfo('time_action')" class="w-4 h-4 rounded-full border border-gray-700 text-gray-600 hover:border-cyan-400 hover:text-cyan-400 transition-colors flex items-center justify-center text-[10px] font-bold cursor-pointer shrink-0">i</button>
+                @if (infoOpen['time_action']) {
+                  <div class="absolute bottom-full left-0 mb-2 w-64 bg-gray-800 border border-gray-700 rounded-xl p-3 text-[11px] text-gray-300 leading-relaxed shadow-xl z-50">
+                    Intervalo em segundos entre o carregamento da página e o primeiro clique relevante (CTA, feature ou projeto). Sessões sem ação não entram no cálculo.
+                  </div>
+                }
+              </span>
+            </div>
             <p class="text-[11px] text-gray-600 mb-4">Quanto tempo uma sessão leva para clicar ou iniciar algo relevante.</p>
             @if (!loading && (firstActionAvgSeconds > 0 || firstActionBySource.length > 0)) {
               <div class="grid grid-cols-2 gap-3 mb-5">
@@ -677,37 +747,32 @@ interface TimeToActionRow {
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
           <div class="admin-card border rounded-xl p-5">
-            <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Funil de Contato</p>
-            <p class="text-[11px] text-gray-600 mb-4">
-              {{ usingFallback ? 'Estimativa de adoção de features — eventos de navegação ainda insuficientes.' : 'Sessões, projetos, contato, CTA e contato direto.' }}
-            </p>
-            @if (!loading && contactFunnelSteps.length > 0) {
-              <div class="space-y-4">
-                @for (step of contactFunnelSteps; track step.label; let i = $index) {
-                  <div>
-                    <div class="flex items-center justify-between mb-1.5">
-                      <div class="flex items-center gap-2">
-                        <span class="text-[10px] font-mono text-gray-600 w-3 shrink-0">{{ i + 1 }}</span>
-                        <span class="text-xs text-gray-300">{{ step.label }}</span>
-                      </div>
-                      <div class="flex items-center gap-1.5">
-                        <span class="text-sm font-bold tabular-nums" [style.color]="step.color">{{ step.value }}</span>
-                        @if (contactFunnelSteps[0].value > 0) {
-                          <span class="text-[10px] text-gray-500 font-mono w-9 text-right">
-                            {{ i === 0 ? '100' : pct(step.value / contactFunnelSteps[0].value) }}%
-                          </span>
-                        }
-                      </div>
-                    </div>
-                    <div class="h-1.5 bg-gray-800/80 rounded-full overflow-hidden">
-                      <div class="h-full rounded-full transition-all duration-700"
-                           [style.width.%]="contactFunnelSteps[0].value > 0 ? (step.value / contactFunnelSteps[0].value) * 100 : 0"
-                           [style.background-color]="step.color">
-                      </div>
-                    </div>
+            <div class="flex items-center gap-1 mb-1">
+              <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Funil de Contato</p>
+              <span class="relative inline-flex items-center">
+                <button (click)="toggleInfo('funnel')" (mouseleave)="closeInfo('funnel')" class="w-4 h-4 rounded-full border border-gray-700 text-gray-600 hover:border-cyan-400 hover:text-cyan-400 transition-colors flex items-center justify-center text-[10px] font-bold cursor-pointer shrink-0">i</button>
+                @if (infoOpen['funnel']) {
+                  <div class="absolute bottom-full left-0 mb-2 w-64 bg-gray-800 border border-gray-700 rounded-xl p-3 text-[11px] text-gray-300 leading-relaxed shadow-xl z-50">
+                    Fluxo de conversão do visitante: de sessão geral até contato direto. Cada camada mostra o total absoluto e a % em relação à primeira etapa. A seta vermelha indica a queda entre etapas consecutivas.
                   </div>
                 }
-              </div>
+              </span>
+            </div>
+            <p class="text-[11px] text-gray-600 mb-4">
+              {{ usingFallback ? 'Estimativa de adoção de features — eventos de navegação ainda insuficientes.' : 'Sessões → projetos → contato → CTA → contato direto.' }}
+            </p>
+            @if (!loading && contactFunnelSteps.length > 0) {
+              <svg [attr.viewBox]="'0 0 280 ' + funnelSvgHeight" class="w-full" [attr.height]="funnelSvgHeight">
+                @for (seg of funnelSegments; track seg.label; let last = $last) {
+                  <path [attr.d]="seg.path" [attr.fill]="seg.color" opacity="0.85" />
+                  <text [attr.x]="140" [attr.y]="seg.midY - 7" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.65)" font-family="system-ui,sans-serif">{{ seg.label }}</text>
+                  <text [attr.x]="140" [attr.y]="seg.midY + 9" text-anchor="middle" font-size="15" font-weight="700" fill="white" font-family="system-ui,sans-serif">{{ seg.value }}</text>
+                  <text [attr.x]="274" [attr.y]="seg.midY + 4" text-anchor="end" font-size="10" fill="rgba(255,255,255,0.45)" font-family="system-ui,sans-serif">{{ seg.totalPct }}%</text>
+                  @if (!last && seg.dropPct !== null) {
+                    <text [attr.x]="140" [attr.y]="seg.gapMidY + 4" text-anchor="middle" font-size="9" fill="rgba(248,113,113,0.8)" font-family="system-ui,sans-serif">▼ -{{ seg.dropPct }}% nesta etapa</text>
+                  }
+                }
+              </svg>
             } @else if (!loading) {
               <div class="py-8 text-center text-gray-600 text-sm">Sem eventos suficientes ainda</div>
             } @else {
@@ -716,7 +781,17 @@ interface TimeToActionRow {
           </div>
 
           <div class="admin-card border rounded-xl p-5">
-            <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">CTR por CTA</p>
+            <div class="flex items-center gap-1 mb-1">
+              <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">CTR por CTA</p>
+              <span class="relative inline-flex items-center">
+                <button (click)="toggleInfo('ctr')" (mouseleave)="closeInfo('ctr')" class="w-4 h-4 rounded-full border border-gray-700 text-gray-600 hover:border-cyan-400 hover:text-cyan-400 transition-colors flex items-center justify-center text-[10px] font-bold cursor-pointer shrink-0">i</button>
+                @if (infoOpen['ctr']) {
+                  <div class="absolute bottom-full left-0 mb-2 w-64 bg-gray-800 border border-gray-700 rounded-xl p-3 text-[11px] text-gray-300 leading-relaxed shadow-xl z-50">
+                    Click-Through Rate de cada botão de ação. Calculado como cliques ÷ sessões únicas com acesso àquele CTA. Verde ≥ 20%, amarelo ≥ 10%, cinza abaixo disso.
+                  </div>
+                }
+              </span>
+            </div>
             <p class="text-[11px] text-gray-600 mb-4">CTA = botão ou link de ação. Ex.: contato, currículo, WhatsApp, projetos e atalhos do header.</p>
             @if (!loading && ctaPerformance.length > 0) {
               <div class="space-y-3">
@@ -750,7 +825,17 @@ interface TimeToActionRow {
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
           <div class="admin-card border rounded-xl p-5">
-            <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Alcance por Seção</p>
+            <div class="flex items-center gap-1 mb-1">
+              <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Alcance por Seção</p>
+              <span class="relative inline-flex items-center">
+                <button (click)="toggleInfo('section_reach')" (mouseleave)="closeInfo('section_reach')" class="w-4 h-4 rounded-full border border-gray-700 text-gray-600 hover:border-cyan-400 hover:text-cyan-400 transition-colors flex items-center justify-center text-[10px] font-bold cursor-pointer shrink-0">i</button>
+                @if (infoOpen['section_reach']) {
+                  <div class="absolute bottom-full left-0 mb-2 w-64 bg-gray-800 border border-gray-700 rounded-xl p-3 text-[11px] text-gray-300 leading-relaxed shadow-xl z-50">
+                    Porcentagem das sessões que rolaram até cada seção da página. Mostra a profundidade de leitura — seções com baixo alcance indicam que o conteúdo acima está retendo mais atenção.
+                  </div>
+                }
+              </span>
+            </div>
             <p class="text-[11px] text-gray-600 mb-4">Profundidade real de leitura da página por sessão.</p>
             @if (!loading && sectionReachRows.length > 0) {
               <div class="space-y-3">
@@ -780,7 +865,17 @@ interface TimeToActionRow {
           </div>
 
           <div class="admin-card border rounded-xl p-5">
-            <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Uso das Features</p>
+            <div class="flex items-center gap-1 mb-1">
+              <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Uso das Features</p>
+              <span class="relative inline-flex items-center">
+                <button (click)="toggleInfo('features')" (mouseleave)="closeInfo('features')" class="w-4 h-4 rounded-full border border-gray-700 text-gray-600 hover:border-cyan-400 hover:text-cyan-400 transition-colors flex items-center justify-center text-[10px] font-bold cursor-pointer shrink-0">i</button>
+                @if (infoOpen['features']) {
+                  <div class="absolute bottom-full left-0 mb-2 w-64 bg-gray-800 border border-gray-700 rounded-xl p-3 text-[11px] text-gray-300 leading-relaxed shadow-xl z-50">
+                    Quantas sessões abriram cada feature interativa (Dev Match, Match por IA), chegaram a um resultado e quantas saíram antes de concluir. Taxa de conclusão = concluíram ÷ iniciaram.
+                  </div>
+                }
+              </span>
+            </div>
             <p class="text-[11px] text-gray-600 mb-4">
               {{ usingFallback ? 'Totais de uso das features (baseado nos matches registrados).' : 'Início, conclusão e abandono implícito por sessão.' }}
             </p>
@@ -1335,6 +1430,42 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   firstActionBySource: TimeToActionRow[] = [];
   analyticsEventCount = 0;
   usingFallback = false;
+
+  // ── Info tooltips ────────────────────────────────────────────────────────────
+  infoOpen: Record<string, boolean> = {};
+  toggleInfo(key: string): void { this.infoOpen[key] = !this.infoOpen[key]; }
+  closeInfo(key: string): void { this.infoOpen[key] = false; }
+
+  // ── Funil SVG ────────────────────────────────────────────────────────────────
+  get funnelSegments() {
+    const steps = this.contactFunnelSteps;
+    if (!steps.length) return [];
+    const svgW = 280;
+    const minW = 48;
+    const stepH = 44;
+    const gapH = 14;
+    const maxVal = steps[0].value || 1;
+    return steps.map((step, i) => {
+      const currW = Math.max(minW, svgW * (step.value / maxVal));
+      const nextStep = steps[i + 1];
+      const nextW = nextStep ? Math.max(minW, svgW * (nextStep.value / maxVal)) : currW;
+      const currX = (svgW - currW) / 2;
+      const nextX = (svgW - nextW) / 2;
+      const y = i * (stepH + gapH);
+      const path = `M${currX},${y} L${currX + currW},${y} L${nextX + nextW},${y + stepH} L${nextX},${y + stepH} Z`;
+      const dropPct = nextStep && step.value > 0
+        ? Math.round((1 - nextStep.value / step.value) * 100) : null;
+      return {
+        label: step.label, value: step.value, color: step.color,
+        totalPct: i === 0 ? 100 : Math.round((step.value / maxVal) * 100),
+        dropPct, path, midY: y + stepH / 2, gapMidY: y + stepH + gapH / 2,
+      };
+    });
+  }
+
+  get funnelSvgHeight() {
+    return this.contactFunnelSteps.length > 0 ? this.contactFunnelSteps.length * 58 - 14 : 0;
+  }
 
   private readonly OWNER_IPS = ['45.179.22.183', '138.255.215.188'];
 
@@ -2631,9 +2762,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     return this.heatColorByIntensity(t, this.isLightTheme());
   }
 
-  pct(ratio: number): number {
-    return Math.round(ratio * 100);
-  }
+  pct(ratio: number): number { return Math.round(ratio * 100); }
 
   private hasCoordinates(visitor?: VisitorRecord): visitor is VisitorRecord & { lat: number; lng: number } {
     return visitor?.lat != null && visitor.lng != null;
