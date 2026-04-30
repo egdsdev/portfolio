@@ -726,30 +726,30 @@ interface TimeToActionRow {
                            [attr.fill]="s.color" fill-opacity="0.15"
                            [attr.stroke]="s.color" stroke-width="1.5" stroke-opacity="0.55" />
                   <!-- Número da etapa + label -->
-                  <text x="8" [attr.y]="s.centerY - 5"
-                        fill="#6b7280" font-size="9" dominant-baseline="auto">
+                  <text x="8" [attr.y]="s.centerY - 8"
+                        fill="#6b7280" font-size="12" dominant-baseline="auto">
                     {{ i + 1 }}.
                   </text>
-                  <text x="20" [attr.y]="s.centerY - 5"
-                        fill="#d1d5db" font-size="10" dominant-baseline="auto">
+                  <text x="22" [attr.y]="s.centerY - 8"
+                        fill="#d1d5db" font-size="13" dominant-baseline="auto">
                     {{ s.label }}
                   </text>
                   <!-- Valor absoluto + % (direita) -->
-                  <text x="295" [attr.y]="s.centerY - 5"
+                  <text x="295" [attr.y]="s.centerY - 8"
                         text-anchor="end" [attr.fill]="s.color"
-                        font-size="12" font-weight="700" dominant-baseline="auto">
+                        font-size="16" font-weight="700" dominant-baseline="auto">
                     {{ s.value }}
                   </text>
-                  <text x="295" [attr.y]="s.centerY + 9"
-                        text-anchor="end" fill="#6b7280"
-                        font-size="9" dominant-baseline="auto">
+                  <text x="295" [attr.y]="s.centerY + 12"
+                        text-anchor="end" fill="#9ca3af"
+                        font-size="12" dominant-baseline="auto">
                     {{ s.pct }}%
                   </text>
                   <!-- Queda entre etapas -->
                   @if (s.dropPct !== null) {
                     <text x="150" [attr.y]="s.dropY + 3"
                           text-anchor="middle" fill="#f87171"
-                          font-size="9" opacity="0.85" dominant-baseline="middle">
+                          font-size="12" font-weight="600" opacity="0.9" dominant-baseline="middle">
                       ▼ -{{ s.dropPct }}%
                     </text>
                   }
@@ -766,7 +766,7 @@ interface TimeToActionRow {
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">CTR por CTA</p>
             <p class="text-[11px] text-gray-600 mb-4">CTA = botão ou link de ação. Ex.: contato, currículo, WhatsApp, projetos e atalhos do header.</p>
             @if (!loading && ctaPerformance.length > 0) {
-              <div [style.height.px]="Math.max(160, Math.min(ctaPerformance.length, 12) * 32)">
+              <div [style.height.px]="Math.max(200, Math.min(ctaPerformance.length, 12) * 44)">
                 <canvas #ctaChartCanvas style="width:100%;height:100%"></canvas>
               </div>
             } @else if (!loading) {
@@ -784,7 +784,7 @@ interface TimeToActionRow {
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Alcance por Seção</p>
             <p class="text-[11px] text-gray-600 mb-4">Profundidade real de leitura da página por sessão.</p>
             @if (!loading && sectionReachRows.length > 0) {
-              <div [style.height.px]="Math.max(140, sectionReachRows.length * 32)">
+              <div [style.height.px]="Math.max(180, sectionReachRows.length * 44)">
                 <canvas #sectionChartCanvas style="width:100%;height:100%"></canvas>
               </div>
             } @else if (!loading) {
@@ -3145,7 +3145,7 @@ Resposta em português brasileiro, tom direto e profissional.`;
   get funnelShapes() {
     const steps = this.contactFunnelSteps;
     if (!steps.length) return [];
-    const maxW = 230, cx = 150, stepH = 52, gapH = 26;
+    const maxW = 230, cx = 150, stepH = 62, gapH = 30;
     const topValue = steps[0].value || 1;
     return steps.map((step, i) => {
       const topPct = step.value / topValue;
@@ -3171,7 +3171,7 @@ Resposta em português brasileiro, tom direto e profissional.`;
 
   get funnelSvgHeight(): number {
     const n = this.contactFunnelSteps.length;
-    return n * 52 + Math.max(0, n - 1) * 26;
+    return n * 62 + Math.max(0, n - 1) * 30;
   }
 
   // ── Charts horizontais de barra ────────────────────────────────────────
@@ -3188,8 +3188,34 @@ Resposta em português brasileiro, tom direto e profissional.`;
       navigation: '#94a3b8', contact: '#22d3ee',
     };
     const rows = this.ctaPerformance.slice(0, 12);
-    const labels = rows.map(r => r.label.length > 20 ? r.label.slice(0, 18) + '…' : r.label);
+    const labels = rows.map(r => r.label.length > 22 ? r.label.slice(0, 20) + '…' : r.label);
     const colors = rows.map(r => categoryColors[r.category] ?? '#22d3ee');
+
+    const ctaDatalabels = {
+      id: 'ctaBarDatalabels',
+      afterDatasetsDraw(chart: any) {
+        const ctx2 = chart.ctx as CanvasRenderingContext2D;
+        chart.data.datasets.forEach((_: any, di: number) => {
+          const meta = chart.getDatasetMeta(di);
+          meta.data.forEach((bar: any, j: number) => {
+            const val = chart.data.datasets[di].data[j] as number;
+            if (val <= 0) return;
+            const clicks = rows[j]?.clicks ?? '';
+            ctx2.save();
+            ctx2.fillStyle = '#e5e7eb';
+            ctx2.font = 'bold 12px Inter, ui-sans-serif, sans-serif';
+            ctx2.textAlign = 'left';
+            ctx2.textBaseline = 'middle';
+            const x = Math.min(bar.x + 6, chart.chartArea.right - 58);
+            ctx2.fillText(`${val}%`, x, bar.y);
+            ctx2.fillStyle = '#6b7280';
+            ctx2.font = '11px Inter, ui-sans-serif, sans-serif';
+            ctx2.fillText(`${clicks}×`, x + 34, bar.y);
+            ctx2.restore();
+          });
+        });
+      },
+    };
 
     this.ctaChartInstance = new Chart(el, {
       type: 'bar',
@@ -3209,6 +3235,7 @@ Resposta em português brasileiro, tom direto e profissional.`;
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
+        layout: { padding: { right: 16 } },
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -3221,14 +3248,15 @@ Resposta em português brasileiro, tom direto e profissional.`;
           x: {
             beginAtZero: true, max: 100,
             grid: { color: gridColor },
-            ticks: { color: tickColor, font: { size: 10 }, callback: v => v + '%' },
+            ticks: { color: tickColor, font: { size: 13 }, callback: v => v + '%' },
           },
           y: {
             grid: { color: 'transparent' },
-            ticks: { color: tickColor, font: { size: 10 } },
+            ticks: { color: tickColor, font: { size: 13 } },
           },
         },
       },
+      plugins: [ctaDatalabels],
     });
   }
 
@@ -3242,6 +3270,32 @@ Resposta em português brasileiro, tom direto e profissional.`;
     const tickColor = isDark ? '#6b7280' : '#9ca3af';
     const accent = this.accentColor;
     const rows = this.sectionReachRows;
+
+    const sectionDatalabels = {
+      id: 'sectionBarDatalabels',
+      afterDatasetsDraw(chart: any) {
+        const ctx2 = chart.ctx as CanvasRenderingContext2D;
+        chart.data.datasets.forEach((_: any, di: number) => {
+          const meta = chart.getDatasetMeta(di);
+          meta.data.forEach((bar: any, j: number) => {
+            const val = chart.data.datasets[di].data[j] as number;
+            if (val <= 0) return;
+            const sessions = rows[j]?.sessions ?? '';
+            ctx2.save();
+            ctx2.fillStyle = '#e5e7eb';
+            ctx2.font = 'bold 12px Inter, ui-sans-serif, sans-serif';
+            ctx2.textAlign = 'left';
+            ctx2.textBaseline = 'middle';
+            const x = Math.min(bar.x + 6, chart.chartArea.right - 68);
+            ctx2.fillText(`${val}%`, x, bar.y);
+            ctx2.fillStyle = '#6b7280';
+            ctx2.font = '11px Inter, ui-sans-serif, sans-serif';
+            ctx2.fillText(`${sessions} sess.`, x + 34, bar.y);
+            ctx2.restore();
+          });
+        });
+      },
+    };
 
     this.sectionChartInstance = new Chart(el, {
       type: 'bar',
@@ -3261,6 +3315,7 @@ Resposta em português brasileiro, tom direto e profissional.`;
         indexAxis: 'y',
         responsive: true,
         maintainAspectRatio: false,
+        layout: { padding: { right: 16 } },
         plugins: {
           legend: { display: false },
           tooltip: {
@@ -3273,14 +3328,15 @@ Resposta em português brasileiro, tom direto e profissional.`;
           x: {
             beginAtZero: true, max: 100,
             grid: { color: gridColor },
-            ticks: { color: tickColor, font: { size: 10 }, callback: v => v + '%' },
+            ticks: { color: tickColor, font: { size: 13 }, callback: v => v + '%' },
           },
           y: {
             grid: { color: 'transparent' },
-            ticks: { color: tickColor, font: { size: 10 } },
+            ticks: { color: tickColor, font: { size: 13 } },
           },
         },
       },
+      plugins: [sectionDatalabels],
     });
   }
 
