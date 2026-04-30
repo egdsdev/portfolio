@@ -523,6 +523,18 @@ export class FirebaseService {
     });
   }
 
+  /** Ouve visitantes ativos (campo `online: true` em visitors com lastSeen < 5min) */
+  listenActiveVisitors(callback: (count: number) => void): () => void {
+    const since = new Date(Date.now() - 5 * 60 * 1000);
+    const q = query(
+      collection(this.db, 'visitors'),
+      where('lastSeen', '>=', Timestamp.fromDate(since)),
+    );
+    return onSnapshot(q, snap => {
+      callback(snap.size);
+    });
+  }
+
   async trackVisitor(visitorId: string, isFirstVisit: boolean, data: Omit<VisitorRecord, 'id' | 'visitCount' | 'firstSeen' | 'lastSeen'>): Promise<void> {
     // Firestore rejeita campos undefined; remove-os antes de gravar
     const clean = Object.fromEntries(

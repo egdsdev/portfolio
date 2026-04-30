@@ -4,9 +4,14 @@ import { FormsModule } from '@angular/forms';
 import { FirebaseService, AiMatchRecord, VisitorRecord, DevMatchRecord, AnalyticsEventRecord, ChatConversation, ChatMessage, isChatMessageWithinEditWindow } from '../../../core/services/firebase.service';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import * as L from 'leaflet';
-import { Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip } from 'chart.js';
+import { GoogleGenAI } from '@google/genai';
+import { environment } from '../../../../environments/environment';
+import {
+  Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip, Legend,
+  BarController, BarElement,
+} from 'chart.js';
 
-Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip);
+Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip, Legend, BarController, BarElement);
 
 interface AccessRecord {
   date: Date;
@@ -76,7 +81,7 @@ interface TimeToActionRow {
   imports: [DatePipe, FormsModule, ConfirmDialogComponent],
   template: `
     <div class="admin-page min-h-screen pt-20">
-      <main class="max-w-7xl mx-auto px-4 pb-12 space-y-6">
+      <main class="max-w-screen-2xl mx-auto px-6 pb-12 space-y-6">
 
         <!-- Título -->
         <div class="pt-6">
@@ -106,6 +111,18 @@ interface TimeToActionRow {
               </span>
             }
           </button>
+          <button (click)="activeTab = 'leads'"
+                  [class.bg-gray-700]="activeTab === 'leads'"
+                  [class.text-white]="activeTab === 'leads'"
+                  [class.text-gray-500]="activeTab !== 'leads'"
+                  class="px-5 py-2 rounded-lg text-sm font-medium transition-all duration-150 flex items-center gap-2">
+            Leads
+            @if (hotLeads.length > 0) {
+              <span class="inline-flex items-center justify-center px-1.5 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold">
+                {{ hotLeads.length }}🔥
+              </span>
+            }
+          </button>
           <button (click)="activeTab = 'tests'"
                   [class.bg-gray-700]="activeTab === 'tests'"
                   [class.text-white]="activeTab === 'tests'"
@@ -131,10 +148,17 @@ interface TimeToActionRow {
         <div [class.hidden]="activeTab !== 'analytics'" class="space-y-8">
 
         <!-- 5 Cards resumo -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <div class="admin-card rounded-xl p-4 border">
             <p class="text-xs text-gray-500 mb-1">Visitantes Únicos</p>
             <p class="text-3xl font-bold text-cyan-400">{{ visitors.length }}</p>
+          </div>
+          <div class="admin-card rounded-xl p-4 border flex flex-col gap-1">
+            <p class="text-xs text-gray-500">Ativos agora</p>
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full shrink-0" [class]="activeNowCount > 0 ? 'bg-green-400 animate-pulse' : 'bg-gray-600'"></span>
+              <p class="text-3xl font-bold" [class]="activeNowCount > 0 ? 'text-green-400' : 'text-gray-500'">{{ activeNowCount }}</p>
+            </div>
           </div>
           <div class="admin-card rounded-xl p-4 border">
             <p class="text-xs text-gray-500 mb-1">Países</p>
@@ -149,7 +173,7 @@ interface TimeToActionRow {
             <p class="text-3xl font-bold">{{ devMatches.length }}</p>
           </div>
           <div class="admin-card rounded-xl p-4 border">
-            <p class="text-xs text-gray-500 mb-1">🌌 Brulias <span class="text-gray-600 text-[10px]">(excl. seu IP)</span></p>
+            <p class="text-xs text-gray-500 mb-1">🌌 Brulias <span class="text-gray-500 text-xs">(excl. seu IP)</span></p>
             <p class="text-3xl font-bold text-purple-400">{{ bruliasClicks }}</p>
           </div>
         </div>
@@ -170,6 +194,7 @@ interface TimeToActionRow {
                     <th class="text-left px-4 py-3">Dispositivo</th>
                     <th class="text-left px-4 py-3">IP / Rede</th>
                     <th class="text-left px-4 py-3 whitespace-nowrap">Acessos</th>
+                    <th class="text-left px-4 py-3 whitespace-nowrap">Score</th>
                     <th class="text-left px-4 py-3 border-l border-gray-800/60">Match IA</th>
                     <th class="text-left px-4 py-3">Resposta IA</th>
                     <th class="text-left px-4 py-3 border-l border-gray-800/60">Match Dev</th>
@@ -205,10 +230,10 @@ interface TimeToActionRow {
                         <div class="text-gray-600 font-mono whitespace-nowrap">{{ r.ip ?? '-' }}</div>
                         @if (r.visitor && hasNetworkInfo(r.visitor)) {
                           <div class="mt-1 space-y-1">
-                            <div class="text-[10px] text-gray-400 max-w-44 truncate" [title]="networkSummary(r.visitor)">
+                            <div class="text-xs text-gray-400 max-w-44 truncate" [title]="networkSummary(r.visitor)">
                               {{ networkSummary(r.visitor) }}
                             </div>
-                            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold"
                                   [style.background-color]="networkKindBackground(r.visitor)"
                                   [style.color]="networkKindForeground(r.visitor)"
                                   [attr.title]="networkKindTitle(r.visitor)">
@@ -221,6 +246,19 @@ interface TimeToActionRow {
                         @if (r.visitorIds.length > 0) {
                           <span class="inline-flex items-center gap-1 rounded-full px-2 py-1 bg-cyan-500/10 text-cyan-400 font-semibold">
                             {{ r.accessCount }}x
+                          </span>
+                        } @else {
+                          <span class="text-gray-700">-</span>
+                        }
+                      </td>
+                      <td class="px-4 py-3 whitespace-nowrap">
+                        @if (r.visitor) {
+                          @let s = computeVisitorScore(r.visitor);
+                          @let sl = scoreLabel(s);
+                          <span class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full border"
+                                [class]="sl.bg + ' ' + sl.color"
+                                [title]="sl.label">
+                            {{ s }}
                           </span>
                         } @else {
                           <span class="text-gray-700">-</span>
@@ -360,15 +398,40 @@ interface TimeToActionRow {
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
           <!-- Gráfico de linha (Chart.js) -->
-          <div class="admin-card border rounded-xl p-5">
-            <p class="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">Acessos — Últimos 7 dias</p>
+          <div class="admin-card border rounded-xl p-5 space-y-3">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Acessos por período</p>
+              <div class="flex items-center gap-2 flex-wrap">
+                <div class="flex gap-1">
+                  @for (p of [{d:7,l:'7d'},{d:14,l:'14d'},{d:30,l:'30d'},{d:90,l:'90d'}]; track p.l) {
+                    <button (click)="setChartPreset(p.d)"
+                            class="px-2 py-1 text-xs font-semibold rounded border transition-colors cursor-pointer"
+                            [class]="chartPresetDays === p.d ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300' : 'border-gray-700 text-gray-500 hover:text-gray-300'">
+                      {{ p.l }}
+                    </button>
+                  }
+                </div>
+                <div class="flex items-center gap-1">
+                  <input type="date" [(ngModel)]="chartDateStart" (change)="onChartRangeChange()"
+                         class="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-gray-300 focus:outline-none focus:border-cyan-500/50" />
+                  <span class="text-gray-600 text-xs">–</span>
+                  <input type="date" [(ngModel)]="chartDateEnd" (change)="onChartRangeChange()"
+                         class="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-gray-300 focus:outline-none focus:border-cyan-500/50" />
+                </div>
+                <button (click)="showPeriodCompare = !showPeriodCompare; onChartRangeChange()"
+                        class="px-2 py-1 text-xs font-semibold rounded border transition-colors cursor-pointer"
+                        [class]="showPeriodCompare ? 'bg-purple-500/20 border-purple-500/50 text-purple-300' : 'border-gray-700 text-gray-500 hover:text-gray-300'">
+                  ≈ Comparar
+                </button>
+              </div>
+            </div>
             <canvas #chartCanvas style="width:100%;max-height:220px"></canvas>
           </div>
 
           <!-- Mapa Leaflet -->
           <div class="admin-card border rounded-xl p-5">
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">Localização dos Acessos</p>
-            <p class="text-[11px] text-gray-600 mb-4">Clique em uma linha da tabela para aproximar o mapa nesse acesso.</p>
+            <p class="text-xs text-gray-500 mb-4">Clique em uma linha da tabela para aproximar o mapa nesse acesso.</p>
             @if (loading) {
               <div class="h-64 flex items-center justify-center text-gray-600 text-sm animate-pulse">Carregando mapa...</div>
             } @else if (!hasMapCoords) {
@@ -383,7 +446,7 @@ interface TimeToActionRow {
         <!-- ── Heatmap de Horários ──────────────────────────────────────── -->
         <div class="admin-card border rounded-xl p-5">
           <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Heatmap de Acesso</p>
-          <p class="text-[11px] text-gray-600 mb-4">Dia da semana × hora — todas as interações registradas</p>
+          <p class="text-xs text-gray-500 mb-4">Dia da semana × hora — todas as interações registradas</p>
           @if (!loading && visitors.length > 0) {
             <div class="flex gap-8 flex-wrap lg:flex-nowrap">
               <!-- Grade -->
@@ -399,7 +462,7 @@ interface TimeToActionRow {
                 <!-- Linhas por dia -->
                 @for (row of heatmapRows; track row.label) {
                   <div class="flex items-center mb-px" style="gap:1px">
-                    <div class="text-[10px] text-gray-500 text-right pr-2 shrink-0" style="width:54px">{{ row.label }}</div>
+                    <div class="text-xs text-gray-500 text-right pr-2 shrink-0" style="width:54px">{{ row.label }}</div>
                     @for (cell of row.cells; track $index) {
                       <div
                         class="rounded-sm shrink-0 cursor-default hover:opacity-75 transition-opacity"
@@ -413,11 +476,11 @@ interface TimeToActionRow {
                 }
                 <!-- Legenda -->
                 <div class="flex items-center gap-1 mt-3" style="padding-left:56px">
-                  <span class="text-[10px] text-gray-600 mr-1">Menos</span>
+                  <span class="text-xs text-gray-500 mr-1">Menos</span>
                   @for (l of legendSteps; track l) {
                     <div class="rounded-sm" style="width:14px;height:14px" [style.background-color]="heatLegendColor(l)"></div>
                   }
-                  <span class="text-[10px] text-gray-600 ml-1">Mais</span>
+                  <span class="text-xs text-gray-500 ml-1">Mais</span>
                 </div>
               </div>
 
@@ -426,33 +489,33 @@ interface TimeToActionRow {
                 <!-- KPIs -->
                 <div class="grid grid-cols-3 gap-3">
                   <div class="admin-card border rounded-lg p-3 text-center">
-                    <p class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Total</p>
+                    <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Total</p>
                     <p class="text-2xl font-bold" [style.color]="accentColor">{{ heatTotalHits }}</p>
-                    <p class="text-[10px] text-gray-500 mt-0.5">eventos</p>
+                    <p class="text-xs text-gray-500 mt-0.5">eventos</p>
                   </div>
                   <div class="admin-card border rounded-lg p-3 text-center">
-                    <p class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Hora pico</p>
+                    <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Hora pico</p>
                     <p class="text-2xl font-bold" [style.color]="accentColor">{{ heatPeakHour }}h</p>
-                    <p class="text-[10px] text-gray-500 mt-0.5">mais acessos</p>
+                    <p class="text-xs text-gray-500 mt-0.5">mais acessos</p>
                   </div>
                   <div class="admin-card border rounded-lg p-3 text-center">
-                    <p class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Dia ativo</p>
+                    <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Dia ativo</p>
                     <p class="text-2xl font-bold" [style.color]="accentColor">{{ heatPeakDay }}</p>
-                    <p class="text-[10px] text-gray-500 mt-0.5">mais acessos</p>
+                    <p class="text-xs text-gray-500 mt-0.5">mais acessos</p>
                   </div>
                 </div>
 
                 <!-- Top 5 horas -->
                 <div>
-                  <p class="text-[10px] text-gray-500 uppercase tracking-wider mb-3">Top 5 horas mais ativas</p>
+                  <p class="text-xs text-gray-500 uppercase tracking-wider mb-3">Top 5 horas mais ativas</p>
                   <div class="space-y-2">
                     @for (h of heatTopHours; track h.label) {
                       <div class="flex items-center gap-2">
-                        <span class="text-[11px] text-gray-400 w-6 shrink-0 text-right">{{ h.label }}</span>
+                        <span class="text-xs text-gray-400 w-6 shrink-0 text-right">{{ h.label }}</span>
                         <div class="flex-1 h-2 rounded-full bg-gray-800 overflow-hidden">
                           <div class="h-full rounded-full transition-all" [style.width.%]="h.pct" [style.background-color]="accentColor"></div>
                         </div>
-                        <span class="text-[11px] font-bold tabular-nums w-6 text-right" [style.color]="accentColor">{{ h.count }}</span>
+                        <span class="text-xs font-bold tabular-nums w-6 text-right" [style.color]="accentColor">{{ h.count }}</span>
                       </div>
                     }
                   </div>
@@ -528,7 +591,7 @@ interface TimeToActionRow {
                 </div>
               </div>
               @if (topReturnList.length > 0) {
-                <p class="text-[10px] text-gray-600 uppercase tracking-wider mb-2">Top recorrentes</p>
+                <p class="text-xs text-gray-500 uppercase tracking-wider mb-2">Top recorrentes</p>
                 <div class="space-y-2">
                   @for (v of topReturnList; track v.ip) {
                     <div class="flex items-center justify-between">
@@ -571,14 +634,14 @@ interface TimeToActionRow {
                 </span>
               }
             </div>
-            <p class="text-[11px] text-gray-600 mb-4">
+            <p class="text-xs text-gray-500 mb-4">
               {{ usingFallback ? 'Origem dos visitantes por campo referrer. Cliques em CTA disponíveis após acumulação de eventos.' : 'Sessões por canal e quantas delas geram projeto, contato e download de currículo.' }}
             </p>
             @if (!loading && sourceConversions.length > 0) {
               <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                   <thead>
-                    <tr class="text-[11px] text-gray-500 uppercase tracking-wider border-b border-gray-800/50">
+                    <tr class="text-xs text-gray-500 uppercase tracking-wider border-b border-gray-800/50">
                       <th class="text-left py-2 pr-4">Origem</th>
                       <th class="text-right py-2 px-2">{{ usingFallback ? 'Visitantes' : 'Sessões' }}</th>
                       @if (!usingFallback) {
@@ -616,15 +679,15 @@ interface TimeToActionRow {
 
           <div class="admin-card border rounded-xl p-5">
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Tempo até Primeira Ação</p>
-            <p class="text-[11px] text-gray-600 mb-4">Quanto tempo uma sessão leva para clicar ou iniciar algo relevante.</p>
+            <p class="text-xs text-gray-500 mb-4">Quanto tempo uma sessão leva para clicar ou iniciar algo relevante.</p>
             @if (!loading && (firstActionAvgSeconds > 0 || firstActionBySource.length > 0)) {
               <div class="grid grid-cols-2 gap-3 mb-5">
                 <div class="admin-card border rounded-lg p-3 text-center">
-                  <p class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Média</p>
+                  <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Média</p>
                   <p class="text-2xl font-bold" [style.color]="accentColor">{{ firstActionAvgSeconds }}s</p>
                 </div>
                 <div class="admin-card border rounded-lg p-3 text-center">
-                  <p class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Mediana</p>
+                  <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Mediana</p>
                   <p class="text-2xl font-bold" [style.color]="accentColor">{{ firstActionMedianSeconds }}s</p>
                 </div>
               </div>
@@ -633,7 +696,7 @@ interface TimeToActionRow {
                   <div class="flex items-center justify-between gap-4">
                     <div>
                       <p class="text-sm text-gray-300">{{ row.source }}</p>
-                      <p class="text-[10px] text-gray-600">{{ row.sessions }} sessões</p>
+                      <p class="text-xs text-gray-500">{{ row.sessions }} sessões</p>
                     </div>
                     <p class="text-lg font-bold tabular-nums" [style.color]="accentColor">{{ row.avgSeconds }}s</p>
                   </div>
@@ -652,36 +715,55 @@ interface TimeToActionRow {
 
           <div class="admin-card border rounded-xl p-5">
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Funil de Contato</p>
-            <p class="text-[11px] text-gray-600 mb-4">
+            <p class="text-xs text-gray-500 mb-4">
               {{ usingFallback ? 'Estimativa de adoção de features — eventos de navegação ainda insuficientes.' : 'Sessões, projetos, contato, CTA e contato direto.' }}
             </p>
             @if (!loading && contactFunnelSteps.length > 0) {
-              <div class="space-y-4">
-                @for (step of contactFunnelSteps; track step.label; let i = $index) {
-                  <div>
-                    <div class="flex items-center justify-between mb-1.5">
-                      <div class="flex items-center gap-2">
-                        <span class="text-[10px] font-mono text-gray-600 w-3 shrink-0">{{ i + 1 }}</span>
-                        <span class="text-xs text-gray-300">{{ step.label }}</span>
-                      </div>
-                      <div class="flex items-center gap-1.5">
-                        <span class="text-sm font-bold tabular-nums" [style.color]="step.color">{{ step.value }}</span>
-                        @if (contactFunnelSteps[0].value > 0) {
-                          <span class="text-[10px] text-gray-500 font-mono w-9 text-right">
-                            {{ i === 0 ? '100' : pct(step.value / contactFunnelSteps[0].value) }}%
-                          </span>
-                        }
-                      </div>
-                    </div>
-                    <div class="h-1.5 bg-gray-800/80 rounded-full overflow-hidden">
-                      <div class="h-full rounded-full transition-all duration-700"
-                           [style.width.%]="contactFunnelSteps[0].value > 0 ? (step.value / contactFunnelSteps[0].value) * 100 : 0"
-                           [style.background-color]="step.color">
-                      </div>
-                    </div>
-                  </div>
+              <svg [attr.viewBox]="'0 0 500 ' + funnelSvgHeight" class="w-full h-auto">
+                <defs>
+                  @for (s of funnelShapes; track s.label; let i = $index) {
+                    <linearGradient [attr.id]="'fg' + i" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" [attr.stop-color]="s.color" stop-opacity="0.42"/>
+                      <stop offset="100%" [attr.stop-color]="s.color" stop-opacity="0.14"/>
+                    </linearGradient>
+                  }
+                </defs>
+                @for (s of funnelShapes; track s.label; let i = $index) {
+                  <!-- Trapézio com gradiente -->
+                  <polygon [attr.points]="s.points"
+                           [attr.fill]="'url(#fg' + i + ')'"
+                           [attr.stroke]="s.color" stroke-width="2" stroke-opacity="0.85"
+                           stroke-linejoin="round"/>
+                  <!-- Número + label (esquerda — zona x=0..130, funil começa em x=150) -->
+                  <text x="4" [attr.y]="s.centerY"
+                        fill="#6b7280" font-size="11" font-weight="600" dominant-baseline="middle">
+                    {{ i + 1 }}.
+                  </text>
+                  <text x="20" [attr.y]="s.centerY"
+                        fill="#d1d5db" font-size="12" dominant-baseline="middle">
+                    {{ s.label }}
+                  </text>
+                  <!-- Valor + % (direita — zona x=360..500, funil termina em x=350) -->
+                  <text x="496" [attr.y]="s.centerY - 7"
+                        text-anchor="end" [attr.fill]="s.color"
+                        font-size="16" font-weight="700" dominant-baseline="middle">
+                    {{ s.value }}
+                  </text>
+                  <text x="496" [attr.y]="s.centerY + 10"
+                        text-anchor="end" fill="#9ca3af"
+                        font-size="11" dominant-baseline="middle">
+                    {{ s.pct }}%
+                  </text>
+                  <!-- Queda entre etapas -->
+                  @if (s.dropPct !== null) {
+                    <text x="250" [attr.y]="s.dropY"
+                          text-anchor="middle" fill="#f87171"
+                          font-size="11" font-weight="600" opacity="0.9" dominant-baseline="middle">
+                      ▼ -{{ s.dropPct }}%
+                    </text>
+                  }
                 }
-              </div>
+              </svg>
             } @else if (!loading) {
               <div class="py-8 text-center text-gray-600 text-sm">Sem eventos suficientes ainda</div>
             } @else {
@@ -691,26 +773,10 @@ interface TimeToActionRow {
 
           <div class="admin-card border rounded-xl p-5">
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">CTR por CTA</p>
-            <p class="text-[11px] text-gray-600 mb-4">CTA = botão ou link de ação. Ex.: contato, currículo, WhatsApp, projetos e atalhos do header.</p>
+            <p class="text-xs text-gray-500 mb-4">CTA = botão ou link de ação. Ex.: contato, currículo, WhatsApp, projetos e atalhos do header.</p>
             @if (!loading && ctaPerformance.length > 0) {
-              <div class="space-y-3">
-                @for (row of ctaPerformance; track row.key) {
-                  <div>
-                    <div class="flex items-center justify-between gap-3 mb-1">
-                      <div>
-                        <p class="text-sm text-gray-300">{{ row.label }}</p>
-                        <p class="text-[10px] text-gray-600">{{ row.uniqueSessions }} sessões · {{ row.clicks }} cliques</p>
-                      </div>
-                      <p class="text-sm font-bold tabular-nums" [style.color]="row.ctr >= 20 ? '#4ade80' : row.ctr >= 10 ? '#fbbf24' : accentColor">{{ row.ctr }}%</p>
-                    </div>
-                    <div class="h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                      <div class="h-full rounded-full transition-all duration-700"
-                           [style.width.%]="row.ctr"
-                           [style.background-color]="row.category === 'project' ? '#a855f7' : row.category === 'direct_contact' ? '#22c55e' : row.category === 'resume' ? '#f59e0b' : row.category === 'navigation' ? '#94a3b8' : '#22d3ee'">
-                      </div>
-                    </div>
-                  </div>
-                }
+              <div [style.height.px]="Math.max(200, Math.min(ctaPerformance.length, 12) * 44)">
+                <canvas #ctaChartCanvas style="width:100%;height:100%"></canvas>
               </div>
             } @else if (!loading) {
               <div class="py-8 text-center text-gray-600 text-sm">Sem CTAs suficientes ainda</div>
@@ -725,26 +791,10 @@ interface TimeToActionRow {
 
           <div class="admin-card border rounded-xl p-5">
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Alcance por Seção</p>
-            <p class="text-[11px] text-gray-600 mb-4">Profundidade real de leitura da página por sessão.</p>
+            <p class="text-xs text-gray-500 mb-4">Profundidade real de leitura da página por sessão.</p>
             @if (!loading && sectionReachRows.length > 0) {
-              <div class="space-y-3">
-                @for (row of sectionReachRows; track row.key) {
-                  <div>
-                    <div class="flex items-center justify-between gap-3 mb-1">
-                      <div>
-                        <p class="text-sm text-gray-300">{{ row.label }}</p>
-                        <p class="text-[10px] text-gray-600">{{ row.sessions }} sessões</p>
-                      </div>
-                      <p class="text-sm font-bold tabular-nums" [style.color]="accentColor">{{ row.reachRate }}%</p>
-                    </div>
-                    <div class="h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                      <div class="h-full rounded-full transition-all duration-700"
-                           [style.width.%]="row.reachRate"
-                           [style.background-color]="accentColor">
-                      </div>
-                    </div>
-                  </div>
-                }
+              <div [style.height.px]="Math.max(180, sectionReachRows.length * 44)">
+                <canvas #sectionChartCanvas style="width:100%;height:100%"></canvas>
               </div>
             } @else if (!loading) {
               <div class="py-8 text-center text-gray-600 text-sm">Sem seções visualizadas ainda</div>
@@ -755,7 +805,7 @@ interface TimeToActionRow {
 
           <div class="admin-card border rounded-xl p-5">
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Uso das Features</p>
-            <p class="text-[11px] text-gray-600 mb-4">
+            <p class="text-xs text-gray-500 mb-4">
               {{ usingFallback ? 'Totais de uso das features (baseado nos matches registrados).' : 'Início, conclusão e abandono implícito por sessão.' }}
             </p>
             @if (!loading && featureUsageRows.length > 0) {
@@ -765,22 +815,50 @@ interface TimeToActionRow {
                     <div class="flex items-start justify-between gap-4 mb-3">
                       <div>
                         <p class="text-sm text-gray-200 font-semibold">{{ row.label }}</p>
-                        <p class="text-[10px] text-gray-600">
+                        <p class="text-xs text-gray-500">
                           {{ usingFallback ? row.completed + ' usos registrados' : row.started + ' iniciaram · ' + row.completed + ' concluíram · ' + row.abandoned + ' abandonaram' }}
                         </p>
                       </div>
                       <div class="text-right">
                         <p class="text-lg font-bold" [style.color]="row.completionRate >= 60 ? '#4ade80' : row.completionRate >= 30 ? '#fbbf24' : '#f87171'">{{ row.completionRate }}%</p>
-                        <p class="text-[10px] text-gray-600">taxa de conclusão</p>
+                        <p class="text-xs text-gray-500">taxa de conclusão</p>
                       </div>
                     </div>
-                    <div class="h-1.5 bg-gray-800 rounded-full overflow-hidden mb-2">
-                      <div class="h-full rounded-full transition-all duration-700"
-                           [style.width.%]="row.completionRate"
-                           [style.background-color]="row.key === 'dev_match' ? '#22d3ee' : '#a855f7'">
+                    @if (!usingFallback && row.started > 0) {
+                      <!-- Barra segmentada: concluídos / abandonados / (gap) -->
+                      <div class="h-3 bg-gray-800 rounded-full overflow-hidden flex mb-2" [title]="row.completed + ' concluídos, ' + row.abandoned + ' abandonaram'">
+                        <div class="h-full transition-all duration-700"
+                             [style.width.%]="(row.completed / row.started) * 100"
+                             [style.background-color]="row.key === 'dev_match' ? '#22d3ee' : '#a855f7'">
+                        </div>
+                        @if (row.abandoned > 0) {
+                          <div class="h-full transition-all duration-700 opacity-30"
+                               [style.width.%]="(row.abandoned / row.started) * 100"
+                               [style.background-color]="row.key === 'dev_match' ? '#22d3ee' : '#a855f7'">
+                          </div>
+                        }
                       </div>
-                    </div>
-                    <p class="text-[10px] text-gray-500">
+                      <div class="flex items-center gap-3 text-xs text-gray-500">
+                        <span class="flex items-center gap-1">
+                          <span class="inline-block w-2 h-2 rounded-sm" [style.background-color]="row.key === 'dev_match' ? '#22d3ee' : '#a855f7'"></span>
+                          {{ row.completed }} concluíram
+                        </span>
+                        @if (row.abandoned > 0) {
+                          <span class="flex items-center gap-1 opacity-50">
+                            <span class="inline-block w-2 h-2 rounded-sm" [style.background-color]="row.key === 'dev_match' ? '#22d3ee' : '#a855f7'"></span>
+                            {{ row.abandoned }} abandonaram
+                          </span>
+                        }
+                      </div>
+                    } @else {
+                      <div class="h-3 bg-gray-800 rounded-full overflow-hidden mb-2">
+                        <div class="h-full rounded-full transition-all duration-700"
+                             [style.width.%]="row.completionRate"
+                             [style.background-color]="row.key === 'dev_match' ? '#22d3ee' : '#a855f7'">
+                        </div>
+                      </div>
+                    }
+                    <p class="text-xs text-gray-500 mt-2">
                       Resultado médio:
                       <span class="font-semibold text-gray-300">{{ row.avgResult != null ? row.avgResult + '%' : 'sem conclusão ainda' }}</span>
                     </p>
@@ -829,7 +907,7 @@ interface TimeToActionRow {
                             [class]="conv.visitorOnline ? 'bg-green-400' : 'bg-gray-600'"></span>
                       <div class="min-w-0">
                         <p class="text-sm font-medium text-gray-200 truncate">{{ conv.company ? conv.username + ' · ' + conv.company : conv.username }}</p>
-                        <p class="text-[10px] text-gray-600 mt-0.5">{{ conv.lastMessageAt | date:'dd/MM HH:mm' }}</p>
+                        <p class="text-xs text-gray-500 mt-0.5">{{ conv.lastMessageAt | date:'dd/MM HH:mm' }}</p>
                       </div>
                     </div>
                   <div class="flex items-center gap-2 shrink-0">
@@ -871,7 +949,7 @@ interface TimeToActionRow {
                       {{ selectedConv.visitorOnline ? 'Online' : 'Offline' }}
                     </p>
                   </div>
-                  <p class="text-[10px] text-gray-600">{{ selectedConv.startedAt | date:'dd/MM/yy HH:mm' }}</p>
+                  <p class="text-xs text-gray-500">{{ selectedConv.startedAt | date:'dd/MM/yy HH:mm' }}</p>
                   <button (click)="askDeleteConv(selectedConv)"
                           class="ml-1 p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
                           title="Excluir conversa">
@@ -904,7 +982,7 @@ interface TimeToActionRow {
                           </p>
                         } @else {
                           @if (msg.sender === 'visitor') {
-                            <p class="text-[10px] text-gray-400 font-semibold mb-1">{{ selectedConv.username }}</p>
+                            <p class="text-xs text-gray-400 font-semibold mb-1">{{ selectedConv.username }}</p>
                           }
                           @if (editingConvMessageId === msg.id) {
                             <div class="space-y-2 min-w-[220px]" (click)="$event.stopPropagation()">
@@ -916,12 +994,12 @@ interface TimeToActionRow {
                                         placeholder="Edite a mensagem..."></textarea>
                               <div class="flex items-center justify-end gap-2">
                                 <button (click)="cancelEditConvMessage()"
-                                        class="px-2.5 py-1 rounded-lg text-[11px] bg-black/15 hover:bg-black/25 transition-colors cursor-pointer">
+                                        class="px-2.5 py-1 rounded-lg text-xs bg-black/15 hover:bg-black/25 transition-colors cursor-pointer">
                                   Cancelar
                                 </button>
                                 <button (click)="saveEditedConvMessage(msg)"
                                         [disabled]="!editConvMessageText.trim() || savingConvEdit"
-                                        class="px-2.5 py-1 rounded-lg text-[11px] bg-white/15 hover:bg-white/25 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                                        class="px-2.5 py-1 rounded-lg text-xs bg-white/15 hover:bg-white/25 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer">
                                   {{ savingConvEdit ? 'Salvando...' : 'Salvar' }}
                                 </button>
                               </div>
@@ -939,7 +1017,7 @@ interface TimeToActionRow {
                                 {{ msg.fileName }}
                               </a>
                             }
-                            <p class="text-[10px] mt-1 opacity-60 text-right">
+                            <p class="text-xs mt-1 opacity-60 text-right">
                               {{ msg.sentAt | date:'HH:mm' }}@if (msg.editedAt) { · editada }
                             </p>
                           }
@@ -1018,6 +1096,222 @@ interface TimeToActionRow {
 
         </div>
         <!-- fim: Aba Conversas -->
+
+        <!-- ── Aba: Leads ────────────────────────────────────────────── -->
+        <div [class.hidden]="activeTab !== 'leads'" class="space-y-6">
+          <div class="flex items-center justify-between flex-wrap gap-3">
+            <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Leads por score</p>
+            <button (click)="exportLeadsCsv()"
+                    class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-700 hover:border-cyan-500/50 text-xs text-gray-400 hover:text-cyan-300 transition-colors cursor-pointer">
+              ↓ Exportar CSV
+            </button>
+          </div>
+
+          <!-- Cards de resumo -->
+          <div class="grid grid-cols-3 gap-3">
+            <div class="admin-card rounded-xl p-5 border border-red-500/30 bg-red-500/5">
+              <p class="text-sm font-semibold text-red-500 mb-2">🔥 Leads quentes</p>
+              <p class="text-4xl font-bold text-red-500">{{ hotLeads.length }}</p>
+              <p class="text-xs font-medium text-red-400 mt-2">Score ≥ 70</p>
+            </div>
+            <div class="admin-card rounded-xl p-5 border border-amber-500/30 bg-amber-500/5">
+              <p class="text-sm font-semibold text-amber-500 mb-2">🌡 Leads mornos</p>
+              <p class="text-4xl font-bold text-amber-500">{{ warmLeads.length }}</p>
+              <p class="text-xs font-medium text-amber-400 mt-2">Score 40–69</p>
+            </div>
+            <div class="admin-card rounded-xl p-5 border border-blue-500/30 bg-blue-500/5">
+              <p class="text-sm font-semibold text-blue-500 mb-2">❄️ Leads frios</p>
+              <p class="text-4xl font-bold text-blue-500">{{ visitors.length - hotLeads.length - warmLeads.length }}</p>
+              <p class="text-xs font-medium text-blue-400 mt-2">Score &lt; 40</p>
+            </div>
+          </div>
+
+          <!-- Tabela de leads -->
+          <div class="admin-card border rounded-xl overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-xs text-gray-500 uppercase tracking-wider border-b border-gray-800">
+                    <th class="text-left px-4 py-3">Score</th>
+                    <th class="text-left px-4 py-3">IP</th>
+                    <th class="text-left px-4 py-3">Localização</th>
+                    <th class="text-left px-4 py-3 whitespace-nowrap">Visitas</th>
+                    <th class="text-left px-4 py-3 whitespace-nowrap">Match IA</th>
+                    <th class="text-left px-4 py-3 whitespace-nowrap">Match Dev</th>
+                    <th class="text-left px-4 py-3 whitespace-nowrap">Chat</th>
+                    <th class="text-left px-4 py-3 whitespace-nowrap">Última visita</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (v of paginatedLeads; track v.id) {
+                    @let score = computeVisitorScore(v);
+                    @let sl = scoreLabel(score);
+                    <tr class="border-b border-gray-800/40 hover:bg-gray-800/30 transition-colors">
+                      <td class="px-4 py-3">
+                        <span class="inline-flex items-center gap-1.5 text-sm font-bold px-3 py-1.5 rounded-full border {{ sl.bg }} {{ sl.color }}">
+                          {{ score }}
+                        </span>
+                      </td>
+                      <td class="px-4 py-3 text-xs text-gray-500 font-mono">{{ v.ip }}</td>
+                      <td class="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
+                        {{ v.city }}{{ v.city && v.country ? ', ' : '' }}{{ v.country }}
+                      </td>
+                      <td class="px-4 py-3 text-xs text-cyan-400 font-semibold">{{ v.visitCount }}x</td>
+                      <td class="px-4 py-3 text-xs">
+                        @let aiM = getAiMatchFor(v.id);
+                        @if (aiM) {
+                          <span [class]="aiM.matchPercentage >= 70 ? 'text-green-400' : aiM.matchPercentage >= 50 ? 'text-yellow-400' : 'text-red-400'">{{ aiM.matchPercentage }}%</span>
+                        } @else { <span class="text-gray-700">—</span> }
+                      </td>
+                      <td class="px-4 py-3 text-xs">
+                        @let devM = getDevMatchFor(v.id);
+                        @if (devM) {
+                          <span [class]="devM.matchPercentage >= 70 ? 'text-green-400' : devM.matchPercentage >= 50 ? 'text-yellow-400' : 'text-red-400'">{{ devM.matchPercentage }}%</span>
+                        } @else { <span class="text-gray-700">—</span> }
+                      </td>
+                      <td class="px-4 py-3 text-xs">
+                        @let conv = getConvForIp(v.ip);
+                        @if (conv) {
+                          <span class="text-violet-400">💬 {{ conv.username }}</span>
+                        } @else { <span class="text-gray-700">—</span> }
+                      </td>
+                      <td class="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">{{ v.lastSeen | date:'dd/MM/yy HH:mm' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+            <!-- Paginação -->
+            <div class="flex flex-col gap-3 border-t border-gray-800/40 px-4 py-3 text-xs text-gray-500 sm:flex-row sm:items-center sm:justify-between">
+              <div class="flex items-center gap-2">
+                <span>Linhas por página:</span>
+                <select [(ngModel)]="leadsPageSize" (ngModelChange)="onLeadsPageSizeChange()"
+                        class="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-gray-300 focus:outline-none focus:border-cyan-500/50 cursor-pointer">
+                  <option [value]="10">10</option>
+                  <option [value]="15">15</option>
+                  <option [value]="25">25</option>
+                  <option [value]="50">50</option>
+                </select>
+                <span>· Exibindo {{ leadsPageStart }}–{{ leadsPageEnd }} de {{ sortedLeads.length }}</span>
+              </div>
+              <div class="flex items-center gap-2 self-end sm:self-auto">
+                <button type="button" (click)="leadsPrevPage()" [disabled]="leadsPage === 1"
+                        class="rounded-md border border-gray-700 px-3 py-1.5 transition-colors hover:border-gray-500 hover:text-gray-300 disabled:cursor-not-allowed disabled:opacity-40">
+                  Anterior
+                </button>
+                <span class="min-w-24 text-center">Página {{ leadsPage }} de {{ leadsTotalPages }}</span>
+                <button type="button" (click)="leadsNextPage()" [disabled]="leadsPage >= leadsTotalPages"
+                        class="rounded-md border border-gray-700 px-3 py-1.5 transition-colors hover:border-gray-500 hover:text-gray-300 disabled:cursor-not-allowed disabled:opacity-40">
+                  Próxima
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Mapa de jornada -->
+          @if (journeyPaths.length > 0) {
+            <div class="admin-card border rounded-xl p-5 space-y-4">
+              <div class="flex items-start justify-between gap-3 flex-wrap">
+                <div>
+                  <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Jornadas mais comuns</p>
+                  <p class="text-xs text-gray-500 mt-0.5">Sequências de seções visualizadas por sessão, ordenadas por frequência</p>
+                </div>
+                <button (click)="generateJourneyInsight()"
+                        [disabled]="journeyAiLoading"
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-violet-600/40 bg-violet-500/10 text-violet-300 text-xs font-medium hover:bg-violet-500/20 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0">
+                  @if (journeyAiLoading) {
+                    <span class="inline-block w-3 h-3 border-2 border-violet-300/30 border-t-violet-300 rounded-full animate-spin"></span>
+                    Analisando…
+                  } @else {
+                    ✦ Analisar com IA
+                  }
+                </button>
+              </div>
+
+              <!-- Lista de jornadas com chips -->
+              <div class="space-y-3">
+                @for (j of journeyPaths; track j.path; let i = $index) {
+                  <div class="group flex items-start gap-3 p-3 rounded-xl transition-colors hover:bg-gray-800/40"
+                       [class]="i === 0 ? 'bg-cyan-500/5 border border-cyan-500/15' : ''">
+                    <!-- Posição + barra de frequência -->
+                    <div class="flex flex-col items-center gap-1 pt-0.5 shrink-0 w-8">
+                      <span class="text-xs font-bold tabular-nums"
+                            [class]="i === 0 ? 'text-cyan-400' : i === 1 ? 'text-gray-400' : 'text-gray-600'">
+                        #{{ i + 1 }}
+                      </span>
+                      <div class="w-1 rounded-full" [style.height.px]="Math.max(4, Math.round(j.pct * 0.5))"
+                           [style.background-color]="i === 0 ? '#22d3ee' : i === 1 ? '#a855f7' : '#374151'"></div>
+                    </div>
+                    <!-- Chips de seções -->
+                    <div class="flex-1 min-w-0">
+                      <div class="flex flex-wrap items-center gap-1 mb-1.5">
+                        @for (step of j.path.split(' → '); track step; let si = $index; let last = $last) {
+                          <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border"
+                                [class]="si === 0
+                                  ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
+                                  : last
+                                    ? 'bg-amber-500/15 border-amber-500/30 text-amber-300'
+                                    : 'bg-gray-700/60 border-gray-600/50 text-gray-400'">
+                            {{ step }}
+                          </span>
+                          @if (!last) {
+                            <span class="text-gray-600 text-[10px] select-none">→</span>
+                          }
+                        }
+                      </div>
+                      <!-- Barra de frequência relativa -->
+                      <div class="flex items-center gap-2">
+                        <div class="flex-1 h-1 bg-gray-800 rounded-full overflow-hidden">
+                          <div class="h-full rounded-full transition-all duration-700"
+                               [style.width.%]="j.pct"
+                               [style.background-color]="i === 0 ? '#22d3ee' : i === 1 ? '#a855f7' : '#4b5563'">
+                          </div>
+                        </div>
+                        <span class="text-xs text-gray-500 tabular-nums shrink-0">{{ j.count }}x · {{ j.pct }}%</span>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+
+              <!-- AI Insight -->
+              @if (journeyAiError) {
+                <div class="rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3 text-xs text-red-400">{{ journeyAiError }}</div>
+              }
+              @if (journeyAiParsed) {
+                @let ai = journeyAiParsed;
+                <div class="rounded-xl border p-4 space-y-3 mt-2"
+                     [class]="ai.assessment === 'good'
+                       ? 'border-green-500/20 bg-green-500/5'
+                       : ai.assessment === 'attention'
+                         ? 'border-amber-500/20 bg-amber-500/5'
+                         : 'border-cyan-500/15 bg-cyan-500/5'">
+                  <div class="flex items-center gap-2">
+                    <span class="text-base">
+                      {{ ai.assessment === 'good' ? '✅' : ai.assessment === 'attention' ? '⚠️' : '💡' }}
+                    </span>
+                    <p class="text-xs font-semibold"
+                       [class]="ai.assessment === 'good' ? 'text-green-300' : ai.assessment === 'attention' ? 'text-amber-300' : 'text-cyan-300'">
+                      Análise IA — Jornadas de Navegação
+                    </p>
+                  </div>
+                  <p class="text-xs text-gray-300 leading-relaxed">{{ ai.summary }}</p>
+                  <div class="space-y-2">
+                    <div class="flex gap-2">
+                      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide shrink-0 w-16 pt-0.5">Indica</span>
+                      <p class="text-xs text-gray-400 leading-relaxed">{{ ai.insight }}</p>
+                    </div>
+                    <div class="flex gap-2">
+                      <span class="text-xs font-semibold text-violet-400 uppercase tracking-wide shrink-0 w-16 pt-0.5">Ação</span>
+                      <p class="text-xs text-gray-300 leading-relaxed">{{ ai.action }}</p>
+                    </div>
+                  </div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+        <!-- fim: Aba Leads -->
 
         <!-- ── Aba: Testes ───────────────────────────────────────────── -->
         <div [class.hidden]="activeTab !== 'tests'" class="space-y-6">
@@ -1272,9 +1566,13 @@ interface TimeToActionRow {
 export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('mapEl') mapEl!: ElementRef<HTMLDivElement>;
   @ViewChild('chartCanvas') chartCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('ctaChartCanvas') ctaChartCanvas?: ElementRef<HTMLCanvasElement>;
+  @ViewChild('sectionChartCanvas') sectionChartCanvas?: ElementRef<HTMLCanvasElement>;
   private leafletMap?: L.Map;
   private mapMarkers = new Map<string, L.CircleMarker>();
   private lineChartInstance?: Chart;
+  private ctaChartInstance?: Chart;
+  private sectionChartInstance?: Chart;
   private themeObserver?: MutationObserver;
 
   private firebase = inject(FirebaseService);
@@ -1310,6 +1608,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   analyticsEventCount = 0;
   usingFallback = false;
 
+  readonly Math = Math;
   private readonly OWNER_IPS = ['45.179.22.183', '138.255.215.188'];
 
   // ── Novos widgets ──────────────────────────────────────────────────────────
@@ -1325,8 +1624,241 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   readonly legendSteps = [0.1, 0.3, 0.5, 0.75, 1.0];
   readonly cellSize = 18;
 
-  // ── Tabs ─────────────────────────────────────────────────────────────
-  activeTab: 'analytics' | 'chat' | 'tests' = 'analytics';
+  // ── Date range do gráfico ─────────────────────────────────────────────
+  chartDateStart: string = new Date(Date.now() - 6 * 86_400_000).toISOString().slice(0, 10);
+  chartDateEnd: string   = new Date().toISOString().slice(0, 10);
+  chartPresetDays = 7;
+
+  toIsoDate(d: Date): string {
+    return d.toISOString().slice(0, 10);
+  }
+
+  setChartPreset(days: number): void {
+    this.chartPresetDays = days;
+    this.chartDateStart = this.toIsoDate(new Date(Date.now() - (days - 1) * 86_400_000));
+    this.chartDateEnd   = this.toIsoDate(new Date());
+    this.initLineChart();
+  }
+
+  onChartRangeChange(): void {
+    this.chartPresetDays = 0;
+    this.initLineChart();
+  }
+  activeTab: 'analytics' | 'chat' | 'leads' | 'tests' = 'analytics';
+
+  // ── Score de visitante ───────────────────────────────────────────────
+  visitorScores = new Map<string, number>();
+
+  computeVisitorScore(v: VisitorRecord): number {
+    let score = 0;
+    if (v.visitCount >= 3) score += 30;
+    else if (v.visitCount >= 2) score += 15;
+    const aiM = this.aiMatches.find(m => m.visitorId === v.id);
+    const devM = this.devMatches.find(m => m.visitorId === v.id);
+    if (aiM) score += 25 + (aiM.matchPercentage >= 70 ? 15 : 0);
+    if (devM) score += 20 + (devM.matchPercentage >= 70 ? 10 : 0);
+    const conv = this.conversations.find(c => c.ip === v.ip);
+    if (conv) score += 30;
+    return Math.min(100, score);
+  }
+
+  scoreLabel(score: number): { label: string; color: string; bg: string } {
+    if (score >= 70) return { label: '🔥 Lead quente', color: 'text-red-400', bg: 'bg-red-500/15 border-red-500/30' };
+    if (score >= 40) return { label: '🌡 Lead morno', color: 'text-amber-400', bg: 'bg-amber-500/15 border-amber-500/30' };
+    return { label: '❄️ Lead frio', color: 'text-blue-400', bg: 'bg-blue-500/15 border-blue-500/30' };
+  }
+
+  get hotLeads(): VisitorRecord[] {
+    return this.visitors.filter(v => this.computeVisitorScore(v) >= 70)
+      .sort((a, b) => this.computeVisitorScore(b) - this.computeVisitorScore(a));
+  }
+
+  get warmLeads(): VisitorRecord[] {
+    return this.visitors.filter(v => {
+      const s = this.computeVisitorScore(v);
+      return s >= 40 && s < 70;
+    }).sort((a, b) => this.computeVisitorScore(b) - this.computeVisitorScore(a));
+  }
+
+  // ── Paginação da tabela de leads ────────────────────────────────────────────────
+  leadsPage = 1;
+  leadsPageSize = 15;
+
+  get sortedLeads(): VisitorRecord[] {
+    return [...this.visitors].sort((a, b) => this.computeVisitorScore(b) - this.computeVisitorScore(a));
+  }
+
+  get leadsTotalPages(): number {
+    return Math.max(1, Math.ceil(this.sortedLeads.length / this.leadsPageSize));
+  }
+
+  get paginatedLeads(): VisitorRecord[] {
+    const start = (this.leadsPage - 1) * this.leadsPageSize;
+    return this.sortedLeads.slice(start, start + this.leadsPageSize);
+  }
+
+  get leadsPageStart(): number {
+    return this.sortedLeads.length === 0 ? 0 : (this.leadsPage - 1) * this.leadsPageSize + 1;
+  }
+
+  get leadsPageEnd(): number {
+    return Math.min(this.leadsPage * this.leadsPageSize, this.sortedLeads.length);
+  }
+
+  leadsNextPage(): void {
+    if (this.leadsPage < this.leadsTotalPages) this.leadsPage++;
+  }
+
+  leadsPrevPage(): void {
+    if (this.leadsPage > 1) this.leadsPage--;
+  }
+
+  onLeadsPageSizeChange(): void {
+    this.leadsPage = 1;
+  }
+
+  // ── Journey AI insight ─────────────────────────────────────────────────────
+  journeyAiInsight = '';
+  journeyAiLoading = false;
+  journeyAiError = '';
+
+  async generateJourneyInsight(): Promise<void> {
+    if (!this.journeyPaths.length || this.journeyAiLoading) return;
+    this.journeyAiLoading = true;
+    this.journeyAiInsight = '';
+    this.journeyAiError = '';
+    this.cdr.detectChanges();
+
+    const top = this.journeyPaths.slice(0, 6)
+      .map((j, i) => `${i + 1}. "${j.path}" — ${j.count}x (${j.pct}%)`)
+      .join('\n');
+
+    const prompt = `Você é um especialista em UX e analytics de portfolios de desenvolvedores.
+Analise as jornadas de navegação mais comuns dos visitantes e fornecer um feedback curto e prático para o dono do portfolio.
+
+JORNADAS MAIS COMUNS (formato: sequência de seções → contagem de sessões):
+${top}
+
+Total de sessões analisadas: ${this.journeyPaths.reduce((s, j) => s + j.count, 0)}
+
+Responda em JSON com esta estrutura exata (sem markdown):
+{
+  "assessment": "ok | attention | good",
+  "summary": "<2-3 frases descrevendo o padrão geral de navegação>",
+  "insight": "<o que isso indica sobre o comportamento do visitante>",
+  "action": "<1-2 recomendações práticas para o dono do portfolio>"
+}
+Resposta em português brasileiro, tom direto e profissional.`;
+
+    try {
+      const ai = new GoogleGenAI({ apiKey: environment.geminiApiKey });
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash-lite',
+        contents: prompt,
+        config: { temperature: 0.5, responseMimeType: 'application/json' },
+      });
+      const parsed = JSON.parse(response.text ?? '{}') as {
+        assessment: string; summary: string; insight: string; action: string;
+      };
+      this.journeyAiInsight = JSON.stringify(parsed);
+    } catch (e) {
+      this.journeyAiError = 'Falha ao gerar análise. Tente novamente.';
+    } finally {
+      this.journeyAiLoading = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  get journeyAiParsed(): { assessment: string; summary: string; insight: string; action: string } | null {
+    if (!this.journeyAiInsight) return null;
+    try { return JSON.parse(this.journeyAiInsight); } catch { return null; }
+  }
+
+  getAiMatchFor(visitorId?: string): AiMatchRecord | undefined {
+    return this.aiMatches.find(m => m.visitorId === visitorId);
+  }
+
+  getDevMatchFor(visitorId?: string): DevMatchRecord | undefined {
+    return this.devMatches.find(m => m.visitorId === visitorId);
+  }
+
+  getConvForIp(ip: string): ChatConversation | undefined {
+    return this.conversations.find(c => c.ip === ip);
+  }
+
+  exportLeadsCsv(): void {
+    const rows = [
+      ['IP', 'Cidade', 'País', 'Visitas', 'Score', 'Categoria', 'AI Match %', 'Dev Match %', 'Primeira Visita', 'Última Visita'],
+      ...this.visitors
+        .map(v => {
+          const score = this.computeVisitorScore(v);
+          const { label } = this.scoreLabel(score);
+          const aiM = this.aiMatches.find(m => m.visitorId === v.id);
+          const devM = this.devMatches.find(m => m.visitorId === v.id);
+          return [
+            v.ip, v.city ?? '', v.country ?? '',
+            v.visitCount, score, label.replace(/[🔥🌡❄️ ]/g, '').trim(),
+            aiM?.matchPercentage ?? '', devM?.matchPercentage ?? '',
+            v.firstSeen.toLocaleDateString('pt-BR'),
+            v.lastSeen.toLocaleDateString('pt-BR'),
+          ];
+        })
+        .sort((a, b) => (b[4] as number) - (a[4] as number)),
+    ];
+    const csv = rows.map(r => r.join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = `leads-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+  }
+
+  // ── Visitantes ativos agora ───────────────────────────────────────────
+  activeNowCount = 0;
+  private unsubActiveNow?: () => void;
+
+  // ── Mapa de jornada ───────────────────────────────────────────────────
+  journeyPaths: { path: string; count: number; pct: number }[] = [];
+
+  private computeJourneyMap(): void {
+    const sessionPaths = new Map<string, string[]>();
+    const sorted = [...this.analyticsEvents]
+      .filter(e => e.eventType === 'section_view' && e.section)
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+
+    for (const e of sorted) {
+      const existing = sessionPaths.get(e.sessionId) ?? [];
+      const last = existing[existing.length - 1];
+      if (last !== e.section) existing.push(e.section!);
+      sessionPaths.set(e.sessionId, existing);
+    }
+
+    const pathCounts = new Map<string, number>();
+    for (const sections of sessionPaths.values()) {
+      if (sections.length < 2) continue;
+      const key = sections.join(' → ');
+      pathCounts.set(key, (pathCounts.get(key) ?? 0) + 1);
+    }
+
+    const total = [...pathCounts.values()].reduce((s, v) => s + v, 0) || 1;
+    this.journeyPaths = [...pathCounts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([path, count]) => ({ path, count, pct: Math.round((count / total) * 100) }));
+  }
+
+  // ── Comparação de períodos ─────────────────────────────────────────────
+  showPeriodCompare = false;
+
+  get chartCompareStart(): string {
+    const start = new Date(this.chartDateStart + 'T00:00:00');
+    const end   = new Date(this.chartDateEnd   + 'T00:00:00');
+    const days  = Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1;
+    return this.toIsoDate(new Date(start.getTime() - days * 86_400_000));
+  }
+
+  get chartCompareEnd(): string {
+    return this.toIsoDate(new Date(new Date(this.chartDateStart + 'T00:00:00').getTime() - 86_400_000));
+  }
 
   // ── Chat ────────────────────────────────────────────────────────────
   conversations: ChatConversation[] = [];
@@ -1424,6 +1956,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     setTimeout(() => {
       this.initLineChart();
       this.initMap();
+      this.initCtaChart();
+      this.initSectionChart();
     }, 50);
 
     // Listener em tempo real das conversas
@@ -1447,6 +1981,14 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
           }
         }
         this.conversations = convs;
+        this.cdr.detectChanges();
+      });
+    });
+
+    // Listener visitantes ativos agora (presence)
+    this.unsubActiveNow = this.firebase.listenActiveVisitors((count: number) => {
+      this.zone.run(() => {
+        this.activeNowCount = count;
         this.cdr.detectChanges();
       });
     });
@@ -1735,12 +2277,15 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   ngOnDestroy(): void {
     void this.firebase.setOwnerOnline(false);
     this.lineChartInstance?.destroy();
+    this.ctaChartInstance?.destroy();
+    this.sectionChartInstance?.destroy();
     this.themeObserver?.disconnect();
     this.leafletMap?.remove();
     this.mapMarkers.clear();
     this.unsubConversations?.();
     this.unsubConvMessages?.();
     this.unsubTestEmail?.();
+    this.unsubActiveNow?.();
     clearTimeout(this.adminToastTimer);
     this.knownUnreadByConv.clear();
   }
@@ -1785,7 +2330,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
       areaStart:  light ? 'rgba(124,58,237,0.18)' : 'rgba(34,211,238,0.18)',
       areaEnd:    light ? 'rgba(124,58,237,0)' : 'rgba(34,211,238,0)',
       grid:       light ? '#e9d5ff' : '#1f2937',
-      tickColor:  light ? '#6b7280' : '#6b7280',
+      tickColor:  light ? '#374151' : '#6b7280',
     };
   }
 
@@ -1793,20 +2338,22 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     if (!this.chartCanvas?.nativeElement) return;
     this.lineChartInstance?.destroy();
 
-    const today = new Date();
-    const days = Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(today);
-      d.setDate(today.getDate() - (6 - i));
+    const start = new Date(this.chartDateStart + 'T00:00:00');
+    const end   = new Date(this.chartDateEnd   + 'T23:59:59');
+    const totalDays = Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1;
+
+    const days = Array.from({ length: totalDays }, (_, i) => {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
       return d;
     });
+
+    const sameDay = (d1: Date, d2: Date) =>
+      d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+
     const labels = days.map(d => d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }));
     const counts = days.map(day =>
-      this.visitors.filter(v => {
-        const ls = new Date(v.lastSeen);
-        return ls.getFullYear() === day.getFullYear()
-          && ls.getMonth() === day.getMonth()
-          && ls.getDate() === day.getDate();
-      }).length
+      this.visitors.filter(v => sameDay(new Date(v.lastSeen), day)).length
     );
 
     const c = this.chartColors();
@@ -1815,28 +2362,52 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     grad.addColorStop(0, c.areaStart);
     grad.addColorStop(1, c.areaEnd);
 
+    const datasets: any[] = [{
+      label: 'Período atual',
+      data: counts,
+      borderColor: c.accent,
+      backgroundColor: grad,
+      borderWidth: 2,
+      pointBackgroundColor: c.accent,
+      pointRadius: 4,
+      pointHoverRadius: 6,
+      fill: true,
+      tension: 0.35,
+    }];
+
+    if (this.showPeriodCompare) {
+      const prevStart = new Date(this.chartCompareStart + 'T00:00:00');
+      const prevCounts = days.map((_, i) => {
+        const prevDay = new Date(prevStart);
+        prevDay.setDate(prevStart.getDate() + i);
+        return this.visitors.filter(v => sameDay(new Date(v.lastSeen), prevDay)).length;
+      });
+      datasets.push({
+        label: 'Período anterior',
+        data: prevCounts,
+        borderColor: 'rgba(139,92,246,0.7)',
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        borderDash: [5, 4],
+        pointBackgroundColor: 'rgba(139,92,246,0.7)',
+        pointRadius: 3,
+        fill: false,
+        tension: 0.35,
+      });
+    }
+
     this.lineChartInstance = new Chart(ctx, {
       type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          data: counts,
-          borderColor: c.accent,
-          backgroundColor: grad,
-          borderWidth: 2,
-          pointBackgroundColor: c.accent,
-          pointRadius: 4,
-          pointHoverRadius: 6,
-          fill: true,
-          tension: 0.35,
-        }],
-      },
+      data: { labels, datasets },
       options: {
         responsive: true,
         maintainAspectRatio: true,
-        plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+        plugins: {
+          legend: { display: this.showPeriodCompare, labels: { color: c.tickColor, boxWidth: 12, font: { size: 10 } } },
+          tooltip: { mode: 'index', intersect: false },
+        },
         scales: {
-          x: { grid: { color: c.grid }, ticks: { color: c.tickColor, font: { size: 11 } } },
+          x: { grid: { color: c.grid }, ticks: { color: c.tickColor, font: { size: 11 }, maxTicksLimit: 14 } },
           y: { beginAtZero: true, grid: { color: c.grid }, ticks: { color: c.tickColor, font: { size: 11 }, precision: 0 } },
         },
       },
@@ -1973,6 +2544,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
       this.deleteTarget = null;
       this.initLineChart();
       this.initMap();
+      this.initCtaChart();
+      this.initSectionChart();
     } catch (err) {
       console.error('[Dashboard] deleteVisitor', err);
     } finally {
@@ -2122,6 +2695,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     this.syncSelectedMapTarget();
     this.computeExtraStats();
     this.computeAnalyticsInsights();
+    this.computeJourneyMap();
   }
 
   private buildResolutionLabel(visitor: VisitorRecord): string {
@@ -2576,6 +3150,213 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
 
   pct(ratio: number): number {
     return Math.round(ratio * 100);
+  }
+
+  // ── Funil SVG ─────────────────────────────────────────────────────────
+  get funnelShapes() {
+    const steps = this.contactFunnelSteps;
+    if (!steps.length) return [];
+    // cx=250, maxW=200 → funil de x=150 a x=350 na largura máxima
+    // Zona esquerda (texto): x=0..130 | Funil: x=150..350 | Zona direita: x=360..500
+    const maxW = 200, cx = 250, stepH = 62, gapH = 30;
+    const topValue = steps[0].value || 1;
+    return steps.map((step, i) => {
+      const topPct = step.value / topValue;
+      const botPct = i < steps.length - 1 ? steps[i + 1].value / topValue : topPct;
+      const topW = Math.max(32, topPct * maxW);
+      const botW = Math.max(32, botPct * maxW);
+      const y = i * (stepH + gapH);
+      const dropPct = i > 0 ? Math.round((1 - step.value / (steps[i - 1].value || 1)) * 100) : null;
+      const x1t = cx - topW / 2, x2t = cx + topW / 2;
+      const x1b = cx - botW / 2, x2b = cx + botW / 2;
+      return {
+        label: step.label,
+        value: step.value,
+        color: step.color,
+        pct: Math.round(topPct * 100),
+        dropPct,
+        points: `${x1t},${y} ${x2t},${y} ${x2b},${y + stepH} ${x1b},${y + stepH}`,
+        centerY: y + stepH / 2,
+        dropY: y + stepH + gapH / 2,
+      };
+    });
+  }
+
+  get funnelSvgHeight(): number {
+    const n = this.contactFunnelSteps.length;
+    return n * 62 + Math.max(0, n - 1) * 30;
+  }
+
+  // ── Charts horizontais de barra ────────────────────────────────────────
+  private initCtaChart(): void {
+    const el = this.ctaChartCanvas?.nativeElement;
+    if (!el || !this.ctaPerformance.length) return;
+    this.ctaChartInstance?.destroy();
+
+    const isDark = !document.documentElement.classList.contains('light');
+    const gridColor  = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)';
+    const tickColor  = isDark ? '#9ca3af' : '#374151';
+    const categoryColors: Record<string, string> = {
+      project: '#a855f7', direct_contact: '#22c55e', resume: '#f59e0b',
+      navigation: '#94a3b8', contact: '#22d3ee',
+    };
+    const rows = this.ctaPerformance.slice(0, 12);
+    const labels = rows.map(r => r.label.length > 22 ? r.label.slice(0, 20) + '…' : r.label);
+    const colors = rows.map(r => categoryColors[r.category] ?? '#22d3ee');
+
+    const ctaDatalabels = {
+      id: 'ctaBarDatalabels',
+      afterDatasetsDraw(chart: any) {
+        const ctx2 = chart.ctx as CanvasRenderingContext2D;
+        const dark = !document.documentElement.classList.contains('light');
+        const labelPrimary   = dark ? '#e5e7eb' : '#1f2937';
+        const labelSecondary = dark ? '#6b7280' : '#6b7280';
+        chart.data.datasets.forEach((_: any, di: number) => {
+          const meta = chart.getDatasetMeta(di);
+          meta.data.forEach((bar: any, j: number) => {
+            const val = chart.data.datasets[di].data[j] as number;
+            if (val <= 0) return;
+            const clicks = rows[j]?.clicks ?? '';
+            ctx2.save();
+            ctx2.fillStyle = labelPrimary;
+            ctx2.font = 'bold 12px Inter, ui-sans-serif, sans-serif';
+            ctx2.textAlign = 'left';
+            ctx2.textBaseline = 'middle';
+            const x = Math.min(bar.x + 6, chart.chartArea.right - 58);
+            ctx2.fillText(`${val}%`, x, bar.y);
+            ctx2.fillStyle = labelSecondary;
+            ctx2.font = '11px Inter, ui-sans-serif, sans-serif';
+            ctx2.fillText(`${clicks}×`, x + 34, bar.y);
+            ctx2.restore();
+          });
+        });
+      },
+    };
+
+    this.ctaChartInstance = new Chart(el, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'CTR %',
+          data: rows.map(r => r.ctr),
+          backgroundColor: colors.map(c => c + '33'),
+          borderColor: colors,
+          borderWidth: 1.5,
+          borderRadius: 4,
+          borderSkipped: false,
+        }],
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { right: 16 } },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.parsed.x}% CTR · ${rows[ctx.dataIndex].clicks} cliques`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            beginAtZero: true, max: 100,
+            grid: { color: gridColor },
+            ticks: { color: tickColor, font: { size: 13 }, callback: v => v + '%' },
+          },
+          y: {
+            grid: { color: 'transparent' },
+            ticks: { color: tickColor, font: { size: 13 } },
+          },
+        },
+      },
+      plugins: [ctaDatalabels],
+    });
+  }
+
+  private initSectionChart(): void {
+    const el = this.sectionChartCanvas?.nativeElement;
+    if (!el || !this.sectionReachRows.length) return;
+    this.sectionChartInstance?.destroy();
+
+    const isDark = !document.documentElement.classList.contains('light');
+    const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)';
+    const tickColor = isDark ? '#9ca3af' : '#374151';
+    const accent = this.accentColor;
+    const rows = this.sectionReachRows;
+
+    const sectionDatalabels = {
+      id: 'sectionBarDatalabels',
+      afterDatasetsDraw(chart: any) {
+        const ctx2 = chart.ctx as CanvasRenderingContext2D;
+        const dark = !document.documentElement.classList.contains('light');
+        const labelPrimary   = dark ? '#e5e7eb' : '#1f2937';
+        const labelSecondary = dark ? '#6b7280' : '#6b7280';
+        chart.data.datasets.forEach((_: any, di: number) => {
+          const meta = chart.getDatasetMeta(di);
+          meta.data.forEach((bar: any, j: number) => {
+            const val = chart.data.datasets[di].data[j] as number;
+            if (val <= 0) return;
+            const sessions = rows[j]?.sessions ?? '';
+            ctx2.save();
+            ctx2.fillStyle = labelPrimary;
+            ctx2.font = 'bold 12px Inter, ui-sans-serif, sans-serif';
+            ctx2.textAlign = 'left';
+            ctx2.textBaseline = 'middle';
+            const x = Math.min(bar.x + 6, chart.chartArea.right - 68);
+            ctx2.fillText(`${val}%`, x, bar.y);
+            ctx2.fillStyle = labelSecondary;
+            ctx2.font = '11px Inter, ui-sans-serif, sans-serif';
+            ctx2.fillText(`${sessions} sess.`, x + 34, bar.y);
+            ctx2.restore();
+          });
+        });
+      },
+    };
+
+    this.sectionChartInstance = new Chart(el, {
+      type: 'bar',
+      data: {
+        labels: rows.map(r => r.label),
+        datasets: [{
+          label: 'Alcance %',
+          data: rows.map(r => r.reachRate),
+          backgroundColor: accent + '33',
+          borderColor: accent,
+          borderWidth: 1.5,
+          borderRadius: 4,
+          borderSkipped: false,
+        }],
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        layout: { padding: { right: 16 } },
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.parsed.x}% · ${rows[ctx.dataIndex].sessions} sessões`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            beginAtZero: true, max: 100,
+            grid: { color: gridColor },
+            ticks: { color: tickColor, font: { size: 13 }, callback: v => v + '%' },
+          },
+          y: {
+            grid: { color: 'transparent' },
+            ticks: { color: tickColor, font: { size: 13 } },
+          },
+        },
+      },
+      plugins: [sectionDatalabels],
+    });
   }
 
   private hasCoordinates(visitor?: VisitorRecord): visitor is VisitorRecord & { lat: number; lng: number } {

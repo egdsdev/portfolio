@@ -167,7 +167,7 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
                               placeholder-gray-500 focus:outline-none focus:border-violet-500 transition-colors"
                        placeholder="Nome da empresa" />
               </div>
-              <p class="text-[11px] text-gray-600 mt-1">As alterações ficam vinculadas ao seu IP e serão visíveis para Elias.</p>
+              <p class="text-xs text-gray-600 mt-1">As alterações ficam vinculadas ao seu IP e serão visíveis para Elias.</p>
             </div>
             <div class="px-5 py-4 border-t border-gray-700/50 flex gap-3 shrink-0">
               <button (click)="cancelEditProfile()"
@@ -239,7 +239,7 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
                   </p>
                 } @else {
                   @if (msg.sender === 'owner') {
-                    <p class="chat-owner-label text-[10px] text-violet-300 font-semibold mb-1">Elias</p>
+                    <p class="chat-owner-label text-xs text-violet-300 font-semibold mb-1">Elias</p>
                   }
                   @if (editingMessageId() === msg.id) {
                     <div class="space-y-2 min-w-[220px]" (click)="$event.stopPropagation()">
@@ -252,12 +252,12 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
                                 placeholder="Edite sua mensagem..."></textarea>
                       <div class="flex items-center justify-end gap-2">
                         <button (click)="cancelEditMessage()"
-                                class="px-2.5 py-1 rounded-lg text-[11px] bg-black/15 hover:bg-black/25 transition-colors cursor-pointer">
+                                class="px-2.5 py-1 rounded-lg text-xs bg-black/15 hover:bg-black/25 transition-colors cursor-pointer">
                           Cancelar
                         </button>
                         <button (click)="saveEditedMessage(msg)"
                                 [disabled]="!editMessageText().trim() || isSavingEditedMsg()"
-                                class="px-2.5 py-1 rounded-lg text-[11px] bg-white/15 hover:bg-white/25 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                                class="px-2.5 py-1 rounded-lg text-xs bg-white/15 hover:bg-white/25 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer">
                           @if (isSavingEditedMsg()) { Salvando... } @else { Salvar }
                         </button>
                       </div>
@@ -276,8 +276,8 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
                       </a>
                     }
                     <p [class]="msg.sender === 'visitor'
-                        ? 'text-violet-300/70 text-[10px] mt-1 text-right'
-                        : 'text-gray-400 text-[10px] mt-1 text-right'">
+                        ? 'text-violet-300/70 text-xs mt-1 text-right'
+                        : 'text-gray-400 text-xs mt-1 text-right'">
                       {{ formatTime(msg.sentAt) }}@if (msg.editedAt) { · editada }
                     </p>
                   }

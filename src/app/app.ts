@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, HostListener } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
 import { AnalyticsService } from './core/services/analytics.service';
@@ -16,6 +16,8 @@ import { FooterComponent } from './shared/components/footer/footer.component';
 import { StatsComponent } from './features/stats/stats.component';
 import { GithubStatsComponent } from './features/stats/github-stats.component';
 import { RevealDirective } from './shared/directives/reveal.directive';
+import { HowIWorkComponent } from './features/how-i-work/how-i-work.component';
+import { TechTimelineComponent } from './features/tech-timeline/tech-timeline.component';
 
 @Component({
   selector: 'app-root',
@@ -35,6 +37,8 @@ import { RevealDirective } from './shared/directives/reveal.directive';
     FooterComponent,
     RevealDirective,
     GithubStatsComponent,
+    HowIWorkComponent,
+    TechTimelineComponent,
   ],
   template: `
     <div class="starfield">
@@ -59,7 +63,13 @@ import { RevealDirective } from './shared/directives/reveal.directive';
             <app-experience></app-experience>
           </div>
           <div appReveal="up" [revealDelay]="0">
+            <app-how-i-work></app-how-i-work>
+          </div>
+          <div appReveal="up" [revealDelay]="0">
             <app-skills></app-skills>
+          </div>
+          <div appReveal="up" [revealDelay]="0">
+            <app-tech-timeline></app-tech-timeline>
           </div>
           <!-- GitHub stats: oculto temporariamente -->
           @if (false) {
@@ -92,6 +102,29 @@ import { RevealDirective } from './shared/directives/reveal.directive';
             <span>Fale Comigo<span class="hidden sm:inline"> Aqui</span></span>
           </button>
         }
+        <!-- CTA flutuante contextual -->
+        @if (!isAdminRoute() && !isAuthenticated() && contextualCtaVisible()) {
+          <div class="fixed bottom-6 left-6 z-40 flex items-center gap-2 rounded-xl
+                      bg-gray-900/90 border border-gray-700/60 backdrop-blur-md
+                      shadow-xl px-4 py-2.5 animate-fade-in-up">
+            @if (contextualCta() === 'experience') {
+              <a href="#contato" (click)="contextualCtaVisible.set(false)"
+                 class="flex items-center gap-2 text-sm font-medium text-cyan-300 hover:text-cyan-200 transition-colors">
+                <span class="text-base">💼</span>
+                Tem uma vaga? <span class="font-bold text-white">Vamos conversar</span>
+              </a>
+            } @else if (contextualCta() === 'projetos') {
+              <a href="https://github.com/egdsdev" target="_blank" rel="noopener"
+                 (click)="contextualCtaVisible.set(false)"
+                 class="flex items-center gap-2 text-sm font-medium text-purple-300 hover:text-purple-200 transition-colors">
+                <span class="text-base">🚀</span>
+                Ver mais no <span class="font-bold text-white">GitHub</span>
+              </a>
+            }
+            <button (click)="contextualCtaVisible.set(false)"
+                    class="ml-2 text-gray-600 hover:text-gray-400 transition-colors text-xs">✕</button>
+          </div>
+        }
         <router-outlet></router-outlet>
       }
     }
@@ -108,6 +141,32 @@ export class App implements OnInit, OnDestroy {
   routerResolved = signal(false);
   isAdmin = signal(false);
   isAuthenticated = signal(false);
+  contextualCta = signal<'experience' | 'projetos' | null>(null);
+  contextualCtaVisible = signal(false);
+
+  @HostListener('window:scroll')
+  onScroll(): void {
+    if (this.isAdmin()) return;
+    const expEl = document.getElementById('experiencia');
+    const projEl = document.getElementById('projetos');
+    if (!expEl && !projEl) return;
+
+    const scrollY = window.scrollY + window.innerHeight * 0.4;
+
+    if (projEl && scrollY >= projEl.getBoundingClientRect().top + window.scrollY) {
+      if (this.contextualCta() !== 'projetos') {
+        this.contextualCta.set('projetos');
+        this.contextualCtaVisible.set(true);
+      }
+    } else if (expEl && scrollY >= expEl.getBoundingClientRect().top + window.scrollY) {
+      if (this.contextualCta() !== 'experience') {
+        this.contextualCta.set('experience');
+        this.contextualCtaVisible.set(true);
+      }
+    } else {
+      this.contextualCtaVisible.set(false);
+    }
+  }
 
   isAdminRoute(): boolean {
     return this.isAdmin();
@@ -121,7 +180,8 @@ export class App implements OnInit, OnDestroy {
     ).subscribe((e) => {
       const url = (e as NavigationEnd).urlAfterRedirects;
       const admin = url.startsWith('/admin');
-      this.isAdmin.set(admin);
+      const recruiter = url.startsWith('/recruiter');
+      this.isAdmin.set(admin || recruiter);
       if (!this.routerResolved()) {
         this.routerResolved.set(true);
         if (!admin) {
