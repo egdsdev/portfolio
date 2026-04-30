@@ -1,9 +1,11 @@
 ﻿import { Component, inject, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef, ElementRef, ViewChild, NgZone } from '@angular/core';
-import { DatePipe, SlicePipe } from '@angular/common';
+import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FirebaseService, AiMatchRecord, VisitorRecord, DevMatchRecord, AnalyticsEventRecord, ChatConversation, ChatMessage, isChatMessageWithinEditWindow } from '../../../core/services/firebase.service';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import * as L from 'leaflet';
+import { GoogleGenAI } from '@google/genai';
+import { environment } from '../../../../environments/environment';
 import {
   Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip, Legend,
   BarController, BarElement,
@@ -76,7 +78,7 @@ interface TimeToActionRow {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [DatePipe, SlicePipe, FormsModule, ConfirmDialogComponent],
+  imports: [DatePipe, FormsModule, ConfirmDialogComponent],
   template: `
     <div class="admin-page min-h-screen pt-20">
       <main class="max-w-7xl mx-auto px-4 pb-12 space-y-6">
@@ -1132,7 +1134,7 @@ interface TimeToActionRow {
                   </tr>
                 </thead>
                 <tbody>
-                  @for (v of visitors | slice:0:50; track v.id) {
+                  @for (v of paginatedLeads; track v.id) {
                     @let score = computeVisitorScore(v);
                     @let sl = scoreLabel(score);
                     <tr class="border-b border-gray-800/40 hover:bg-gray-800/30 transition-colors">
@@ -1170,28 +1172,133 @@ interface TimeToActionRow {
                 </tbody>
               </table>
             </div>
+            <!-- Paginação -->
+            <div class="flex flex-col gap-3 border-t border-gray-800/40 px-4 py-3 text-xs text-gray-500 sm:flex-row sm:items-center sm:justify-between">
+              <div class="flex items-center gap-2">
+                <span>Linhas por página:</span>
+                <select [(ngModel)]="leadsPageSize" (ngModelChange)="onLeadsPageSizeChange()"
+                        class="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-gray-300 focus:outline-none focus:border-cyan-500/50 cursor-pointer">
+                  <option [value]="10">10</option>
+                  <option [value]="15">15</option>
+                  <option [value]="25">25</option>
+                  <option [value]="50">50</option>
+                </select>
+                <span>· Exibindo {{ leadsPageStart }}–{{ leadsPageEnd }} de {{ sortedLeads.length }}</span>
+              </div>
+              <div class="flex items-center gap-2 self-end sm:self-auto">
+                <button type="button" (click)="leadsPrevPage()" [disabled]="leadsPage === 1"
+                        class="rounded-md border border-gray-700 px-3 py-1.5 transition-colors hover:border-gray-500 hover:text-gray-300 disabled:cursor-not-allowed disabled:opacity-40">
+                  Anterior
+                </button>
+                <span class="min-w-24 text-center">Página {{ leadsPage }} de {{ leadsTotalPages }}</span>
+                <button type="button" (click)="leadsNextPage()" [disabled]="leadsPage >= leadsTotalPages"
+                        class="rounded-md border border-gray-700 px-3 py-1.5 transition-colors hover:border-gray-500 hover:text-gray-300 disabled:cursor-not-allowed disabled:opacity-40">
+                  Próxima
+                </button>
+              </div>
+            </div>
           </div>
 
           <!-- Mapa de jornada -->
           @if (journeyPaths.length > 0) {
-            <div class="admin-card border rounded-xl p-5 space-y-3">
-              <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Jornadas mais comuns</p>
-              <p class="text-[11px] text-gray-600">Sequências de seções visualizadas por sessão</p>
-              <div class="space-y-2">
-                @for (j of journeyPaths; track j.path) {
-                  <div class="flex items-center gap-3">
-                    <div class="flex-1 min-w-0">
-                      <p class="text-xs text-gray-400 truncate font-mono" [title]="j.path">{{ j.path }}</p>
+            <div class="admin-card border rounded-xl p-5 space-y-4">
+              <div class="flex items-start justify-between gap-3 flex-wrap">
+                <div>
+                  <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Jornadas mais comuns</p>
+                  <p class="text-[11px] text-gray-600 mt-0.5">Sequências de seções visualizadas por sessão, ordenadas por frequência</p>
+                </div>
+                <button (click)="generateJourneyInsight()"
+                        [disabled]="journeyAiLoading"
+                        class="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-violet-600/40 bg-violet-500/10 text-violet-300 text-xs font-medium hover:bg-violet-500/20 transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed shrink-0">
+                  @if (journeyAiLoading) {
+                    <span class="inline-block w-3 h-3 border-2 border-violet-300/30 border-t-violet-300 rounded-full animate-spin"></span>
+                    Analisando…
+                  } @else {
+                    ✦ Analisar com IA
+                  }
+                </button>
+              </div>
+
+              <!-- Lista de jornadas com chips -->
+              <div class="space-y-3">
+                @for (j of journeyPaths; track j.path; let i = $index) {
+                  <div class="group flex items-start gap-3 p-3 rounded-xl transition-colors hover:bg-gray-800/40"
+                       [class]="i === 0 ? 'bg-cyan-500/5 border border-cyan-500/15' : ''">
+                    <!-- Posição + barra de frequência -->
+                    <div class="flex flex-col items-center gap-1 pt-0.5 shrink-0 w-8">
+                      <span class="text-[10px] font-bold tabular-nums"
+                            [class]="i === 0 ? 'text-cyan-400' : i === 1 ? 'text-gray-400' : 'text-gray-600'">
+                        #{{ i + 1 }}
+                      </span>
+                      <div class="w-1 rounded-full" [style.height.px]="Math.max(4, Math.round(j.pct * 0.5))"
+                           [style.background-color]="i === 0 ? '#22d3ee' : i === 1 ? '#a855f7' : '#374151'"></div>
                     </div>
-                    <div class="flex items-center gap-2 shrink-0">
-                      <div class="w-24 h-1.5 rounded-full bg-gray-800 overflow-hidden">
-                        <div class="h-full rounded-full bg-cyan-500/60" [style.width.%]="j.pct"></div>
+                    <!-- Chips de seções -->
+                    <div class="flex-1 min-w-0">
+                      <div class="flex flex-wrap items-center gap-1 mb-1.5">
+                        @for (step of j.path.split(' → '); track step; let si = $index; let last = $last) {
+                          <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium border"
+                                [class]="si === 0
+                                  ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
+                                  : last
+                                    ? 'bg-amber-500/15 border-amber-500/30 text-amber-300'
+                                    : 'bg-gray-700/60 border-gray-600/50 text-gray-400'">
+                            {{ step }}
+                          </span>
+                          @if (!last) {
+                            <span class="text-gray-600 text-[10px] select-none">→</span>
+                          }
+                        }
                       </div>
-                      <span class="text-[10px] text-gray-500 w-12 text-right">{{ j.count }}x ({{ j.pct }}%)</span>
+                      <!-- Barra de frequência relativa -->
+                      <div class="flex items-center gap-2">
+                        <div class="flex-1 h-1 bg-gray-800 rounded-full overflow-hidden">
+                          <div class="h-full rounded-full transition-all duration-700"
+                               [style.width.%]="j.pct"
+                               [style.background-color]="i === 0 ? '#22d3ee' : i === 1 ? '#a855f7' : '#4b5563'">
+                          </div>
+                        </div>
+                        <span class="text-[10px] text-gray-500 tabular-nums shrink-0">{{ j.count }}x · {{ j.pct }}%</span>
+                      </div>
                     </div>
                   </div>
                 }
               </div>
+
+              <!-- AI Insight -->
+              @if (journeyAiError) {
+                <div class="rounded-xl border border-red-500/20 bg-red-500/5 px-4 py-3 text-xs text-red-400">{{ journeyAiError }}</div>
+              }
+              @if (journeyAiParsed) {
+                @let ai = journeyAiParsed;
+                <div class="rounded-xl border p-4 space-y-3 mt-2"
+                     [class]="ai.assessment === 'good'
+                       ? 'border-green-500/20 bg-green-500/5'
+                       : ai.assessment === 'attention'
+                         ? 'border-amber-500/20 bg-amber-500/5'
+                         : 'border-cyan-500/15 bg-cyan-500/5'">
+                  <div class="flex items-center gap-2">
+                    <span class="text-base">
+                      {{ ai.assessment === 'good' ? '✅' : ai.assessment === 'attention' ? '⚠️' : '💡' }}
+                    </span>
+                    <p class="text-xs font-semibold"
+                       [class]="ai.assessment === 'good' ? 'text-green-300' : ai.assessment === 'attention' ? 'text-amber-300' : 'text-cyan-300'">
+                      Análise IA — Jornadas de Navegação
+                    </p>
+                  </div>
+                  <p class="text-xs text-gray-300 leading-relaxed">{{ ai.summary }}</p>
+                  <div class="space-y-2">
+                    <div class="flex gap-2">
+                      <span class="text-[10px] font-semibold text-gray-500 uppercase tracking-wide shrink-0 w-16 pt-0.5">Indica</span>
+                      <p class="text-xs text-gray-400 leading-relaxed">{{ ai.insight }}</p>
+                    </div>
+                    <div class="flex gap-2">
+                      <span class="text-[10px] font-semibold text-violet-400 uppercase tracking-wide shrink-0 w-16 pt-0.5">Ação</span>
+                      <p class="text-xs text-gray-300 leading-relaxed">{{ ai.action }}</p>
+                    </div>
+                  </div>
+                </div>
+              }
             </div>
           }
         </div>
@@ -1564,7 +1671,99 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     }).sort((a, b) => this.computeVisitorScore(b) - this.computeVisitorScore(a));
   }
 
-  getAiMatchFor(visitorId?: string): AiMatchRecord | undefined {
+  // ── Paginação da tabela de leads ──────────────────────────────────────
+  leadsPage = 1;
+  leadsPageSize = 15;
+
+  get sortedLeads(): VisitorRecord[] {
+    return [...this.visitors].sort((a, b) => this.computeVisitorScore(b) - this.computeVisitorScore(a));
+  }
+
+  get leadsTotalPages(): number {
+    return Math.max(1, Math.ceil(this.sortedLeads.length / this.leadsPageSize));
+  }
+
+  get paginatedLeads(): VisitorRecord[] {
+    const start = (this.leadsPage - 1) * this.leadsPageSize;
+    return this.sortedLeads.slice(start, start + this.leadsPageSize);
+  }
+
+  get leadsPageStart(): number {
+    return this.sortedLeads.length === 0 ? 0 : (this.leadsPage - 1) * this.leadsPageSize + 1;
+  }
+
+  get leadsPageEnd(): number {
+    return Math.min(this.leadsPage * this.leadsPageSize, this.sortedLeads.length);
+  }
+
+  leadsNextPage(): void {
+    if (this.leadsPage < this.leadsTotalPages) this.leadsPage++;
+  }
+
+  leadsPrevPage(): void {
+    if (this.leadsPage > 1) this.leadsPage--;
+  }
+
+  onLeadsPageSizeChange(): void {
+    this.leadsPage = 1;
+  }
+
+  // ── Journey AI insight ────────────────────────────────────────────────
+  journeyAiInsight = '';
+  journeyAiLoading = false;
+  journeyAiError = '';
+
+  async generateJourneyInsight(): Promise<void> {
+    if (!this.journeyPaths.length || this.journeyAiLoading) return;
+    this.journeyAiLoading = true;
+    this.journeyAiInsight = '';
+    this.journeyAiError = '';
+    this.cdr.detectChanges();
+
+    const top = this.journeyPaths.slice(0, 6)
+      .map((j, i) => `${i + 1}. "${j.path}" — ${j.count}x (${j.pct}%)`)
+      .join('\n');
+
+    const prompt = `Você é um especialista em UX e analytics de portfolios de desenvolvedores.
+Analise as jornadas de navegação mais comuns dos visitantes e forneça um feedback curto e prático para o dono do portfolio.
+
+JORNADAS MAIS COMUNS (formato: sequência de seções → contagem de sessões):
+${top}
+
+Total de sessões analisadas: ${this.journeyPaths.reduce((s, j) => s + j.count, 0)}
+
+Responda em JSON com esta estrutura exata (sem markdown):
+{
+  "assessment": "ok | attention | good",
+  "summary": "<2-3 frases descrevendo o padrão geral de navegação>",
+  "insight": "<o que isso indica sobre o comportamento do visitante>",
+  "action": "<1-2 recomendações práticas para o dono do portfolio>"
+}
+Resposta em português brasileiro, tom direto e profissional.`;
+
+    try {
+      const ai = new GoogleGenAI({ apiKey: environment.geminiApiKey });
+      const response = await ai.models.generateContent({
+        model: 'gemini-2.5-flash-lite',
+        contents: prompt,
+        config: { temperature: 0.5, responseMimeType: 'application/json' },
+      });
+      const parsed = JSON.parse(response.text ?? '{}') as {
+        assessment: string; summary: string; insight: string; action: string;
+      };
+      this.journeyAiInsight = JSON.stringify(parsed);
+    } catch (e) {
+      this.journeyAiError = 'Falha ao gerar análise. Tente novamente.';
+    } finally {
+      this.journeyAiLoading = false;
+      this.cdr.detectChanges();
+    }
+  }
+
+  get journeyAiParsed(): { assessment: string; summary: string; insight: string; action: string } | null {
+    if (!this.journeyAiInsight) return null;
+    try { return JSON.parse(this.journeyAiInsight); } catch { return null; }
+  }
     return this.aiMatches.find(m => m.visitorId === visitorId);
   }
 
