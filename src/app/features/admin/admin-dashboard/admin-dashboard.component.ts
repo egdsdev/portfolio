@@ -1671,7 +1671,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     }).sort((a, b) => this.computeVisitorScore(b) - this.computeVisitorScore(a));
   }
 
-  // ── Paginação da tabela de leads ──────────────────────────────────────
+  // ── Paginação da tabela de leads ────────────────────────────────────────────────
   leadsPage = 1;
   leadsPageSize = 15;
 
@@ -1708,7 +1708,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     this.leadsPage = 1;
   }
 
-  // ── Journey AI insight ────────────────────────────────────────────────
+  // ── Journey AI insight ─────────────────────────────────────────────────────
   journeyAiInsight = '';
   journeyAiLoading = false;
   journeyAiError = '';
@@ -1725,7 +1725,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
       .join('\n');
 
     const prompt = `Você é um especialista em UX e analytics de portfolios de desenvolvedores.
-Analise as jornadas de navegação mais comuns dos visitantes e forneça um feedback curto e prático para o dono do portfolio.
+Analise as jornadas de navegação mais comuns dos visitantes e fornecer um feedback curto e prático para o dono do portfolio.
 
 JORNADAS MAIS COMUNS (formato: sequência de seções → contagem de sessões):
 ${top}
@@ -1764,6 +1764,8 @@ Resposta em português brasileiro, tom direto e profissional.`;
     if (!this.journeyAiInsight) return null;
     try { return JSON.parse(this.journeyAiInsight); } catch { return null; }
   }
+
+  getAiMatchFor(visitorId?: string): AiMatchRecord | undefined {
     return this.aiMatches.find(m => m.visitorId === visitorId);
   }
 
