@@ -4,9 +4,12 @@ import { FormsModule } from '@angular/forms';
 import { FirebaseService, AiMatchRecord, VisitorRecord, DevMatchRecord, AnalyticsEventRecord, ChatConversation, ChatMessage, isChatMessageWithinEditWindow } from '../../../core/services/firebase.service';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import * as L from 'leaflet';
-import { Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip } from 'chart.js';
+import {
+  Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip, Legend,
+  BarController, BarElement,
+} from 'chart.js';
 
-Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip);
+Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip, Legend, BarController, BarElement);
 
 interface AccessRecord {
   date: Date;
@@ -714,32 +717,42 @@ interface TimeToActionRow {
               {{ usingFallback ? 'Estimativa de adoção de features — eventos de navegação ainda insuficientes.' : 'Sessões, projetos, contato, CTA e contato direto.' }}
             </p>
             @if (!loading && contactFunnelSteps.length > 0) {
-              <div class="space-y-4">
-                @for (step of contactFunnelSteps; track step.label; let i = $index) {
-                  <div>
-                    <div class="flex items-center justify-between mb-1.5">
-                      <div class="flex items-center gap-2">
-                        <span class="text-[10px] font-mono text-gray-600 w-3 shrink-0">{{ i + 1 }}</span>
-                        <span class="text-xs text-gray-300">{{ step.label }}</span>
-                      </div>
-                      <div class="flex items-center gap-1.5">
-                        <span class="text-sm font-bold tabular-nums" [style.color]="step.color">{{ step.value }}</span>
-                        @if (contactFunnelSteps[0].value > 0) {
-                          <span class="text-[10px] text-gray-500 font-mono w-9 text-right">
-                            {{ i === 0 ? '100' : pct(step.value / contactFunnelSteps[0].value) }}%
-                          </span>
-                        }
-                      </div>
-                    </div>
-                    <div class="h-1.5 bg-gray-800/80 rounded-full overflow-hidden">
-                      <div class="h-full rounded-full transition-all duration-700"
-                           [style.width.%]="contactFunnelSteps[0].value > 0 ? (step.value / contactFunnelSteps[0].value) * 100 : 0"
-                           [style.background-color]="step.color">
-                      </div>
-                    </div>
-                  </div>
+              <svg [attr.viewBox]="'0 0 300 ' + funnelSvgHeight" class="w-full" [attr.height]="funnelSvgHeight" style="overflow:visible">
+                @for (s of funnelShapes; track s.label; let i = $index) {
+                  <!-- Trapézio colorido -->
+                  <polygon [attr.points]="s.points"
+                           [attr.fill]="s.color" fill-opacity="0.15"
+                           [attr.stroke]="s.color" stroke-width="1.5" stroke-opacity="0.55" />
+                  <!-- Número da etapa + label -->
+                  <text x="8" [attr.y]="s.centerY - 5"
+                        fill="#6b7280" font-size="9" dominant-baseline="auto">
+                    {{ i + 1 }}.
+                  </text>
+                  <text x="20" [attr.y]="s.centerY - 5"
+                        fill="#d1d5db" font-size="10" dominant-baseline="auto">
+                    {{ s.label }}
+                  </text>
+                  <!-- Valor absoluto + % (direita) -->
+                  <text x="295" [attr.y]="s.centerY - 5"
+                        text-anchor="end" [attr.fill]="s.color"
+                        font-size="12" font-weight="700" dominant-baseline="auto">
+                    {{ s.value }}
+                  </text>
+                  <text x="295" [attr.y]="s.centerY + 9"
+                        text-anchor="end" fill="#6b7280"
+                        font-size="9" dominant-baseline="auto">
+                    {{ s.pct }}%
+                  </text>
+                  <!-- Queda entre etapas -->
+                  @if (s.dropPct !== null) {
+                    <text x="150" [attr.y]="s.dropY + 3"
+                          text-anchor="middle" fill="#f87171"
+                          font-size="9" opacity="0.85" dominant-baseline="middle">
+                      ▼ -{{ s.dropPct }}%
+                    </text>
+                  }
                 }
-              </div>
+              </svg>
             } @else if (!loading) {
               <div class="py-8 text-center text-gray-600 text-sm">Sem eventos suficientes ainda</div>
             } @else {
@@ -751,24 +764,8 @@ interface TimeToActionRow {
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">CTR por CTA</p>
             <p class="text-[11px] text-gray-600 mb-4">CTA = botão ou link de ação. Ex.: contato, currículo, WhatsApp, projetos e atalhos do header.</p>
             @if (!loading && ctaPerformance.length > 0) {
-              <div class="space-y-3">
-                @for (row of ctaPerformance; track row.key) {
-                  <div>
-                    <div class="flex items-center justify-between gap-3 mb-1">
-                      <div>
-                        <p class="text-sm text-gray-300">{{ row.label }}</p>
-                        <p class="text-[10px] text-gray-600">{{ row.uniqueSessions }} sessões · {{ row.clicks }} cliques</p>
-                      </div>
-                      <p class="text-sm font-bold tabular-nums" [style.color]="row.ctr >= 20 ? '#4ade80' : row.ctr >= 10 ? '#fbbf24' : accentColor">{{ row.ctr }}%</p>
-                    </div>
-                    <div class="h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                      <div class="h-full rounded-full transition-all duration-700"
-                           [style.width.%]="row.ctr"
-                           [style.background-color]="row.category === 'project' ? '#a855f7' : row.category === 'direct_contact' ? '#22c55e' : row.category === 'resume' ? '#f59e0b' : row.category === 'navigation' ? '#94a3b8' : '#22d3ee'">
-                      </div>
-                    </div>
-                  </div>
-                }
+              <div [style.height.px]="Math.max(160, Math.min(ctaPerformance.length, 12) * 32)">
+                <canvas #ctaChartCanvas style="width:100%;height:100%"></canvas>
               </div>
             } @else if (!loading) {
               <div class="py-8 text-center text-gray-600 text-sm">Sem CTAs suficientes ainda</div>
@@ -785,24 +782,8 @@ interface TimeToActionRow {
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Alcance por Seção</p>
             <p class="text-[11px] text-gray-600 mb-4">Profundidade real de leitura da página por sessão.</p>
             @if (!loading && sectionReachRows.length > 0) {
-              <div class="space-y-3">
-                @for (row of sectionReachRows; track row.key) {
-                  <div>
-                    <div class="flex items-center justify-between gap-3 mb-1">
-                      <div>
-                        <p class="text-sm text-gray-300">{{ row.label }}</p>
-                        <p class="text-[10px] text-gray-600">{{ row.sessions }} sessões</p>
-                      </div>
-                      <p class="text-sm font-bold tabular-nums" [style.color]="accentColor">{{ row.reachRate }}%</p>
-                    </div>
-                    <div class="h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                      <div class="h-full rounded-full transition-all duration-700"
-                           [style.width.%]="row.reachRate"
-                           [style.background-color]="accentColor">
-                      </div>
-                    </div>
-                  </div>
-                }
+              <div [style.height.px]="Math.max(140, sectionReachRows.length * 32)">
+                <canvas #sectionChartCanvas style="width:100%;height:100%"></canvas>
               </div>
             } @else if (!loading) {
               <div class="py-8 text-center text-gray-600 text-sm">Sem seções visualizadas ainda</div>
@@ -832,13 +813,41 @@ interface TimeToActionRow {
                         <p class="text-[10px] text-gray-600">taxa de conclusão</p>
                       </div>
                     </div>
-                    <div class="h-1.5 bg-gray-800 rounded-full overflow-hidden mb-2">
-                      <div class="h-full rounded-full transition-all duration-700"
-                           [style.width.%]="row.completionRate"
-                           [style.background-color]="row.key === 'dev_match' ? '#22d3ee' : '#a855f7'">
+                    @if (!usingFallback && row.started > 0) {
+                      <!-- Barra segmentada: concluídos / abandonados / (gap) -->
+                      <div class="h-3 bg-gray-800 rounded-full overflow-hidden flex mb-2" [title]="row.completed + ' concluídos, ' + row.abandoned + ' abandonaram'">
+                        <div class="h-full transition-all duration-700"
+                             [style.width.%]="(row.completed / row.started) * 100"
+                             [style.background-color]="row.key === 'dev_match' ? '#22d3ee' : '#a855f7'">
+                        </div>
+                        @if (row.abandoned > 0) {
+                          <div class="h-full transition-all duration-700 opacity-30"
+                               [style.width.%]="(row.abandoned / row.started) * 100"
+                               [style.background-color]="row.key === 'dev_match' ? '#22d3ee' : '#a855f7'">
+                          </div>
+                        }
                       </div>
-                    </div>
-                    <p class="text-[10px] text-gray-500">
+                      <div class="flex items-center gap-3 text-[10px] text-gray-600">
+                        <span class="flex items-center gap-1">
+                          <span class="inline-block w-2 h-2 rounded-sm" [style.background-color]="row.key === 'dev_match' ? '#22d3ee' : '#a855f7'"></span>
+                          {{ row.completed }} concluíram
+                        </span>
+                        @if (row.abandoned > 0) {
+                          <span class="flex items-center gap-1 opacity-50">
+                            <span class="inline-block w-2 h-2 rounded-sm" [style.background-color]="row.key === 'dev_match' ? '#22d3ee' : '#a855f7'"></span>
+                            {{ row.abandoned }} abandonaram
+                          </span>
+                        }
+                      </div>
+                    } @else {
+                      <div class="h-3 bg-gray-800 rounded-full overflow-hidden mb-2">
+                        <div class="h-full rounded-full transition-all duration-700"
+                             [style.width.%]="row.completionRate"
+                             [style.background-color]="row.key === 'dev_match' ? '#22d3ee' : '#a855f7'">
+                        </div>
+                      </div>
+                    }
+                    <p class="text-[10px] text-gray-500 mt-2">
                       Resultado médio:
                       <span class="font-semibold text-gray-300">{{ row.avgResult != null ? row.avgResult + '%' : 'sem conclusão ainda' }}</span>
                     </p>
@@ -1441,9 +1450,13 @@ interface TimeToActionRow {
 export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
   @ViewChild('mapEl') mapEl!: ElementRef<HTMLDivElement>;
   @ViewChild('chartCanvas') chartCanvas!: ElementRef<HTMLCanvasElement>;
+  @ViewChild('ctaChartCanvas') ctaChartCanvas?: ElementRef<HTMLCanvasElement>;
+  @ViewChild('sectionChartCanvas') sectionChartCanvas?: ElementRef<HTMLCanvasElement>;
   private leafletMap?: L.Map;
   private mapMarkers = new Map<string, L.CircleMarker>();
   private lineChartInstance?: Chart;
+  private ctaChartInstance?: Chart;
+  private sectionChartInstance?: Chart;
   private themeObserver?: MutationObserver;
 
   private firebase = inject(FirebaseService);
@@ -1479,6 +1492,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   analyticsEventCount = 0;
   usingFallback = false;
 
+  readonly Math = Math;
   private readonly OWNER_IPS = ['45.179.22.183', '138.255.215.188'];
 
   // ── Novos widgets ──────────────────────────────────────────────────────────
@@ -1732,6 +1746,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     setTimeout(() => {
       this.initLineChart();
       this.initMap();
+      this.initCtaChart();
+      this.initSectionChart();
     }, 50);
 
     // Listener em tempo real das conversas
@@ -2051,6 +2067,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   ngOnDestroy(): void {
     void this.firebase.setOwnerOnline(false);
     this.lineChartInstance?.destroy();
+    this.ctaChartInstance?.destroy();
+    this.sectionChartInstance?.destroy();
     this.themeObserver?.disconnect();
     this.leafletMap?.remove();
     this.mapMarkers.clear();
@@ -2316,6 +2334,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
       this.deleteTarget = null;
       this.initLineChart();
       this.initMap();
+      this.initCtaChart();
+      this.initSectionChart();
     } catch (err) {
       console.error('[Dashboard] deleteVisitor', err);
     } finally {
@@ -2920,6 +2940,149 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
 
   pct(ratio: number): number {
     return Math.round(ratio * 100);
+  }
+
+  // ── Funil SVG ─────────────────────────────────────────────────────────
+  get funnelShapes() {
+    const steps = this.contactFunnelSteps;
+    if (!steps.length) return [];
+    const maxW = 230, cx = 150, stepH = 52, gapH = 26;
+    const topValue = steps[0].value || 1;
+    return steps.map((step, i) => {
+      const topPct = step.value / topValue;
+      const botPct = i < steps.length - 1 ? steps[i + 1].value / topValue : topPct;
+      const topW = Math.max(28, topPct * maxW);
+      const botW = Math.max(28, botPct * maxW);
+      const y = i * (stepH + gapH);
+      const dropPct = i > 0 ? Math.round((1 - step.value / (steps[i - 1].value || 1)) * 100) : null;
+      const x1t = cx - topW / 2, x2t = cx + topW / 2;
+      const x1b = cx - botW / 2, x2b = cx + botW / 2;
+      return {
+        label: step.label,
+        value: step.value,
+        color: step.color,
+        pct: Math.round(topPct * 100),
+        dropPct,
+        points: `${x1t},${y} ${x2t},${y} ${x2b},${y + stepH} ${x1b},${y + stepH}`,
+        centerY: y + stepH / 2,
+        dropY: y + stepH + gapH / 2,
+      };
+    });
+  }
+
+  get funnelSvgHeight(): number {
+    const n = this.contactFunnelSteps.length;
+    return n * 52 + Math.max(0, n - 1) * 26;
+  }
+
+  // ── Charts horizontais de barra ────────────────────────────────────────
+  private initCtaChart(): void {
+    const el = this.ctaChartCanvas?.nativeElement;
+    if (!el || !this.ctaPerformance.length) return;
+    this.ctaChartInstance?.destroy();
+
+    const isDark = !document.documentElement.classList.contains('light');
+    const gridColor  = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+    const tickColor  = isDark ? '#6b7280' : '#9ca3af';
+    const categoryColors: Record<string, string> = {
+      project: '#a855f7', direct_contact: '#22c55e', resume: '#f59e0b',
+      navigation: '#94a3b8', contact: '#22d3ee',
+    };
+    const rows = this.ctaPerformance.slice(0, 12);
+    const labels = rows.map(r => r.label.length > 20 ? r.label.slice(0, 18) + '…' : r.label);
+    const colors = rows.map(r => categoryColors[r.category] ?? '#22d3ee');
+
+    this.ctaChartInstance = new Chart(el, {
+      type: 'bar',
+      data: {
+        labels,
+        datasets: [{
+          label: 'CTR %',
+          data: rows.map(r => r.ctr),
+          backgroundColor: colors.map(c => c + '33'),
+          borderColor: colors,
+          borderWidth: 1.5,
+          borderRadius: 4,
+          borderSkipped: false,
+        }],
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.parsed.x}% CTR · ${rows[ctx.dataIndex].clicks} cliques`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            beginAtZero: true, max: 100,
+            grid: { color: gridColor },
+            ticks: { color: tickColor, font: { size: 10 }, callback: v => v + '%' },
+          },
+          y: {
+            grid: { color: 'transparent' },
+            ticks: { color: tickColor, font: { size: 10 } },
+          },
+        },
+      },
+    });
+  }
+
+  private initSectionChart(): void {
+    const el = this.sectionChartCanvas?.nativeElement;
+    if (!el || !this.sectionReachRows.length) return;
+    this.sectionChartInstance?.destroy();
+
+    const isDark = !document.documentElement.classList.contains('light');
+    const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
+    const tickColor = isDark ? '#6b7280' : '#9ca3af';
+    const accent = this.accentColor;
+    const rows = this.sectionReachRows;
+
+    this.sectionChartInstance = new Chart(el, {
+      type: 'bar',
+      data: {
+        labels: rows.map(r => r.label),
+        datasets: [{
+          label: 'Alcance %',
+          data: rows.map(r => r.reachRate),
+          backgroundColor: accent + '33',
+          borderColor: accent,
+          borderWidth: 1.5,
+          borderRadius: 4,
+          borderSkipped: false,
+        }],
+      },
+      options: {
+        indexAxis: 'y',
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: {
+            callbacks: {
+              label: ctx => ` ${ctx.parsed.x}% · ${rows[ctx.dataIndex].sessions} sessões`,
+            },
+          },
+        },
+        scales: {
+          x: {
+            beginAtZero: true, max: 100,
+            grid: { color: gridColor },
+            ticks: { color: tickColor, font: { size: 10 }, callback: v => v + '%' },
+          },
+          y: {
+            grid: { color: 'transparent' },
+            ticks: { color: tickColor, font: { size: 10 } },
+          },
+        },
+      },
+    });
   }
 
   private hasCoordinates(visitor?: VisitorRecord): visitor is VisitorRecord & { lat: number; lng: number } {
