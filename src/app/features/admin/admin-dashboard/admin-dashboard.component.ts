@@ -1,5 +1,5 @@
 ﻿import { Component, inject, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef, ElementRef, ViewChild, NgZone } from '@angular/core';
-import { DatePipe } from '@angular/common';
+import { DatePipe, SlicePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { FirebaseService, AiMatchRecord, VisitorRecord, DevMatchRecord, AnalyticsEventRecord, ChatConversation, ChatMessage, isChatMessageWithinEditWindow } from '../../../core/services/firebase.service';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
@@ -73,7 +73,7 @@ interface TimeToActionRow {
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [DatePipe, FormsModule, ConfirmDialogComponent],
+  imports: [DatePipe, SlicePipe, FormsModule, ConfirmDialogComponent],
   template: `
     <div class="admin-page min-h-screen pt-20">
       <main class="max-w-7xl mx-auto px-4 pb-12 space-y-6">
@@ -106,6 +106,18 @@ interface TimeToActionRow {
               </span>
             }
           </button>
+          <button (click)="activeTab = 'leads'"
+                  [class.bg-gray-700]="activeTab === 'leads'"
+                  [class.text-white]="activeTab === 'leads'"
+                  [class.text-gray-500]="activeTab !== 'leads'"
+                  class="px-5 py-2 rounded-lg text-sm font-medium transition-all duration-150 flex items-center gap-2">
+            Leads
+            @if (hotLeads.length > 0) {
+              <span class="inline-flex items-center justify-center px-1.5 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold">
+                {{ hotLeads.length }}🔥
+              </span>
+            }
+          </button>
           <button (click)="activeTab = 'tests'"
                   [class.bg-gray-700]="activeTab === 'tests'"
                   [class.text-white]="activeTab === 'tests'"
@@ -131,10 +143,17 @@ interface TimeToActionRow {
         <div [class.hidden]="activeTab !== 'analytics'" class="space-y-8">
 
         <!-- 5 Cards resumo -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3">
+        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
           <div class="admin-card rounded-xl p-4 border">
             <p class="text-xs text-gray-500 mb-1">Visitantes Únicos</p>
             <p class="text-3xl font-bold text-cyan-400">{{ visitors.length }}</p>
+          </div>
+          <div class="admin-card rounded-xl p-4 border flex flex-col gap-1">
+            <p class="text-xs text-gray-500">Ativos agora</p>
+            <div class="flex items-center gap-2">
+              <span class="w-2 h-2 rounded-full shrink-0" [class]="activeNowCount > 0 ? 'bg-green-400 animate-pulse' : 'bg-gray-600'"></span>
+              <p class="text-3xl font-bold" [class]="activeNowCount > 0 ? 'text-green-400' : 'text-gray-500'">{{ activeNowCount }}</p>
+            </div>
           </div>
           <div class="admin-card rounded-xl p-4 border">
             <p class="text-xs text-gray-500 mb-1">Países</p>
@@ -170,6 +189,7 @@ interface TimeToActionRow {
                     <th class="text-left px-4 py-3">Dispositivo</th>
                     <th class="text-left px-4 py-3">IP / Rede</th>
                     <th class="text-left px-4 py-3 whitespace-nowrap">Acessos</th>
+                    <th class="text-left px-4 py-3 whitespace-nowrap">Score</th>
                     <th class="text-left px-4 py-3 border-l border-gray-800/60">Match IA</th>
                     <th class="text-left px-4 py-3">Resposta IA</th>
                     <th class="text-left px-4 py-3 border-l border-gray-800/60">Match Dev</th>
@@ -221,6 +241,19 @@ interface TimeToActionRow {
                         @if (r.visitorIds.length > 0) {
                           <span class="inline-flex items-center gap-1 rounded-full px-2 py-1 bg-cyan-500/10 text-cyan-400 font-semibold">
                             {{ r.accessCount }}x
+                          </span>
+                        } @else {
+                          <span class="text-gray-700">-</span>
+                        }
+                      </td>
+                      <td class="px-4 py-3 whitespace-nowrap">
+                        @if (r.visitor) {
+                          @let s = computeVisitorScore(r.visitor);
+                          @let sl = scoreLabel(s);
+                          <span class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full border"
+                                [class]="sl.bg + ' ' + sl.color"
+                                [title]="sl.label">
+                            {{ s }}
                           </span>
                         } @else {
                           <span class="text-gray-700">-</span>
@@ -360,8 +393,33 @@ interface TimeToActionRow {
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
 
           <!-- Gráfico de linha (Chart.js) -->
-          <div class="admin-card border rounded-xl p-5">
-            <p class="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">Acessos — Últimos 7 dias</p>
+          <div class="admin-card border rounded-xl p-5 space-y-3">
+            <div class="flex items-center justify-between flex-wrap gap-2">
+              <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Acessos por período</p>
+              <div class="flex items-center gap-2 flex-wrap">
+                <div class="flex gap-1">
+                  @for (p of [{d:7,l:'7d'},{d:14,l:'14d'},{d:30,l:'30d'},{d:90,l:'90d'}]; track p.l) {
+                    <button (click)="setChartPreset(p.d)"
+                            class="px-2 py-1 text-[10px] font-semibold rounded border transition-colors cursor-pointer"
+                            [class]="chartPresetDays === p.d ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300' : 'border-gray-700 text-gray-500 hover:text-gray-300'">
+                      {{ p.l }}
+                    </button>
+                  }
+                </div>
+                <div class="flex items-center gap-1">
+                  <input type="date" [(ngModel)]="chartDateStart" (change)="onChartRangeChange()"
+                         class="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-gray-300 focus:outline-none focus:border-cyan-500/50" />
+                  <span class="text-gray-600 text-xs">–</span>
+                  <input type="date" [(ngModel)]="chartDateEnd" (change)="onChartRangeChange()"
+                         class="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-gray-300 focus:outline-none focus:border-cyan-500/50" />
+                </div>
+                <button (click)="showPeriodCompare = !showPeriodCompare; onChartRangeChange()"
+                        class="px-2 py-1 text-[10px] font-semibold rounded border transition-colors cursor-pointer"
+                        [class]="showPeriodCompare ? 'bg-purple-500/20 border-purple-500/50 text-purple-300' : 'border-gray-700 text-gray-500 hover:text-gray-300'">
+                  ≈ Comparar
+                </button>
+              </div>
+            </div>
             <canvas #chartCanvas style="width:100%;max-height:220px"></canvas>
           </div>
 
@@ -1019,6 +1077,117 @@ interface TimeToActionRow {
         </div>
         <!-- fim: Aba Conversas -->
 
+        <!-- ── Aba: Leads ────────────────────────────────────────────── -->
+        <div [class.hidden]="activeTab !== 'leads'" class="space-y-6">
+          <div class="flex items-center justify-between flex-wrap gap-3">
+            <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Leads por score</p>
+            <button (click)="exportLeadsCsv()"
+                    class="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-gray-700 hover:border-cyan-500/50 text-xs text-gray-400 hover:text-cyan-300 transition-colors cursor-pointer">
+              ↓ Exportar CSV
+            </button>
+          </div>
+
+          <!-- Cards de resumo -->
+          <div class="grid grid-cols-3 gap-3">
+            <div class="admin-card rounded-xl p-4 border border-red-500/20 bg-red-500/5">
+              <p class="text-xs text-red-400/70 mb-1">🔥 Leads quentes</p>
+              <p class="text-3xl font-bold text-red-400">{{ hotLeads.length }}</p>
+              <p class="text-[10px] text-gray-600 mt-1">Score ≥ 70</p>
+            </div>
+            <div class="admin-card rounded-xl p-4 border border-amber-500/20 bg-amber-500/5">
+              <p class="text-xs text-amber-400/70 mb-1">🌡 Leads mornos</p>
+              <p class="text-3xl font-bold text-amber-400">{{ warmLeads.length }}</p>
+              <p class="text-[10px] text-gray-600 mt-1">Score 40–69</p>
+            </div>
+            <div class="admin-card rounded-xl p-4 border border-blue-500/20 bg-blue-500/5">
+              <p class="text-xs text-blue-400/70 mb-1">❄️ Leads frios</p>
+              <p class="text-3xl font-bold text-blue-400">{{ visitors.length - hotLeads.length - warmLeads.length }}</p>
+              <p class="text-[10px] text-gray-600 mt-1">Score &lt; 40</p>
+            </div>
+          </div>
+
+          <!-- Tabela de leads -->
+          <div class="admin-card border rounded-xl overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-sm">
+                <thead>
+                  <tr class="text-xs text-gray-500 uppercase tracking-wider border-b border-gray-800">
+                    <th class="text-left px-4 py-3">Score</th>
+                    <th class="text-left px-4 py-3">IP</th>
+                    <th class="text-left px-4 py-3">Localização</th>
+                    <th class="text-left px-4 py-3 whitespace-nowrap">Visitas</th>
+                    <th class="text-left px-4 py-3 whitespace-nowrap">Match IA</th>
+                    <th class="text-left px-4 py-3 whitespace-nowrap">Match Dev</th>
+                    <th class="text-left px-4 py-3 whitespace-nowrap">Chat</th>
+                    <th class="text-left px-4 py-3 whitespace-nowrap">Última visita</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (v of visitors | slice:0:50; track v.id) {
+                    @let score = computeVisitorScore(v);
+                    @let sl = scoreLabel(score);
+                    <tr class="border-b border-gray-800/40 hover:bg-gray-800/30 transition-colors">
+                      <td class="px-4 py-3">
+                        <span class="inline-flex items-center gap-1.5 text-xs font-bold px-2 py-1 rounded-full border {{ sl.bg }} {{ sl.color }}">
+                          {{ score }}
+                        </span>
+                      </td>
+                      <td class="px-4 py-3 text-xs text-gray-500 font-mono">{{ v.ip }}</td>
+                      <td class="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
+                        {{ v.city }}{{ v.city && v.country ? ', ' : '' }}{{ v.country }}
+                      </td>
+                      <td class="px-4 py-3 text-xs text-cyan-400 font-semibold">{{ v.visitCount }}x</td>
+                      <td class="px-4 py-3 text-xs">
+                        @let aiM = getAiMatchFor(v.id);
+                        @if (aiM) {
+                          <span [class]="aiM.matchPercentage >= 70 ? 'text-green-400' : aiM.matchPercentage >= 50 ? 'text-yellow-400' : 'text-red-400'">{{ aiM.matchPercentage }}%</span>
+                        } @else { <span class="text-gray-700">—</span> }
+                      </td>
+                      <td class="px-4 py-3 text-xs">
+                        @let devM = getDevMatchFor(v.id);
+                        @if (devM) {
+                          <span [class]="devM.matchPercentage >= 70 ? 'text-green-400' : devM.matchPercentage >= 50 ? 'text-yellow-400' : 'text-red-400'">{{ devM.matchPercentage }}%</span>
+                        } @else { <span class="text-gray-700">—</span> }
+                      </td>
+                      <td class="px-4 py-3 text-xs">
+                        @let conv = getConvForIp(v.ip);
+                        @if (conv) {
+                          <span class="text-violet-400">💬 {{ conv.username }}</span>
+                        } @else { <span class="text-gray-700">—</span> }
+                      </td>
+                      <td class="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">{{ v.lastSeen | date:'dd/MM/yy HH:mm' }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Mapa de jornada -->
+          @if (journeyPaths.length > 0) {
+            <div class="admin-card border rounded-xl p-5 space-y-3">
+              <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Jornadas mais comuns</p>
+              <p class="text-[11px] text-gray-600">Sequências de seções visualizadas por sessão</p>
+              <div class="space-y-2">
+                @for (j of journeyPaths; track j.path) {
+                  <div class="flex items-center gap-3">
+                    <div class="flex-1 min-w-0">
+                      <p class="text-xs text-gray-400 truncate font-mono" [title]="j.path">{{ j.path }}</p>
+                    </div>
+                    <div class="flex items-center gap-2 shrink-0">
+                      <div class="w-24 h-1.5 rounded-full bg-gray-800 overflow-hidden">
+                        <div class="h-full rounded-full bg-cyan-500/60" [style.width.%]="j.pct"></div>
+                      </div>
+                      <span class="text-[10px] text-gray-500 w-12 text-right">{{ j.count }}x ({{ j.pct }}%)</span>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+          }
+        </div>
+        <!-- fim: Aba Leads -->
+
         <!-- ── Aba: Testes ───────────────────────────────────────────── -->
         <div [class.hidden]="activeTab !== 'tests'" class="space-y-6">
           <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Ferramentas de teste</p>
@@ -1325,8 +1494,147 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   readonly legendSteps = [0.1, 0.3, 0.5, 0.75, 1.0];
   readonly cellSize = 18;
 
-  // ── Tabs ─────────────────────────────────────────────────────────────
-  activeTab: 'analytics' | 'chat' | 'tests' = 'analytics';
+  // ── Date range do gráfico ─────────────────────────────────────────────
+  chartDateStart: string = new Date(Date.now() - 6 * 86_400_000).toISOString().slice(0, 10);
+  chartDateEnd: string   = new Date().toISOString().slice(0, 10);
+  chartPresetDays = 7;
+
+  toIsoDate(d: Date): string {
+    return d.toISOString().slice(0, 10);
+  }
+
+  setChartPreset(days: number): void {
+    this.chartPresetDays = days;
+    this.chartDateStart = this.toIsoDate(new Date(Date.now() - (days - 1) * 86_400_000));
+    this.chartDateEnd   = this.toIsoDate(new Date());
+    this.initLineChart();
+  }
+
+  onChartRangeChange(): void {
+    this.chartPresetDays = 0;
+    this.initLineChart();
+  }
+  activeTab: 'analytics' | 'chat' | 'leads' | 'tests' = 'analytics';
+
+  // ── Score de visitante ───────────────────────────────────────────────
+  visitorScores = new Map<string, number>();
+
+  computeVisitorScore(v: VisitorRecord): number {
+    let score = 0;
+    if (v.visitCount >= 3) score += 30;
+    else if (v.visitCount >= 2) score += 15;
+    const aiM = this.aiMatches.find(m => m.visitorId === v.id);
+    const devM = this.devMatches.find(m => m.visitorId === v.id);
+    if (aiM) score += 25 + (aiM.matchPercentage >= 70 ? 15 : 0);
+    if (devM) score += 20 + (devM.matchPercentage >= 70 ? 10 : 0);
+    const conv = this.conversations.find(c => c.ip === v.ip);
+    if (conv) score += 30;
+    return Math.min(100, score);
+  }
+
+  scoreLabel(score: number): { label: string; color: string; bg: string } {
+    if (score >= 70) return { label: '🔥 Lead quente', color: 'text-red-400', bg: 'bg-red-500/15 border-red-500/30' };
+    if (score >= 40) return { label: '🌡 Lead morno', color: 'text-amber-400', bg: 'bg-amber-500/15 border-amber-500/30' };
+    return { label: '❄️ Lead frio', color: 'text-blue-400', bg: 'bg-blue-500/15 border-blue-500/30' };
+  }
+
+  get hotLeads(): VisitorRecord[] {
+    return this.visitors.filter(v => this.computeVisitorScore(v) >= 70)
+      .sort((a, b) => this.computeVisitorScore(b) - this.computeVisitorScore(a));
+  }
+
+  get warmLeads(): VisitorRecord[] {
+    return this.visitors.filter(v => {
+      const s = this.computeVisitorScore(v);
+      return s >= 40 && s < 70;
+    }).sort((a, b) => this.computeVisitorScore(b) - this.computeVisitorScore(a));
+  }
+
+  getAiMatchFor(visitorId?: string): AiMatchRecord | undefined {
+    return this.aiMatches.find(m => m.visitorId === visitorId);
+  }
+
+  getDevMatchFor(visitorId?: string): DevMatchRecord | undefined {
+    return this.devMatches.find(m => m.visitorId === visitorId);
+  }
+
+  getConvForIp(ip: string): ChatConversation | undefined {
+    return this.conversations.find(c => c.ip === ip);
+  }
+
+  exportLeadsCsv(): void {
+    const rows = [
+      ['IP', 'Cidade', 'País', 'Visitas', 'Score', 'Categoria', 'AI Match %', 'Dev Match %', 'Primeira Visita', 'Última Visita'],
+      ...this.visitors
+        .map(v => {
+          const score = this.computeVisitorScore(v);
+          const { label } = this.scoreLabel(score);
+          const aiM = this.aiMatches.find(m => m.visitorId === v.id);
+          const devM = this.devMatches.find(m => m.visitorId === v.id);
+          return [
+            v.ip, v.city ?? '', v.country ?? '',
+            v.visitCount, score, label.replace(/[🔥🌡❄️ ]/g, '').trim(),
+            aiM?.matchPercentage ?? '', devM?.matchPercentage ?? '',
+            v.firstSeen.toLocaleDateString('pt-BR'),
+            v.lastSeen.toLocaleDateString('pt-BR'),
+          ];
+        })
+        .sort((a, b) => (b[4] as number) - (a[4] as number)),
+    ];
+    const csv = rows.map(r => r.join(',')).join('\n');
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+    a.download = `leads-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+  }
+
+  // ── Visitantes ativos agora ───────────────────────────────────────────
+  activeNowCount = 0;
+  private unsubActiveNow?: () => void;
+
+  // ── Mapa de jornada ───────────────────────────────────────────────────
+  journeyPaths: { path: string; count: number; pct: number }[] = [];
+
+  private computeJourneyMap(): void {
+    const sessionPaths = new Map<string, string[]>();
+    const sorted = [...this.analyticsEvents]
+      .filter(e => e.eventType === 'section_view' && e.section)
+      .sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
+
+    for (const e of sorted) {
+      const existing = sessionPaths.get(e.sessionId) ?? [];
+      const last = existing[existing.length - 1];
+      if (last !== e.section) existing.push(e.section!);
+      sessionPaths.set(e.sessionId, existing);
+    }
+
+    const pathCounts = new Map<string, number>();
+    for (const sections of sessionPaths.values()) {
+      if (sections.length < 2) continue;
+      const key = sections.join(' → ');
+      pathCounts.set(key, (pathCounts.get(key) ?? 0) + 1);
+    }
+
+    const total = [...pathCounts.values()].reduce((s, v) => s + v, 0) || 1;
+    this.journeyPaths = [...pathCounts.entries()]
+      .sort((a, b) => b[1] - a[1])
+      .slice(0, 8)
+      .map(([path, count]) => ({ path, count, pct: Math.round((count / total) * 100) }));
+  }
+
+  // ── Comparação de períodos ─────────────────────────────────────────────
+  showPeriodCompare = false;
+
+  get chartCompareStart(): string {
+    const start = new Date(this.chartDateStart + 'T00:00:00');
+    const end   = new Date(this.chartDateEnd   + 'T00:00:00');
+    const days  = Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1;
+    return this.toIsoDate(new Date(start.getTime() - days * 86_400_000));
+  }
+
+  get chartCompareEnd(): string {
+    return this.toIsoDate(new Date(new Date(this.chartDateStart + 'T00:00:00').getTime() - 86_400_000));
+  }
 
   // ── Chat ────────────────────────────────────────────────────────────
   conversations: ChatConversation[] = [];
@@ -1447,6 +1755,14 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
           }
         }
         this.conversations = convs;
+        this.cdr.detectChanges();
+      });
+    });
+
+    // Listener visitantes ativos agora (presence)
+    this.unsubActiveNow = this.firebase.listenActiveVisitors((count: number) => {
+      this.zone.run(() => {
+        this.activeNowCount = count;
         this.cdr.detectChanges();
       });
     });
@@ -1741,6 +2057,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     this.unsubConversations?.();
     this.unsubConvMessages?.();
     this.unsubTestEmail?.();
+    this.unsubActiveNow?.();
     clearTimeout(this.adminToastTimer);
     this.knownUnreadByConv.clear();
   }
@@ -1793,20 +2110,22 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     if (!this.chartCanvas?.nativeElement) return;
     this.lineChartInstance?.destroy();
 
-    const today = new Date();
-    const days = Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(today);
-      d.setDate(today.getDate() - (6 - i));
+    const start = new Date(this.chartDateStart + 'T00:00:00');
+    const end   = new Date(this.chartDateEnd   + 'T23:59:59');
+    const totalDays = Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1;
+
+    const days = Array.from({ length: totalDays }, (_, i) => {
+      const d = new Date(start);
+      d.setDate(start.getDate() + i);
       return d;
     });
+
+    const sameDay = (d1: Date, d2: Date) =>
+      d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+
     const labels = days.map(d => d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }));
     const counts = days.map(day =>
-      this.visitors.filter(v => {
-        const ls = new Date(v.lastSeen);
-        return ls.getFullYear() === day.getFullYear()
-          && ls.getMonth() === day.getMonth()
-          && ls.getDate() === day.getDate();
-      }).length
+      this.visitors.filter(v => sameDay(new Date(v.lastSeen), day)).length
     );
 
     const c = this.chartColors();
@@ -1815,28 +2134,52 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     grad.addColorStop(0, c.areaStart);
     grad.addColorStop(1, c.areaEnd);
 
+    const datasets: any[] = [{
+      label: 'Período atual',
+      data: counts,
+      borderColor: c.accent,
+      backgroundColor: grad,
+      borderWidth: 2,
+      pointBackgroundColor: c.accent,
+      pointRadius: 4,
+      pointHoverRadius: 6,
+      fill: true,
+      tension: 0.35,
+    }];
+
+    if (this.showPeriodCompare) {
+      const prevStart = new Date(this.chartCompareStart + 'T00:00:00');
+      const prevCounts = days.map((_, i) => {
+        const prevDay = new Date(prevStart);
+        prevDay.setDate(prevStart.getDate() + i);
+        return this.visitors.filter(v => sameDay(new Date(v.lastSeen), prevDay)).length;
+      });
+      datasets.push({
+        label: 'Período anterior',
+        data: prevCounts,
+        borderColor: 'rgba(139,92,246,0.7)',
+        backgroundColor: 'transparent',
+        borderWidth: 2,
+        borderDash: [5, 4],
+        pointBackgroundColor: 'rgba(139,92,246,0.7)',
+        pointRadius: 3,
+        fill: false,
+        tension: 0.35,
+      });
+    }
+
     this.lineChartInstance = new Chart(ctx, {
       type: 'line',
-      data: {
-        labels,
-        datasets: [{
-          data: counts,
-          borderColor: c.accent,
-          backgroundColor: grad,
-          borderWidth: 2,
-          pointBackgroundColor: c.accent,
-          pointRadius: 4,
-          pointHoverRadius: 6,
-          fill: true,
-          tension: 0.35,
-        }],
-      },
+      data: { labels, datasets },
       options: {
         responsive: true,
         maintainAspectRatio: true,
-        plugins: { legend: { display: false }, tooltip: { mode: 'index', intersect: false } },
+        plugins: {
+          legend: { display: this.showPeriodCompare, labels: { color: c.tickColor, boxWidth: 12, font: { size: 10 } } },
+          tooltip: { mode: 'index', intersect: false },
+        },
         scales: {
-          x: { grid: { color: c.grid }, ticks: { color: c.tickColor, font: { size: 11 } } },
+          x: { grid: { color: c.grid }, ticks: { color: c.tickColor, font: { size: 11 }, maxTicksLimit: 14 } },
           y: { beginAtZero: true, grid: { color: c.grid }, ticks: { color: c.tickColor, font: { size: 11 }, precision: 0 } },
         },
       },
@@ -2122,6 +2465,7 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     this.syncSelectedMapTarget();
     this.computeExtraStats();
     this.computeAnalyticsInsights();
+    this.computeJourneyMap();
   }
 
   private buildResolutionLabel(visitor: VisitorRecord): string {
