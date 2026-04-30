@@ -95,7 +95,7 @@ function findSkillScore(input: string): number | null {
                       i
                     </button>
                     @if (showMatchInfo()) {
-                      <div class="match-tooltip absolute top-full left-0 mt-2 w-80 bg-gray-800 border border-gray-700 rounded-xl p-3 text-left shadow-xl z-50 text-gray-300 text-[11px] leading-relaxed">
+                      <div class="match-tooltip absolute top-full left-0 mt-2 w-80 bg-gray-800 border border-gray-700 rounded-xl p-3 text-left shadow-xl z-50 text-gray-300 text-xs leading-relaxed">
                         <p class="font-semibold text-white mb-1.5">📐 Como o % é calculado</p>
                         <p class="mb-2">Cada tecnologia é comparada com o perfil de Elias e recebe uma nota de <span class="text-cyan-400 font-semibold">0–100%</span>. Skills desconhecidas recebem <span class="text-red-400 font-semibold">0%</span>.</p>
                         <p class="mb-1.5">Sem pesos, o match é a <span class="text-cyan-400 font-semibold">média simples</span>:</p>
@@ -152,7 +152,7 @@ function findSkillScore(input: string): number | null {
                   class="flex-1 min-w-0 bg-gray-800/70 border border-gray-700/60 rounded-xl px-3 py-2.5 text-sm text-gray-200 placeholder-gray-600 outline-none focus:border-blue-500/60 transition-colors"
                 />
                 <div class="flex flex-col gap-0.5 shrink-0">
-                  <label class="text-[10px] text-gray-600 text-center">Peso</label>
+                  <label class="text-xs text-gray-600 text-center">Peso</label>
                   <input
                     type="number"
                     [value]="currentWeight()"
@@ -384,7 +384,7 @@ function findSkillScore(input: string): number | null {
                   <div class="text-3xl font-black leading-none transition-colors duration-700" [style.color]="matchColor()">
                     {{ displayPercent() }}<span class="text-base font-semibold">%</span>
                   </div>
-                  <div class="text-gray-500 text-[10px] uppercase tracking-widest font-mono">match</div>
+                  <div class="text-gray-500 text-xs uppercase tracking-widest font-mono">match</div>
                 </div>
               }
 
@@ -443,7 +443,7 @@ function findSkillScore(input: string): number | null {
               @if (activeTab() === 'tags' && skills().length > 0) {
                 <div class="flex flex-wrap justify-center gap-1.5 mt-2 max-w-[220px]">
                   @for (skill of skills(); track skill.name) {
-                    <span class="text-[10px] px-2 py-0.5 rounded-full font-mono transition-all duration-500"
+                    <span class="text-xs px-2 py-0.5 rounded-full font-mono transition-all duration-500"
                           [class.tag-match]="skill.matched"
                           [class.tag-miss]="!skill.matched">
                       {{ skill.name }}
@@ -452,7 +452,7 @@ function findSkillScore(input: string): number | null {
                 </div>
               }
               @if (activeTab() === 'ai' && aiResult()) {
-                <p class="text-[10px] text-center mt-2 font-mono" [style.color]="matchColor()">
+                <p class="text-xs text-center mt-2 font-mono" [style.color]="matchColor()">
                   {{ aiResult()!.matchPercentage >= 85 ? '🚀 Perfeito' : aiResult()!.matchPercentage >= 70 ? '🎯 Ótimo' : aiResult()!.matchPercentage >= 50 ? '💡 Parcial' : '🔍 Baixo' }}
                 </p>
               }

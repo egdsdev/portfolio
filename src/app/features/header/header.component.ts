@@ -17,7 +17,7 @@ import { AnalyticsService } from '../../core/services/analytics.service';
 
     <!-- Header Desktop: oculto no mobile -->
     <nav class="fixed top-0 left-0 right-0 bg-gray-900/90 backdrop-blur-md z-50 border-b border-gray-800/50 hidden md:block">
-      <div class="max-w-7xl mx-auto px-6 py-3 flex items-center justify-between">
+      <div class="max-w-screen-2xl mx-auto px-8 py-3 flex items-center justify-between">
         <a href="#detalhes" class="text-cyan-400 font-bold text-base tracking-widest font-mono hover:text-cyan-300 transition-colors">&lt;EG /&gt;</a>
         <ul class="flex items-center space-x-6">
           <li><a href="#escolaridade" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">Formação</a></li>

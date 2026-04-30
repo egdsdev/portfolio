@@ -83,6 +83,9 @@ om-marquee {
     color: white !important;
 }
 
+/* Light mode: texto do nome (fuzzy text / glitch) visível */
+html.light .om-glitch { color: #2d2546 !important; }
+
 /* Gradient name */
 .text-gradient-name {
   background: linear-gradient(90deg, #60a5fa, #22d3ee, #60a5fa);
@@ -197,6 +200,12 @@ html.light .text-gray-200  { color: #3b3558 !important; }
 html.light .text-gray-300  { color: #4b4570 !important; }
 html.light .text-gray-400  { color: #6b7280 !important; }
 html.light .text-white     { color: #2d2546 !important; }
+/* Fundos escuros mantêm texto branco independente do tema */
+html.light .bg-violet-600,
+html.light .bg-violet-500,
+html.light .bg-violet-600:hover { color: #ffffff !important; }
+html.light .bg-violet-600 .text-white,
+html.light .bg-violet-500 .text-white { color: #ffffff !important; }
 html.light nav button.bg-red-600 { color: #ffffff !important; }
 html.light .text-slate-300 { color: #4b4570 !important; }
 html.light .text-slate-400 { color: #6b7280 !important; }
@@ -288,8 +297,16 @@ html.light h3.text-rose-400 { color: #7c3aed !important; }
 
 /* ---- Timeline ---- */
 html.light .experiencia-timeline {
-  --om-timeline-circle-bg: #f5f3ff !important;
+  --om-timeline-circle-bg: #5b21b6 !important;
   --om-timeline-circle-border-color: #7c3aed !important;
+}
+html.light .experiencia-timeline .om-timeline-circle {
+  background-color: #5b21b6 !important;
+  border-color: #7c3aed !important;
+}
+html.light #experiencia .om-timeline-circle {
+  background-color: #5b21b6 !important;
+  border-color: #7c3aed !important;
 }
 html.light .timeline-content {
   background: #ffffff !important;
@@ -334,6 +351,14 @@ html.light .bg-blue-500   { background-color: #7c3aed !important; }
 html.light .bg-cyan-500   { background-color: #a855f7 !important; }
 html.light .bg-purple-500 { background-color: #7c3aed !important; }
 
+/* Blobs na hero: mais visíveis no light (sem mix-blend, opacidade maior) */
+html.light #detalhes .animate-blob { opacity: 0.45 !important; }
+
+/* Ícones amarelos — péssimo contraste em fundo claro */
+html.light .text-yellow-300 { color: #b45309 !important; }
+html.light .text-yellow-400 { color: #b45309 !important; }
+html.light .text-yellow-500 { color: #92400e !important; }
+
 /* ---- Avatar border ---- */
 html.light .border-cyan-400\/40 { border-color: rgba(124,58,237,0.3) !important; }
 html.light .border-cyan-500\/30 { border-color: rgba(124,58,237,0.25) !important; }
@@ -373,6 +398,85 @@ html.light .contact-btn {
 html.light .contact-btn:hover {
   box-shadow: 0 6px 20px rgba(124,58,237,0.45) !important;
 }
+
+/* ── Tech Timeline — badges no modo claro ──────────────────────────────── */
+/*
+  No dark mode: bg-*-900/40 (escuro) + text-*-300 (claro) = ótimo contraste.
+  No light mode: o mesmo bg semi-transparente sobre branco vira cinza médio
+  e o texto claro (300) fica ilegível. Solução: bg branco/pastel + texto escuro saturado.
+*/
+html.light #tech-timeline span.rounded-full {
+  background-color: #ffffff !important;
+}
+/* Texto por cor — versões escuras e saturadas das respectivas paletas */
+html.light #tech-timeline .text-indigo-300  { color: #4338ca !important; }
+html.light #tech-timeline .text-orange-300  { color: #c2410c !important; }
+html.light #tech-timeline .text-yellow-300  { color: #b45309 !important; }
+html.light #tech-timeline .text-blue-300    { color: #1d4ed8 !important; }
+html.light #tech-timeline .text-cyan-300    { color: #0e7490 !important; }
+html.light #tech-timeline .text-red-300     { color: #b91c1c !important; }
+html.light #tech-timeline .text-rose-300    { color: #be123c !important; }
+html.light #tech-timeline .text-green-300   { color: #15803d !important; }
+html.light #tech-timeline .text-amber-300   { color: #b45309 !important; }
+html.light #tech-timeline .text-purple-300  { color: #7c3aed !important; }
+html.light #tech-timeline .text-gray-300    { color: #374151 !important; }
+/* Cards da timeline: bordas e fundo adequados */
+html.light #tech-timeline .border-gray-800\/60 { border-color: #e9e5ff !important; }
+html.light #tech-timeline .hover\:border-gray-700:hover { border-color: #c4b5fd !important; }
+html.light #tech-timeline p.text-gray-600  { color: #7c3aed !important; }
+
+/* ── Badges no app.html (habilidades / app.html bg-gray-700/50) ──────── */
+html.light span.rounded-full[class*="bg-gray-700"] {
+  background-color: #f5f3ff !important;
+  color: #4b4570 !important;
+}
+
+/* ── Como Eu Trabalho — light mode ──────────────────────────────────────── */
+/* Ícone box: fundo sólido branco + borda colorida visível */
+html.light #como-trabalho .w-20.bg-gray-900 {
+  background-color: #ffffff !important;
+}
+html.light #como-trabalho .border-purple-500\/50 { border-color: rgba(124,58,237,0.55) !important; }
+html.light #como-trabalho .border-blue-500\/50   { border-color: rgba(59,130,246,0.55) !important; }
+html.light #como-trabalho .border-cyan-500\/50   { border-color: rgba(6,182,212,0.55) !important; }
+html.light #como-trabalho .border-green-500\/50  { border-color: rgba(34,197,94,0.55) !important; }
+html.light #como-trabalho .border-amber-500\/50  { border-color: rgba(245,158,11,0.55) !important; }
+/* Hover: fundo pastel em vez de *-950 */
+html.light #como-trabalho .group:hover .border-purple-500\/50 { background-color: #f5f3ff !important; border-color: #7c3aed !important; }
+html.light #como-trabalho .group:hover .border-blue-500\/50   { background-color: #eff6ff !important; border-color: #2563eb !important; }
+html.light #como-trabalho .group:hover .border-cyan-500\/50   { background-color: #ecfeff !important; border-color: #0891b2 !important; }
+html.light #como-trabalho .group:hover .border-green-500\/50  { background-color: #f0fdf4 !important; border-color: #16a34a !important; }
+html.light #como-trabalho .group:hover .border-amber-500\/50  { background-color: #fffbeb !important; border-color: #d97706 !important; }
+/* Badge numérico */
+html.light #como-trabalho .bg-gray-900.border-gray-700 {
+  background-color: #ffffff !important;
+  border-color: #ddd6fe !important;
+  color: #7c3aed !important;
+}
+/* Tags dentro dos steps */
+html.light #como-trabalho span.bg-gray-800\/80 {
+  background-color: #f5f3ff !important;
+  color: #4b4570 !important;
+  border-color: #ddd6fe !important;
+}
+/* Linha conectora — em tom violeta suave */
+html.light #como-trabalho .bg-linear-to-r.from-purple-500\/30 {
+  opacity: 0.35 !important;
+}
+/* Cards de valores (banner inferior) */
+html.light #como-trabalho .border-gray-800\/60.bg-gray-900\/40 {
+  background-color: #ffffff !important;
+  border-color: #ede9fe !important;
+}
+html.light #como-trabalho .border-gray-800\/60.bg-gray-900\/40:hover {
+  border-color: #c4b5fd !important;
+}
+/* Texto dos steps */
+html.light #como-trabalho h3.text-white { color: #2d2546 !important; }
+html.light #como-trabalho p.text-gray-500 { color: #6b7280 !important; }
+html.light #como-trabalho p.text-gray-400 { color: #6b7280 !important; }
+/* Ícone da seta entre steps */
+html.light #como-trabalho .text-gray-700 { color: #c4b5fd !important; }
 
 /* ---- Scroll indicator (light) ---- */
 html.light .scroll-indicator { color: #8b5cf6 !important; }
@@ -488,7 +592,13 @@ html.light .ai-loading-ring {
 /* ---- Timeline path/gradient (light) ---- */
 html.light .experiencia-timeline {
   --om-timeline-circle-border-color: #7c3aed !important;
-  --om-timeline-circle-bg: #f5f3ff !important;
+  --om-timeline-circle-bg: #5b21b6 !important;
+}
+html.light .experiencia-timeline .om-timeline-circle,
+html.light #experiencia .om-timeline-circle,
+html.light om-timeline .om-timeline-circle {
+  background-color: #5b21b6 !important;
+  border-color: #7c3aed !important;
 }
 
 /* ---- Theme toggle alinhamento ---- */
@@ -742,3 +852,233 @@ html.light #projetos .bg-cyan-600\/10     { background-color: rgba(8,145,178,0.0
 /* ---- Portfolio: borda do card principal ---- */
 html.light #projetos .border-purple-500\/30 { border-color: rgba(124,58,237,0.25) !important; }
 html.light #projetos .hover\:border-purple-400\/60:hover { border-color: rgba(109,40,217,0.5) !important; }
+
+/* ════════════════════════════════════════════════════════════════════════
+   ADMIN DASHBOARD — LIGHT MODE COMPREHENSIVE OVERRIDES
+   Cobre: tabela de acessos, gráficos, funil, leads, jornada, testes
+   ════════════════════════════════════════════════════════════════════════ */
+
+/* ── Texto geral escuro ─────────────────────────────────────────────── */
+html.light .admin-page .text-gray-300  { color: #374151 !important; }
+html.light .admin-page .text-gray-100  { color: #1f2937 !important; }
+
+/* ── Badges de percentual (IA/Dev Match) — translúcidos muito claros ── */
+/* Verde */
+html.light .admin-page .bg-green-500\/15 { background-color: #d1fae5 !important; }
+html.light .admin-page .text-green-400   { color: #065f46 !important; }
+html.light .admin-page .text-green-300   { color: #065f46 !important; }
+/* Amarelo/Âmbar — principal culpado de invisibilidade */
+html.light .admin-page .bg-yellow-500\/15 { background-color: #fef3c7 !important; }
+html.light .admin-page .text-yellow-400   { color: #92400e !important; }
+html.light .admin-page .text-amber-400    { color: #92400e !important; }
+html.light .admin-page .text-amber-300    { color: #78350f !important; }
+/* Vermelho */
+html.light .admin-page .bg-red-500\/15  { background-color: #fee2e2 !important; }
+html.light .admin-page .text-red-400    { color: #991b1b !important; }
+html.light .admin-page .text-red-300    { color: #991b1b !important; }
+/* Cyan */
+html.light .admin-page .bg-cyan-500\/10 { background-color: #cffafe !important; }
+html.light .admin-page .text-cyan-400   { color: #0e7490 !important; }
+html.light .admin-page .text-cyan-300   { color: #155e75 !important; }
+/* Purple/Violeta */
+html.light .admin-page .bg-purple-500\/15 { background-color: #ede9fe !important; }
+html.light .admin-page .text-purple-400   { color: #6d28d9 !important; }
+html.light .admin-page .text-purple-300   { color: #6d28d9 !important; }
+/* Azul */
+html.light .admin-page .bg-blue-500\/15  { background-color: #dbeafe !important; }
+html.light .admin-page .text-blue-400    { color: #1e40af !important; }
+html.light .admin-page .text-blue-300    { color: #1e3a8a !important; }
+/* Emerald (chips de jornada — primeira etapa) */
+html.light .admin-page .bg-emerald-500\/15 { background-color: #d1fae5 !important; }
+html.light .admin-page .text-emerald-300   { color: #065f46 !important; }
+/* Amber (chips de jornada — última etapa) */
+html.light .admin-page .bg-amber-500\/15   { background-color: #fef3c7 !important; }
+/* Amber border */
+html.light .admin-page .border-amber-500\/30 { border-color: #fbbf24 !important; }
+html.light .admin-page .border-emerald-500\/30 { border-color: #34d399 !important; }
+html.light .admin-page .border-cyan-500\/15  { border-color: #a5f3fc !important; }
+html.light .admin-page .bg-cyan-500\/5       { background-color: #ecfeff !important; }
+
+/* ── Score badges com border ─────────────────────────────────────────── */
+html.light .admin-page .border-red-500\/30    { border-color: #fca5a5 !important; }
+html.light .admin-page .border-blue-500\/30   { border-color: #93c5fd !important; }
+html.light .admin-page .border-green-500\/30  { border-color: #6ee7b7 !important; }
+
+/* ── Cards de leads (quente/morno/frio) ─────────────────────────────── */
+html.light .admin-page .bg-red-500\/5    { background-color: #fff1f2 !important; }
+html.light .admin-page .border-red-500\/20  { border-color: #fca5a5 !important; }
+html.light .admin-page .border-red-500\/30  { border-color: #f87171 !important; }
+html.light .admin-page .text-red-500    { color: #dc2626 !important; }
+html.light .admin-page .text-red-400    { color: #b91c1c !important; }
+html.light .admin-page .bg-amber-500\/5  { background-color: #fffbeb !important; }
+html.light .admin-page .border-amber-500\/20 { border-color: #fcd34d !important; }
+html.light .admin-page .border-amber-500\/30 { border-color: #f59e0b !important; }
+html.light .admin-page .text-amber-500  { color: #b45309 !important; }
+html.light .admin-page .text-amber-400  { color: #92400e !important; }
+html.light .admin-page .bg-blue-500\/5   { background-color: #eff6ff !important; }
+html.light .admin-page .border-blue-500\/20  { border-color: #93c5fd !important; }
+html.light .admin-page .border-blue-500\/30  { border-color: #60a5fa !important; }
+html.light .admin-page .text-blue-500   { color: #1d4ed8 !important; }
+html.light .admin-page .text-blue-400   { color: #1e40af !important; }
+
+/* ── Chips de jornada (middle steps — bg-gray-700/60 text-gray-400) ─ */
+html.light .admin-page .bg-gray-700\/60 { background-color: #f3f4f6 !important; color: #374151 !important; }
+html.light .admin-page .border-gray-600\/50 { border-color: #d1d5db !important; }
+
+/* ── Barras de progresso (background track) ─────────────────────────── */
+html.light .admin-page .bg-gray-800 { background-color: #e5e7eb !important; }
+html.light .admin-page [class="h-3 bg-gray-800 rounded-full overflow-hidden flex mb-2"],
+html.light .admin-page [class="h-3 bg-gray-800 rounded-full overflow-hidden mb-2"],
+html.light .admin-page [class="h-full rounded-full"],
+html.light .admin-page .h-2.rounded-full.bg-gray-800 { background-color: #e5e7eb !important; }
+html.light .admin-page .w-16.h-1.bg-gray-800 { background-color: #e5e7eb !important; }
+html.light .admin-page .flex-1.h-1.bg-gray-800 { background-color: #e5e7eb !important; }
+
+/* ── Inputs / textareas nas abas de gráficos e Testes ───────────────── */
+html.light .admin-page input[type="date"],
+html.light .admin-page input[type="text"],
+html.light .admin-page select {
+  background-color: #f5f3ff !important;
+  border-color: #ddd6fe !important;
+  color: #3b3558 !important;
+}
+html.light .admin-page input[type="date"]:focus,
+html.light .admin-page input[type="text"]:focus,
+html.light .admin-page select:focus { border-color: #7c3aed !important; }
+html.light .admin-page input::placeholder { color: #a78bfa !important; }
+
+/* ── Botões de preset de período e comparar ─────────────────────────── */
+html.light .admin-page .border-gray-700.text-gray-500 {
+  border-color: #c4b5fd !important;
+  color: #6b7280 !important;
+}
+html.light .admin-page .border-gray-700.text-gray-500:hover {
+  border-color: #7c3aed !important;
+  color: #4c1d95 !important;
+}
+
+/* ── Botões de paginação e Export ────────────────────────────────────── */
+html.light .admin-page .rounded-md.border.border-gray-700 {
+  border-color: #c4b5fd !important;
+  color: #6b7280 !important;
+  background-color: #f5f3ff !important;
+}
+html.light .admin-page .rounded-md.border.border-gray-700:hover:not(:disabled) {
+  border-color: #7c3aed !important;
+  color: #4c1d95 !important;
+}
+
+/* ── Card de testes: títulos h3 (text-white) ─────────────────────────── */
+html.light .admin-page h3.text-white { color: #1f2937 !important; }
+
+/* ── Status badge push (bg-gray-800/60) ─────────────────────────────── */
+html.light .admin-page [class*="bg-gray-800\/60"] {
+  background-color: #f3f4f6 !important;
+}
+html.light .admin-page [class*="bg-gray-800\/70"] {
+  background-color: #f5f3ff !important;
+  border-color: #ddd6fe !important;
+  color: #3b3558 !important;
+}
+
+/* ── Área de ícone dos cards de teste (bg-violet-500/15, bg-cyan-500/15) */
+html.light .admin-page .bg-violet-500\/15 { background-color: #ede9fe !important; }
+html.light .admin-page .bg-cyan-500\/15   { background-color: #cffafe !important; }
+html.light .admin-page .bg-violet-500\/20 { background-color: #ede9fe !important; }
+
+/* ── Botão conceder permissão (bg-violet-500/20 border-violet-500/40) ── */
+html.light .admin-page .bg-violet-500\/20.border-violet-500\/40 {
+  background-color: #ede9fe !important;
+  border-color: #a78bfa !important;
+  color: #4c1d95 !important;
+}
+
+/* ── Dropdown flutuante de mensagem (fixed, fora do admin-page) ───────  */
+html.light .fixed.bg-gray-900.border.border-gray-700 {
+  background-color: #ffffff !important;
+  border-color: #e2d9f3 !important;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.12) !important;
+}
+html.light .fixed.bg-gray-900.border.border-gray-700 .text-gray-200 { color: #1f2937 !important; }
+html.light .fixed.bg-gray-900.border.border-gray-700 .hover\:bg-gray-800:hover { background-color: #f3f4f6 !important; }
+
+/* ── Toast de nova mensagem (fixed, fora do admin-page) ─────────────── */
+html.light .admin-page ~ * .bg-gray-900,
+html.light .fixed.bg-gray-900.border.border-violet-500\/50 {
+  background-color: #ffffff !important;
+  border-color: #c4b5fd !important;
+}
+html.light .fixed.bg-gray-900.border.border-violet-500\/50 .text-violet-400 { color: #7c3aed !important; }
+html.light .fixed.bg-gray-900.border.border-violet-500\/50 .text-gray-200  { color: #1f2937 !important; }
+html.light .fixed.bg-gray-900.border.border-violet-500\/50 .text-gray-500  { color: #6b7280 !important; }
+
+/* ── Funil SVG — texto label (fill hardcoded) ───────────────────────── */
+html.light .admin-page svg text[fill="#d1d5db"] { fill: #374151 !important; }
+html.light .admin-page svg text[fill="#9ca3af"] { fill: #6b7280 !important; }
+html.light .admin-page svg text[fill="#6b7280"] { fill: #6b7280 !important; }
+
+/* ── Donut SVG — texto central branco ───────────────────────────────── */
+html.light .admin-page svg text[fill="white"] { fill: #1f2937 !important; }
+
+/* ── Balonzinho deletado: bg-gray-700/40 ───────────────────────────── */
+html.light .admin-page [class*="bg-gray-700\/40"] {
+  background-color: #f3f4f6 !important;
+  color: #9ca3af !important;
+}
+
+/* ── Journey: hover row ─────────────────────────────────────────────── */
+html.light .admin-page .hover\:bg-gray-800\/40:hover { background-color: rgba(124,58,237,0.05) !important; }
+
+/* ── AI Insight box: texto ───────────────────────────────────────────── */
+html.light .admin-page .text-green-300  { color: #065f46 !important; }
+html.light .admin-page .text-amber-300  { color: #78350f !important; }
+
+/* ── FCM token / mono text ───────────────────────────────────────────── */
+html.light .admin-page .font-mono.text-gray-500 { color: #6b7280 !important; }
+
+/* ── Período comparar badge ativo ────────────────────────────────────── */
+html.light .admin-page .bg-purple-500\/20.border-purple-500\/50.text-purple-300 {
+  background-color: #ede9fe !important;
+  border-color: #a78bfa !important;
+  color: #5b21b6 !important;
+}
+
+/* ── Chart preset ativo (bg-cyan-500/20) ─────────────────────────────── */
+html.light .admin-page .bg-cyan-500\/20.border-cyan-500\/50.text-cyan-300 {
+  background-color: #cffafe !important;
+  border-color: #22d3ee !important;
+  color: #0e7490 !important;
+}
+
+/* ── Usingfallback badge (amber) ─────────────────────────────────────── */
+html.light .admin-page .border-amber-500\/30.text-amber-400.bg-amber-500\/5 {
+  background-color: #fffbeb !important;
+  border-color: #fcd34d !important;
+  color: #92400e !important;
+}
+
+/* ── Barra de progresso do lead segmentada ───────────────────────────── */
+html.light .admin-page .h-3.bg-gray-800 { background-color: #e5e7eb !important; }
+
+/* ── Violeta badges (bg-violet-500/10) já coberto acima mas reforço ─── */
+html.light .admin-page .bg-violet-500\/10 { background-color: #ede9fe !important; }
+
+/* ── Push ativo badge (border-green-500/50 bg-green-500/10 text-green-400) */
+html.light .admin-page .border-green-500\/50.bg-green-500\/10.text-green-400 {
+  background-color: #d1fae5 !important;
+  border-color: #6ee7b7 !important;
+  color: #065f46 !important;
+}
+html.light .admin-page .bg-green-400 { background-color: #34d399 !important; }
+
+/* ── Resultado de teste (success/warn/error borders) ─────────────────── */
+html.light .admin-page .bg-green-500\/10 { background-color: #d1fae5 !important; }
+html.light .admin-page .border-green-500\/20 { border-color: #6ee7b7 !important; }
+html.light .admin-page .bg-yellow-500\/10 { background-color: #fef3c7 !important; }
+html.light .admin-page .border-yellow-500\/20 { border-color: #fcd34d !important; }
+html.light .admin-page .bg-red-500\/10  { background-color: #fee2e2 !important; }
+html.light .admin-page .border-red-500\/20  { border-color: #fca5a5 !important; }
+
+/* ── Donut: fundo do círculo exterior (rgba(31,41,55)) ───────────────── */
+html.light .admin-page svg circle[stroke="rgba(31,41,55,0.9)"] { stroke: #e5e7eb !important; }
+

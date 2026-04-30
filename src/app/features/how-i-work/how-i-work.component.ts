@@ -27,30 +27,30 @@ interface WorkStep {
           <!-- Linha conectora desktop -->
           <div class="hidden lg:block absolute top-12 left-0 right-0 h-px bg-linear-to-r from-purple-500/30 via-cyan-500/30 to-purple-500/30 z-0"></div>
 
-          <div class="grid grid-cols-1 lg:grid-cols-5 gap-6 lg:gap-4 relative z-10">
+          <div class="flex flex-col lg:flex-row items-start gap-6 lg:gap-0 relative z-10">
             @for (step of steps; track step.title; let i = $index) {
-              <div class="group flex flex-col items-center text-center">
+              <div class="group flex flex-col items-center text-center lg:flex-1">
                 <!-- Ícone com número -->
                 <div class="relative mb-4">
                   <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl
-                               border transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg"
+                               bg-gray-900 border transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg"
                        [class]="step.accent">
                     {{ step.icon }}
                   </div>
                   <span class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-gray-900 border border-gray-700
-                               text-[10px] font-bold text-gray-400 flex items-center justify-center">
+                               text-xs font-bold text-gray-400 flex items-center justify-center">
                     {{ i + 1 }}
                   </span>
                 </div>
 
                 <!-- Conteúdo -->
                 <h3 class="text-sm font-bold text-white mb-2 leading-tight">{{ step.title }}</h3>
-                <p class="text-gray-500 text-xs leading-relaxed mb-3">{{ step.description }}</p>
+                <p class="text-gray-500 text-sm leading-relaxed mb-3">{{ step.description }}</p>
 
                 <!-- Tags -->
                 <div class="flex flex-wrap justify-center gap-1">
                   @for (tag of step.tags; track tag) {
-                    <span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-800/80 text-gray-400 border border-gray-700/60">
+                    <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-800/80 text-gray-400 border border-gray-700/60">
                       {{ tag }}
                     </span>
                   }
@@ -59,7 +59,7 @@ interface WorkStep {
 
               <!-- Seta entre etapas (desktop) -->
               @if (i < steps.length - 1) {
-                <div class="hidden lg:flex items-start justify-center pt-10 -mx-2">
+                <div class="hidden lg:flex items-start justify-center pt-10 shrink-0 w-8">
                   <svg class="w-5 h-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"/>
                   </svg>
@@ -90,35 +90,35 @@ export class HowIWorkComponent {
       title: 'Descoberta',
       description: 'Entendo o problema, o contexto do negócio e os objetivos reais antes de qualquer linha de código.',
       tags: ['Reunião', 'Briefing', 'Requisitos'],
-      accent: 'bg-purple-900/40 border-purple-500/40 group-hover:border-purple-400/70 group-hover:shadow-purple-500/20',
+      accent: 'border-purple-500/50 group-hover:border-purple-400/80 group-hover:bg-purple-950 group-hover:shadow-purple-500/25',
     },
     {
       icon: '🗺️',
       title: 'Planejamento',
       description: 'Defino arquitetura, stack, cronograma e critérios de aceite. Sem surpresas no meio do caminho.',
       tags: ['Arquitetura', 'Sprint', 'Estimativa'],
-      accent: 'bg-blue-900/40 border-blue-500/40 group-hover:border-blue-400/70 group-hover:shadow-blue-500/20',
+      accent: 'border-blue-500/50 group-hover:border-blue-400/80 group-hover:bg-blue-950 group-hover:shadow-blue-500/25',
     },
     {
       icon: '⚙️',
       title: 'Desenvolvimento',
       description: 'Código limpo, testável e documentado. Commits atômicos, revisões frequentes, entrega incremental.',
       tags: ['Clean Code', 'Git', 'CI/CD'],
-      accent: 'bg-cyan-900/40 border-cyan-500/40 group-hover:border-cyan-400/70 group-hover:shadow-cyan-500/20',
+      accent: 'border-cyan-500/50 group-hover:border-cyan-400/80 group-hover:bg-cyan-950 group-hover:shadow-cyan-500/25',
     },
     {
       icon: '✅',
       title: 'Revisão',
       description: 'Testes, ajustes e validação com o cliente. Garanto que o que foi pedido é o que foi entregue.',
       tags: ['QA', 'Feedback', 'Ajustes'],
-      accent: 'bg-green-900/40 border-green-500/40 group-hover:border-green-400/70 group-hover:shadow-green-500/20',
+      accent: 'border-green-500/50 group-hover:border-green-400/80 group-hover:bg-green-950 group-hover:shadow-green-500/25',
     },
     {
       icon: '🚀',
       title: 'Entrega',
       description: 'Deploy em produção, documentação e suporte pós-entrega. O projeto não termina com o deploy.',
       tags: ['Deploy', 'Docs', 'Suporte'],
-      accent: 'bg-amber-900/40 border-amber-500/40 group-hover:border-amber-400/70 group-hover:shadow-amber-500/20',
+      accent: 'border-amber-500/50 group-hover:border-amber-400/80 group-hover:bg-amber-950 group-hover:shadow-amber-500/25',
     },
   ];
 

@@ -81,7 +81,7 @@ interface TimeToActionRow {
   imports: [DatePipe, FormsModule, ConfirmDialogComponent],
   template: `
     <div class="admin-page min-h-screen pt-20">
-      <main class="max-w-7xl mx-auto px-4 pb-12 space-y-6">
+      <main class="max-w-screen-2xl mx-auto px-6 pb-12 space-y-6">
 
         <!-- Título -->
         <div class="pt-6">
@@ -173,7 +173,7 @@ interface TimeToActionRow {
             <p class="text-3xl font-bold">{{ devMatches.length }}</p>
           </div>
           <div class="admin-card rounded-xl p-4 border">
-            <p class="text-xs text-gray-500 mb-1">🌌 Brulias <span class="text-gray-600 text-[10px]">(excl. seu IP)</span></p>
+            <p class="text-xs text-gray-500 mb-1">🌌 Brulias <span class="text-gray-500 text-xs">(excl. seu IP)</span></p>
             <p class="text-3xl font-bold text-purple-400">{{ bruliasClicks }}</p>
           </div>
         </div>
@@ -230,10 +230,10 @@ interface TimeToActionRow {
                         <div class="text-gray-600 font-mono whitespace-nowrap">{{ r.ip ?? '-' }}</div>
                         @if (r.visitor && hasNetworkInfo(r.visitor)) {
                           <div class="mt-1 space-y-1">
-                            <div class="text-[10px] text-gray-400 max-w-44 truncate" [title]="networkSummary(r.visitor)">
+                            <div class="text-xs text-gray-400 max-w-44 truncate" [title]="networkSummary(r.visitor)">
                               {{ networkSummary(r.visitor) }}
                             </div>
-                            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-[10px] font-semibold"
+                            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold"
                                   [style.background-color]="networkKindBackground(r.visitor)"
                                   [style.color]="networkKindForeground(r.visitor)"
                                   [attr.title]="networkKindTitle(r.visitor)">
@@ -405,7 +405,7 @@ interface TimeToActionRow {
                 <div class="flex gap-1">
                   @for (p of [{d:7,l:'7d'},{d:14,l:'14d'},{d:30,l:'30d'},{d:90,l:'90d'}]; track p.l) {
                     <button (click)="setChartPreset(p.d)"
-                            class="px-2 py-1 text-[10px] font-semibold rounded border transition-colors cursor-pointer"
+                            class="px-2 py-1 text-xs font-semibold rounded border transition-colors cursor-pointer"
                             [class]="chartPresetDays === p.d ? 'bg-cyan-500/20 border-cyan-500/50 text-cyan-300' : 'border-gray-700 text-gray-500 hover:text-gray-300'">
                       {{ p.l }}
                     </button>
@@ -419,7 +419,7 @@ interface TimeToActionRow {
                          class="bg-gray-800 border border-gray-700 rounded px-2 py-1 text-xs text-gray-300 focus:outline-none focus:border-cyan-500/50" />
                 </div>
                 <button (click)="showPeriodCompare = !showPeriodCompare; onChartRangeChange()"
-                        class="px-2 py-1 text-[10px] font-semibold rounded border transition-colors cursor-pointer"
+                        class="px-2 py-1 text-xs font-semibold rounded border transition-colors cursor-pointer"
                         [class]="showPeriodCompare ? 'bg-purple-500/20 border-purple-500/50 text-purple-300' : 'border-gray-700 text-gray-500 hover:text-gray-300'">
                   ≈ Comparar
                 </button>
@@ -431,7 +431,7 @@ interface TimeToActionRow {
           <!-- Mapa Leaflet -->
           <div class="admin-card border rounded-xl p-5">
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">Localização dos Acessos</p>
-            <p class="text-[11px] text-gray-600 mb-4">Clique em uma linha da tabela para aproximar o mapa nesse acesso.</p>
+            <p class="text-xs text-gray-500 mb-4">Clique em uma linha da tabela para aproximar o mapa nesse acesso.</p>
             @if (loading) {
               <div class="h-64 flex items-center justify-center text-gray-600 text-sm animate-pulse">Carregando mapa...</div>
             } @else if (!hasMapCoords) {
@@ -446,7 +446,7 @@ interface TimeToActionRow {
         <!-- ── Heatmap de Horários ──────────────────────────────────────── -->
         <div class="admin-card border rounded-xl p-5">
           <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Heatmap de Acesso</p>
-          <p class="text-[11px] text-gray-600 mb-4">Dia da semana × hora — todas as interações registradas</p>
+          <p class="text-xs text-gray-500 mb-4">Dia da semana × hora — todas as interações registradas</p>
           @if (!loading && visitors.length > 0) {
             <div class="flex gap-8 flex-wrap lg:flex-nowrap">
               <!-- Grade -->
@@ -462,7 +462,7 @@ interface TimeToActionRow {
                 <!-- Linhas por dia -->
                 @for (row of heatmapRows; track row.label) {
                   <div class="flex items-center mb-px" style="gap:1px">
-                    <div class="text-[10px] text-gray-500 text-right pr-2 shrink-0" style="width:54px">{{ row.label }}</div>
+                    <div class="text-xs text-gray-500 text-right pr-2 shrink-0" style="width:54px">{{ row.label }}</div>
                     @for (cell of row.cells; track $index) {
                       <div
                         class="rounded-sm shrink-0 cursor-default hover:opacity-75 transition-opacity"
@@ -476,11 +476,11 @@ interface TimeToActionRow {
                 }
                 <!-- Legenda -->
                 <div class="flex items-center gap-1 mt-3" style="padding-left:56px">
-                  <span class="text-[10px] text-gray-600 mr-1">Menos</span>
+                  <span class="text-xs text-gray-500 mr-1">Menos</span>
                   @for (l of legendSteps; track l) {
                     <div class="rounded-sm" style="width:14px;height:14px" [style.background-color]="heatLegendColor(l)"></div>
                   }
-                  <span class="text-[10px] text-gray-600 ml-1">Mais</span>
+                  <span class="text-xs text-gray-500 ml-1">Mais</span>
                 </div>
               </div>
 
@@ -489,33 +489,33 @@ interface TimeToActionRow {
                 <!-- KPIs -->
                 <div class="grid grid-cols-3 gap-3">
                   <div class="admin-card border rounded-lg p-3 text-center">
-                    <p class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Total</p>
+                    <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Total</p>
                     <p class="text-2xl font-bold" [style.color]="accentColor">{{ heatTotalHits }}</p>
-                    <p class="text-[10px] text-gray-500 mt-0.5">eventos</p>
+                    <p class="text-xs text-gray-500 mt-0.5">eventos</p>
                   </div>
                   <div class="admin-card border rounded-lg p-3 text-center">
-                    <p class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Hora pico</p>
+                    <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Hora pico</p>
                     <p class="text-2xl font-bold" [style.color]="accentColor">{{ heatPeakHour }}h</p>
-                    <p class="text-[10px] text-gray-500 mt-0.5">mais acessos</p>
+                    <p class="text-xs text-gray-500 mt-0.5">mais acessos</p>
                   </div>
                   <div class="admin-card border rounded-lg p-3 text-center">
-                    <p class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Dia ativo</p>
+                    <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Dia ativo</p>
                     <p class="text-2xl font-bold" [style.color]="accentColor">{{ heatPeakDay }}</p>
-                    <p class="text-[10px] text-gray-500 mt-0.5">mais acessos</p>
+                    <p class="text-xs text-gray-500 mt-0.5">mais acessos</p>
                   </div>
                 </div>
 
                 <!-- Top 5 horas -->
                 <div>
-                  <p class="text-[10px] text-gray-500 uppercase tracking-wider mb-3">Top 5 horas mais ativas</p>
+                  <p class="text-xs text-gray-500 uppercase tracking-wider mb-3">Top 5 horas mais ativas</p>
                   <div class="space-y-2">
                     @for (h of heatTopHours; track h.label) {
                       <div class="flex items-center gap-2">
-                        <span class="text-[11px] text-gray-400 w-6 shrink-0 text-right">{{ h.label }}</span>
+                        <span class="text-xs text-gray-400 w-6 shrink-0 text-right">{{ h.label }}</span>
                         <div class="flex-1 h-2 rounded-full bg-gray-800 overflow-hidden">
                           <div class="h-full rounded-full transition-all" [style.width.%]="h.pct" [style.background-color]="accentColor"></div>
                         </div>
-                        <span class="text-[11px] font-bold tabular-nums w-6 text-right" [style.color]="accentColor">{{ h.count }}</span>
+                        <span class="text-xs font-bold tabular-nums w-6 text-right" [style.color]="accentColor">{{ h.count }}</span>
                       </div>
                     }
                   </div>
@@ -591,7 +591,7 @@ interface TimeToActionRow {
                 </div>
               </div>
               @if (topReturnList.length > 0) {
-                <p class="text-[10px] text-gray-600 uppercase tracking-wider mb-2">Top recorrentes</p>
+                <p class="text-xs text-gray-500 uppercase tracking-wider mb-2">Top recorrentes</p>
                 <div class="space-y-2">
                   @for (v of topReturnList; track v.ip) {
                     <div class="flex items-center justify-between">
@@ -634,14 +634,14 @@ interface TimeToActionRow {
                 </span>
               }
             </div>
-            <p class="text-[11px] text-gray-600 mb-4">
+            <p class="text-xs text-gray-500 mb-4">
               {{ usingFallback ? 'Origem dos visitantes por campo referrer. Cliques em CTA disponíveis após acumulação de eventos.' : 'Sessões por canal e quantas delas geram projeto, contato e download de currículo.' }}
             </p>
             @if (!loading && sourceConversions.length > 0) {
               <div class="overflow-x-auto">
                 <table class="w-full text-sm">
                   <thead>
-                    <tr class="text-[11px] text-gray-500 uppercase tracking-wider border-b border-gray-800/50">
+                    <tr class="text-xs text-gray-500 uppercase tracking-wider border-b border-gray-800/50">
                       <th class="text-left py-2 pr-4">Origem</th>
                       <th class="text-right py-2 px-2">{{ usingFallback ? 'Visitantes' : 'Sessões' }}</th>
                       @if (!usingFallback) {
@@ -679,15 +679,15 @@ interface TimeToActionRow {
 
           <div class="admin-card border rounded-xl p-5">
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Tempo até Primeira Ação</p>
-            <p class="text-[11px] text-gray-600 mb-4">Quanto tempo uma sessão leva para clicar ou iniciar algo relevante.</p>
+            <p class="text-xs text-gray-500 mb-4">Quanto tempo uma sessão leva para clicar ou iniciar algo relevante.</p>
             @if (!loading && (firstActionAvgSeconds > 0 || firstActionBySource.length > 0)) {
               <div class="grid grid-cols-2 gap-3 mb-5">
                 <div class="admin-card border rounded-lg p-3 text-center">
-                  <p class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Média</p>
+                  <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Média</p>
                   <p class="text-2xl font-bold" [style.color]="accentColor">{{ firstActionAvgSeconds }}s</p>
                 </div>
                 <div class="admin-card border rounded-lg p-3 text-center">
-                  <p class="text-[10px] text-gray-500 uppercase tracking-wider mb-1">Mediana</p>
+                  <p class="text-xs text-gray-500 uppercase tracking-wider mb-1">Mediana</p>
                   <p class="text-2xl font-bold" [style.color]="accentColor">{{ firstActionMedianSeconds }}s</p>
                 </div>
               </div>
@@ -696,7 +696,7 @@ interface TimeToActionRow {
                   <div class="flex items-center justify-between gap-4">
                     <div>
                       <p class="text-sm text-gray-300">{{ row.source }}</p>
-                      <p class="text-[10px] text-gray-600">{{ row.sessions }} sessões</p>
+                      <p class="text-xs text-gray-500">{{ row.sessions }} sessões</p>
                     </div>
                     <p class="text-lg font-bold tabular-nums" [style.color]="accentColor">{{ row.avgSeconds }}s</p>
                   </div>
@@ -715,41 +715,50 @@ interface TimeToActionRow {
 
           <div class="admin-card border rounded-xl p-5">
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Funil de Contato</p>
-            <p class="text-[11px] text-gray-600 mb-4">
+            <p class="text-xs text-gray-500 mb-4">
               {{ usingFallback ? 'Estimativa de adoção de features — eventos de navegação ainda insuficientes.' : 'Sessões, projetos, contato, CTA e contato direto.' }}
             </p>
             @if (!loading && contactFunnelSteps.length > 0) {
-              <svg [attr.viewBox]="'0 0 300 ' + funnelSvgHeight" class="w-full" [attr.height]="funnelSvgHeight" style="overflow:visible">
+              <svg [attr.viewBox]="'0 0 500 ' + funnelSvgHeight" class="w-full h-auto">
+                <defs>
+                  @for (s of funnelShapes; track s.label; let i = $index) {
+                    <linearGradient [attr.id]="'fg' + i" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="0%" [attr.stop-color]="s.color" stop-opacity="0.42"/>
+                      <stop offset="100%" [attr.stop-color]="s.color" stop-opacity="0.14"/>
+                    </linearGradient>
+                  }
+                </defs>
                 @for (s of funnelShapes; track s.label; let i = $index) {
-                  <!-- Trapézio colorido -->
+                  <!-- Trapézio com gradiente -->
                   <polygon [attr.points]="s.points"
-                           [attr.fill]="s.color" fill-opacity="0.15"
-                           [attr.stroke]="s.color" stroke-width="1.5" stroke-opacity="0.55" />
-                  <!-- Número da etapa + label -->
-                  <text x="8" [attr.y]="s.centerY - 8"
-                        fill="#6b7280" font-size="12" dominant-baseline="auto">
+                           [attr.fill]="'url(#fg' + i + ')'"
+                           [attr.stroke]="s.color" stroke-width="2" stroke-opacity="0.85"
+                           stroke-linejoin="round"/>
+                  <!-- Número + label (esquerda — zona x=0..130, funil começa em x=150) -->
+                  <text x="4" [attr.y]="s.centerY"
+                        fill="#6b7280" font-size="11" font-weight="600" dominant-baseline="middle">
                     {{ i + 1 }}.
                   </text>
-                  <text x="22" [attr.y]="s.centerY - 8"
-                        fill="#d1d5db" font-size="13" dominant-baseline="auto">
+                  <text x="20" [attr.y]="s.centerY"
+                        fill="#d1d5db" font-size="12" dominant-baseline="middle">
                     {{ s.label }}
                   </text>
-                  <!-- Valor absoluto + % (direita) -->
-                  <text x="295" [attr.y]="s.centerY - 8"
+                  <!-- Valor + % (direita — zona x=360..500, funil termina em x=350) -->
+                  <text x="496" [attr.y]="s.centerY - 7"
                         text-anchor="end" [attr.fill]="s.color"
-                        font-size="16" font-weight="700" dominant-baseline="auto">
+                        font-size="16" font-weight="700" dominant-baseline="middle">
                     {{ s.value }}
                   </text>
-                  <text x="295" [attr.y]="s.centerY + 12"
+                  <text x="496" [attr.y]="s.centerY + 10"
                         text-anchor="end" fill="#9ca3af"
-                        font-size="12" dominant-baseline="auto">
+                        font-size="11" dominant-baseline="middle">
                     {{ s.pct }}%
                   </text>
                   <!-- Queda entre etapas -->
                   @if (s.dropPct !== null) {
-                    <text x="150" [attr.y]="s.dropY + 3"
+                    <text x="250" [attr.y]="s.dropY"
                           text-anchor="middle" fill="#f87171"
-                          font-size="12" font-weight="600" opacity="0.9" dominant-baseline="middle">
+                          font-size="11" font-weight="600" opacity="0.9" dominant-baseline="middle">
                       ▼ -{{ s.dropPct }}%
                     </text>
                   }
@@ -764,7 +773,7 @@ interface TimeToActionRow {
 
           <div class="admin-card border rounded-xl p-5">
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">CTR por CTA</p>
-            <p class="text-[11px] text-gray-600 mb-4">CTA = botão ou link de ação. Ex.: contato, currículo, WhatsApp, projetos e atalhos do header.</p>
+            <p class="text-xs text-gray-500 mb-4">CTA = botão ou link de ação. Ex.: contato, currículo, WhatsApp, projetos e atalhos do header.</p>
             @if (!loading && ctaPerformance.length > 0) {
               <div [style.height.px]="Math.max(200, Math.min(ctaPerformance.length, 12) * 44)">
                 <canvas #ctaChartCanvas style="width:100%;height:100%"></canvas>
@@ -782,7 +791,7 @@ interface TimeToActionRow {
 
           <div class="admin-card border rounded-xl p-5">
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Alcance por Seção</p>
-            <p class="text-[11px] text-gray-600 mb-4">Profundidade real de leitura da página por sessão.</p>
+            <p class="text-xs text-gray-500 mb-4">Profundidade real de leitura da página por sessão.</p>
             @if (!loading && sectionReachRows.length > 0) {
               <div [style.height.px]="Math.max(180, sectionReachRows.length * 44)">
                 <canvas #sectionChartCanvas style="width:100%;height:100%"></canvas>
@@ -796,7 +805,7 @@ interface TimeToActionRow {
 
           <div class="admin-card border rounded-xl p-5">
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Uso das Features</p>
-            <p class="text-[11px] text-gray-600 mb-4">
+            <p class="text-xs text-gray-500 mb-4">
               {{ usingFallback ? 'Totais de uso das features (baseado nos matches registrados).' : 'Início, conclusão e abandono implícito por sessão.' }}
             </p>
             @if (!loading && featureUsageRows.length > 0) {
@@ -806,13 +815,13 @@ interface TimeToActionRow {
                     <div class="flex items-start justify-between gap-4 mb-3">
                       <div>
                         <p class="text-sm text-gray-200 font-semibold">{{ row.label }}</p>
-                        <p class="text-[10px] text-gray-600">
+                        <p class="text-xs text-gray-500">
                           {{ usingFallback ? row.completed + ' usos registrados' : row.started + ' iniciaram · ' + row.completed + ' concluíram · ' + row.abandoned + ' abandonaram' }}
                         </p>
                       </div>
                       <div class="text-right">
                         <p class="text-lg font-bold" [style.color]="row.completionRate >= 60 ? '#4ade80' : row.completionRate >= 30 ? '#fbbf24' : '#f87171'">{{ row.completionRate }}%</p>
-                        <p class="text-[10px] text-gray-600">taxa de conclusão</p>
+                        <p class="text-xs text-gray-500">taxa de conclusão</p>
                       </div>
                     </div>
                     @if (!usingFallback && row.started > 0) {
@@ -829,7 +838,7 @@ interface TimeToActionRow {
                           </div>
                         }
                       </div>
-                      <div class="flex items-center gap-3 text-[10px] text-gray-600">
+                      <div class="flex items-center gap-3 text-xs text-gray-500">
                         <span class="flex items-center gap-1">
                           <span class="inline-block w-2 h-2 rounded-sm" [style.background-color]="row.key === 'dev_match' ? '#22d3ee' : '#a855f7'"></span>
                           {{ row.completed }} concluíram
@@ -849,7 +858,7 @@ interface TimeToActionRow {
                         </div>
                       </div>
                     }
-                    <p class="text-[10px] text-gray-500 mt-2">
+                    <p class="text-xs text-gray-500 mt-2">
                       Resultado médio:
                       <span class="font-semibold text-gray-300">{{ row.avgResult != null ? row.avgResult + '%' : 'sem conclusão ainda' }}</span>
                     </p>
@@ -898,7 +907,7 @@ interface TimeToActionRow {
                             [class]="conv.visitorOnline ? 'bg-green-400' : 'bg-gray-600'"></span>
                       <div class="min-w-0">
                         <p class="text-sm font-medium text-gray-200 truncate">{{ conv.company ? conv.username + ' · ' + conv.company : conv.username }}</p>
-                        <p class="text-[10px] text-gray-600 mt-0.5">{{ conv.lastMessageAt | date:'dd/MM HH:mm' }}</p>
+                        <p class="text-xs text-gray-500 mt-0.5">{{ conv.lastMessageAt | date:'dd/MM HH:mm' }}</p>
                       </div>
                     </div>
                   <div class="flex items-center gap-2 shrink-0">
@@ -940,7 +949,7 @@ interface TimeToActionRow {
                       {{ selectedConv.visitorOnline ? 'Online' : 'Offline' }}
                     </p>
                   </div>
-                  <p class="text-[10px] text-gray-600">{{ selectedConv.startedAt | date:'dd/MM/yy HH:mm' }}</p>
+                  <p class="text-xs text-gray-500">{{ selectedConv.startedAt | date:'dd/MM/yy HH:mm' }}</p>
                   <button (click)="askDeleteConv(selectedConv)"
                           class="ml-1 p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
                           title="Excluir conversa">
@@ -973,7 +982,7 @@ interface TimeToActionRow {
                           </p>
                         } @else {
                           @if (msg.sender === 'visitor') {
-                            <p class="text-[10px] text-gray-400 font-semibold mb-1">{{ selectedConv.username }}</p>
+                            <p class="text-xs text-gray-400 font-semibold mb-1">{{ selectedConv.username }}</p>
                           }
                           @if (editingConvMessageId === msg.id) {
                             <div class="space-y-2 min-w-[220px]" (click)="$event.stopPropagation()">
@@ -985,12 +994,12 @@ interface TimeToActionRow {
                                         placeholder="Edite a mensagem..."></textarea>
                               <div class="flex items-center justify-end gap-2">
                                 <button (click)="cancelEditConvMessage()"
-                                        class="px-2.5 py-1 rounded-lg text-[11px] bg-black/15 hover:bg-black/25 transition-colors cursor-pointer">
+                                        class="px-2.5 py-1 rounded-lg text-xs bg-black/15 hover:bg-black/25 transition-colors cursor-pointer">
                                   Cancelar
                                 </button>
                                 <button (click)="saveEditedConvMessage(msg)"
                                         [disabled]="!editConvMessageText.trim() || savingConvEdit"
-                                        class="px-2.5 py-1 rounded-lg text-[11px] bg-white/15 hover:bg-white/25 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer">
+                                        class="px-2.5 py-1 rounded-lg text-xs bg-white/15 hover:bg-white/25 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer">
                                   {{ savingConvEdit ? 'Salvando...' : 'Salvar' }}
                                 </button>
                               </div>
@@ -1008,7 +1017,7 @@ interface TimeToActionRow {
                                 {{ msg.fileName }}
                               </a>
                             }
-                            <p class="text-[10px] mt-1 opacity-60 text-right">
+                            <p class="text-xs mt-1 opacity-60 text-right">
                               {{ msg.sentAt | date:'HH:mm' }}@if (msg.editedAt) { · editada }
                             </p>
                           }
@@ -1100,20 +1109,20 @@ interface TimeToActionRow {
 
           <!-- Cards de resumo -->
           <div class="grid grid-cols-3 gap-3">
-            <div class="admin-card rounded-xl p-4 border border-red-500/20 bg-red-500/5">
-              <p class="text-xs text-red-400/70 mb-1">🔥 Leads quentes</p>
-              <p class="text-3xl font-bold text-red-400">{{ hotLeads.length }}</p>
-              <p class="text-[10px] text-gray-600 mt-1">Score ≥ 70</p>
+            <div class="admin-card rounded-xl p-5 border border-red-500/30 bg-red-500/5">
+              <p class="text-sm font-semibold text-red-500 mb-2">🔥 Leads quentes</p>
+              <p class="text-4xl font-bold text-red-500">{{ hotLeads.length }}</p>
+              <p class="text-xs font-medium text-red-400 mt-2">Score ≥ 70</p>
             </div>
-            <div class="admin-card rounded-xl p-4 border border-amber-500/20 bg-amber-500/5">
-              <p class="text-xs text-amber-400/70 mb-1">🌡 Leads mornos</p>
-              <p class="text-3xl font-bold text-amber-400">{{ warmLeads.length }}</p>
-              <p class="text-[10px] text-gray-600 mt-1">Score 40–69</p>
+            <div class="admin-card rounded-xl p-5 border border-amber-500/30 bg-amber-500/5">
+              <p class="text-sm font-semibold text-amber-500 mb-2">🌡 Leads mornos</p>
+              <p class="text-4xl font-bold text-amber-500">{{ warmLeads.length }}</p>
+              <p class="text-xs font-medium text-amber-400 mt-2">Score 40–69</p>
             </div>
-            <div class="admin-card rounded-xl p-4 border border-blue-500/20 bg-blue-500/5">
-              <p class="text-xs text-blue-400/70 mb-1">❄️ Leads frios</p>
-              <p class="text-3xl font-bold text-blue-400">{{ visitors.length - hotLeads.length - warmLeads.length }}</p>
-              <p class="text-[10px] text-gray-600 mt-1">Score &lt; 40</p>
+            <div class="admin-card rounded-xl p-5 border border-blue-500/30 bg-blue-500/5">
+              <p class="text-sm font-semibold text-blue-500 mb-2">❄️ Leads frios</p>
+              <p class="text-4xl font-bold text-blue-500">{{ visitors.length - hotLeads.length - warmLeads.length }}</p>
+              <p class="text-xs font-medium text-blue-400 mt-2">Score &lt; 40</p>
             </div>
           </div>
 
@@ -1139,7 +1148,7 @@ interface TimeToActionRow {
                     @let sl = scoreLabel(score);
                     <tr class="border-b border-gray-800/40 hover:bg-gray-800/30 transition-colors">
                       <td class="px-4 py-3">
-                        <span class="inline-flex items-center gap-1.5 text-xs font-bold px-2 py-1 rounded-full border {{ sl.bg }} {{ sl.color }}">
+                        <span class="inline-flex items-center gap-1.5 text-sm font-bold px-3 py-1.5 rounded-full border {{ sl.bg }} {{ sl.color }}">
                           {{ score }}
                         </span>
                       </td>
@@ -1205,7 +1214,7 @@ interface TimeToActionRow {
               <div class="flex items-start justify-between gap-3 flex-wrap">
                 <div>
                   <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Jornadas mais comuns</p>
-                  <p class="text-[11px] text-gray-600 mt-0.5">Sequências de seções visualizadas por sessão, ordenadas por frequência</p>
+                  <p class="text-xs text-gray-500 mt-0.5">Sequências de seções visualizadas por sessão, ordenadas por frequência</p>
                 </div>
                 <button (click)="generateJourneyInsight()"
                         [disabled]="journeyAiLoading"
@@ -1226,7 +1235,7 @@ interface TimeToActionRow {
                        [class]="i === 0 ? 'bg-cyan-500/5 border border-cyan-500/15' : ''">
                     <!-- Posição + barra de frequência -->
                     <div class="flex flex-col items-center gap-1 pt-0.5 shrink-0 w-8">
-                      <span class="text-[10px] font-bold tabular-nums"
+                      <span class="text-xs font-bold tabular-nums"
                             [class]="i === 0 ? 'text-cyan-400' : i === 1 ? 'text-gray-400' : 'text-gray-600'">
                         #{{ i + 1 }}
                       </span>
@@ -1237,7 +1246,7 @@ interface TimeToActionRow {
                     <div class="flex-1 min-w-0">
                       <div class="flex flex-wrap items-center gap-1 mb-1.5">
                         @for (step of j.path.split(' → '); track step; let si = $index; let last = $last) {
-                          <span class="inline-flex items-center px-2 py-0.5 rounded-md text-[10px] font-medium border"
+                          <span class="inline-flex items-center px-2 py-0.5 rounded-md text-xs font-medium border"
                                 [class]="si === 0
                                   ? 'bg-emerald-500/15 border-emerald-500/30 text-emerald-300'
                                   : last
@@ -1258,7 +1267,7 @@ interface TimeToActionRow {
                                [style.background-color]="i === 0 ? '#22d3ee' : i === 1 ? '#a855f7' : '#4b5563'">
                           </div>
                         </div>
-                        <span class="text-[10px] text-gray-500 tabular-nums shrink-0">{{ j.count }}x · {{ j.pct }}%</span>
+                        <span class="text-xs text-gray-500 tabular-nums shrink-0">{{ j.count }}x · {{ j.pct }}%</span>
                       </div>
                     </div>
                   </div>
@@ -1289,11 +1298,11 @@ interface TimeToActionRow {
                   <p class="text-xs text-gray-300 leading-relaxed">{{ ai.summary }}</p>
                   <div class="space-y-2">
                     <div class="flex gap-2">
-                      <span class="text-[10px] font-semibold text-gray-500 uppercase tracking-wide shrink-0 w-16 pt-0.5">Indica</span>
+                      <span class="text-xs font-semibold text-gray-500 uppercase tracking-wide shrink-0 w-16 pt-0.5">Indica</span>
                       <p class="text-xs text-gray-400 leading-relaxed">{{ ai.insight }}</p>
                     </div>
                     <div class="flex gap-2">
-                      <span class="text-[10px] font-semibold text-violet-400 uppercase tracking-wide shrink-0 w-16 pt-0.5">Ação</span>
+                      <span class="text-xs font-semibold text-violet-400 uppercase tracking-wide shrink-0 w-16 pt-0.5">Ação</span>
                       <p class="text-xs text-gray-300 leading-relaxed">{{ ai.action }}</p>
                     </div>
                   </div>
@@ -2321,7 +2330,7 @@ Resposta em português brasileiro, tom direto e profissional.`;
       areaStart:  light ? 'rgba(124,58,237,0.18)' : 'rgba(34,211,238,0.18)',
       areaEnd:    light ? 'rgba(124,58,237,0)' : 'rgba(34,211,238,0)',
       grid:       light ? '#e9d5ff' : '#1f2937',
-      tickColor:  light ? '#6b7280' : '#6b7280',
+      tickColor:  light ? '#374151' : '#6b7280',
     };
   }
 
@@ -3147,13 +3156,15 @@ Resposta em português brasileiro, tom direto e profissional.`;
   get funnelShapes() {
     const steps = this.contactFunnelSteps;
     if (!steps.length) return [];
-    const maxW = 230, cx = 150, stepH = 62, gapH = 30;
+    // cx=250, maxW=200 → funil de x=150 a x=350 na largura máxima
+    // Zona esquerda (texto): x=0..130 | Funil: x=150..350 | Zona direita: x=360..500
+    const maxW = 200, cx = 250, stepH = 62, gapH = 30;
     const topValue = steps[0].value || 1;
     return steps.map((step, i) => {
       const topPct = step.value / topValue;
       const botPct = i < steps.length - 1 ? steps[i + 1].value / topValue : topPct;
-      const topW = Math.max(28, topPct * maxW);
-      const botW = Math.max(28, botPct * maxW);
+      const topW = Math.max(32, topPct * maxW);
+      const botW = Math.max(32, botPct * maxW);
       const y = i * (stepH + gapH);
       const dropPct = i > 0 ? Math.round((1 - step.value / (steps[i - 1].value || 1)) * 100) : null;
       const x1t = cx - topW / 2, x2t = cx + topW / 2;
@@ -3183,8 +3194,8 @@ Resposta em português brasileiro, tom direto e profissional.`;
     this.ctaChartInstance?.destroy();
 
     const isDark = !document.documentElement.classList.contains('light');
-    const gridColor  = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
-    const tickColor  = isDark ? '#6b7280' : '#9ca3af';
+    const gridColor  = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)';
+    const tickColor  = isDark ? '#9ca3af' : '#374151';
     const categoryColors: Record<string, string> = {
       project: '#a855f7', direct_contact: '#22c55e', resume: '#f59e0b',
       navigation: '#94a3b8', contact: '#22d3ee',
@@ -3197,6 +3208,9 @@ Resposta em português brasileiro, tom direto e profissional.`;
       id: 'ctaBarDatalabels',
       afterDatasetsDraw(chart: any) {
         const ctx2 = chart.ctx as CanvasRenderingContext2D;
+        const dark = !document.documentElement.classList.contains('light');
+        const labelPrimary   = dark ? '#e5e7eb' : '#1f2937';
+        const labelSecondary = dark ? '#6b7280' : '#6b7280';
         chart.data.datasets.forEach((_: any, di: number) => {
           const meta = chart.getDatasetMeta(di);
           meta.data.forEach((bar: any, j: number) => {
@@ -3204,13 +3218,13 @@ Resposta em português brasileiro, tom direto e profissional.`;
             if (val <= 0) return;
             const clicks = rows[j]?.clicks ?? '';
             ctx2.save();
-            ctx2.fillStyle = '#e5e7eb';
+            ctx2.fillStyle = labelPrimary;
             ctx2.font = 'bold 12px Inter, ui-sans-serif, sans-serif';
             ctx2.textAlign = 'left';
             ctx2.textBaseline = 'middle';
             const x = Math.min(bar.x + 6, chart.chartArea.right - 58);
             ctx2.fillText(`${val}%`, x, bar.y);
-            ctx2.fillStyle = '#6b7280';
+            ctx2.fillStyle = labelSecondary;
             ctx2.font = '11px Inter, ui-sans-serif, sans-serif';
             ctx2.fillText(`${clicks}×`, x + 34, bar.y);
             ctx2.restore();
@@ -3268,8 +3282,8 @@ Resposta em português brasileiro, tom direto e profissional.`;
     this.sectionChartInstance?.destroy();
 
     const isDark = !document.documentElement.classList.contains('light');
-    const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.06)';
-    const tickColor = isDark ? '#6b7280' : '#9ca3af';
+    const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)';
+    const tickColor = isDark ? '#9ca3af' : '#374151';
     const accent = this.accentColor;
     const rows = this.sectionReachRows;
 
@@ -3277,6 +3291,9 @@ Resposta em português brasileiro, tom direto e profissional.`;
       id: 'sectionBarDatalabels',
       afterDatasetsDraw(chart: any) {
         const ctx2 = chart.ctx as CanvasRenderingContext2D;
+        const dark = !document.documentElement.classList.contains('light');
+        const labelPrimary   = dark ? '#e5e7eb' : '#1f2937';
+        const labelSecondary = dark ? '#6b7280' : '#6b7280';
         chart.data.datasets.forEach((_: any, di: number) => {
           const meta = chart.getDatasetMeta(di);
           meta.data.forEach((bar: any, j: number) => {
@@ -3284,13 +3301,13 @@ Resposta em português brasileiro, tom direto e profissional.`;
             if (val <= 0) return;
             const sessions = rows[j]?.sessions ?? '';
             ctx2.save();
-            ctx2.fillStyle = '#e5e7eb';
+            ctx2.fillStyle = labelPrimary;
             ctx2.font = 'bold 12px Inter, ui-sans-serif, sans-serif';
             ctx2.textAlign = 'left';
             ctx2.textBaseline = 'middle';
             const x = Math.min(bar.x + 6, chart.chartArea.right - 68);
             ctx2.fillText(`${val}%`, x, bar.y);
-            ctx2.fillStyle = '#6b7280';
+            ctx2.fillStyle = labelSecondary;
             ctx2.font = '11px Inter, ui-sans-serif, sans-serif';
             ctx2.fillText(`${sessions} sess.`, x + 34, bar.y);
             ctx2.restore();

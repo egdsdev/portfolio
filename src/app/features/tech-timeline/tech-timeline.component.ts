@@ -48,10 +48,10 @@ interface TechEra {
                         <p class="text-sm font-bold text-white leading-tight">{{ era.label }}</p>
                       </div>
                     </div>
-                    <p class="text-xs text-gray-500 mb-4 leading-relaxed italic">{{ era.highlight }}</p>
+                    <p class="text-sm text-gray-500 mb-4 leading-relaxed italic">{{ era.highlight }}</p>
                     <div class="flex flex-wrap gap-1.5">
                       @for (tech of era.techs; track tech.name) {
-                        <span class="px-2.5 py-0.5 rounded-full text-[11px] font-semibold border"
+                        <span class="px-2.5 py-0.5 rounded-full text-xs font-semibold border"
                               [class]="tech.color">
                           {{ tech.name }}
                         </span>
