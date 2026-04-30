@@ -361,7 +361,33 @@ interface TimeToActionRow {
 
           <!-- Gráfico de linha (Chart.js) -->
           <div class="admin-card border rounded-xl p-5">
-            <p class="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">Acessos — Últimos 7 dias</p>
+            <!-- Cabeçalho com título + filtro de datas -->
+            <div class="flex flex-wrap items-start justify-between gap-3 mb-4">
+              <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold">Acessos por Período</p>
+              <div class="flex flex-wrap items-center gap-2">
+                <!-- Presets -->
+                <div class="flex gap-1">
+                  @for (preset of [{label:'7d',days:7},{label:'14d',days:14},{label:'30d',days:30},{label:'90d',days:90}]; track preset.days) {
+                    <button
+                      (click)="setChartPreset(preset.days)"
+                      class="px-2 py-0.5 rounded-md text-[10px] font-semibold border transition-colors"
+                      [class]="chartDateStart === toIsoDate(makePresetStart(preset.days))
+                        ? 'bg-cyan-600/20 border-cyan-500/50 text-cyan-400'
+                        : 'bg-gray-800/50 border-gray-700/50 text-gray-500 hover:text-gray-300 hover:border-gray-600'">
+                      {{ preset.label }}
+                    </button>
+                  }
+                </div>
+                <!-- Inputs de data -->
+                <div class="flex items-center gap-1.5 text-[11px] text-gray-500">
+                  <input type="date" [(ngModel)]="chartDateStart" (change)="onChartRangeChange()"
+                    class="bg-gray-800/70 border border-gray-700/50 rounded-lg px-2 py-0.5 text-[11px] text-gray-300 outline-none focus:border-cyan-500/60 transition-colors" />
+                  <span>→</span>
+                  <input type="date" [(ngModel)]="chartDateEnd" (change)="onChartRangeChange()"
+                    class="bg-gray-800/70 border border-gray-700/50 rounded-lg px-2 py-0.5 text-[11px] text-gray-300 outline-none focus:border-cyan-500/60 transition-colors" />
+                </div>
+              </div>
+            </div>
             <canvas #chartCanvas style="width:100%;max-height:220px"></canvas>
           </div>
 
@@ -1312,6 +1338,30 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
 
   private readonly OWNER_IPS = ['45.179.22.183', '138.255.215.188'];
 
+  // ── Gráfico — range de datas ────────────────────────────────────────────────
+  chartDateStart: string = this.toIsoDate(new Date(Date.now() - 6 * 86_400_000));
+  chartDateEnd: string   = this.toIsoDate(new Date());
+
+  toIsoDate(d: Date): string {
+    return d.toISOString().slice(0, 10);
+  }
+
+
+
+  onChartRangeChange(): void {
+    this.initLineChart();
+  }
+
+  setChartPreset(days: number): void {
+    this.chartDateEnd   = this.toIsoDate(new Date());
+    this.chartDateStart = this.toIsoDate(new Date(Date.now() - (days - 1) * 86_400_000));
+    this.initLineChart();
+  }
+
+  makePresetStart(days: number): Date {
+    return new Date(Date.now() - (days - 1) * 86_400_000);
+  }
+
   // ── Novos widgets ──────────────────────────────────────────────────────────
   heatmapRows: { label: string; cells: Array<{ color: string; title: string }> }[] = [];
   heatPeakHour = 0;
@@ -1793,12 +1843,19 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     if (!this.chartCanvas?.nativeElement) return;
     this.lineChartInstance?.destroy();
 
-    const today = new Date();
-    const days = Array.from({ length: 7 }, (_, i) => {
-      const d = new Date(today);
-      d.setDate(today.getDate() - (6 - i));
+    const startDate = new Date(this.chartDateStart + 'T00:00:00');
+    const endDate   = new Date(this.chartDateEnd   + 'T00:00:00');
+
+    // Garante que start <= end
+    if (startDate > endDate) return;
+
+    const dayCount = Math.round((endDate.getTime() - startDate.getTime()) / 86_400_000) + 1;
+    const days = Array.from({ length: dayCount }, (_, i) => {
+      const d = new Date(startDate);
+      d.setDate(startDate.getDate() + i);
       return d;
     });
+
     const labels = days.map(d => d.toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' }));
     const counts = days.map(day =>
       this.visitors.filter(v => {
