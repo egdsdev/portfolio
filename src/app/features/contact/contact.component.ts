@@ -34,7 +34,7 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
           </a>
 
           <!-- WhatsApp -->
-          <a href="https://wa.me/5564992726932"
+          <a href="https://wa.me/5562981476096"
              target="_blank"
              rel="noopener noreferrer"
              (click)="onWhatsappClick($event)"
