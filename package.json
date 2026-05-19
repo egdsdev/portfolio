@@ -10,7 +10,8 @@
     "pages:prepare": "node scripts/prepare-pages.js",
     "pages:check": "npm run build:pages && npm run pages:prepare",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "deploy": "ng build --configuration production && npx angular-cli-ghpages --dir=dist/portfolio/browser"
   },
   "prettier": {
     "printWidth": 100,
