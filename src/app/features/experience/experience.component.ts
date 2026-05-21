@@ -63,7 +63,7 @@ export class ExperienceComponent {
           <li>Implementação de agendamentos com SQL Server Agent e cron jobs Linux para rotinas automáticas de processamento, relatórios e manutenção de dados</li>
           <li>Otimização de queries lentas com análise de plano de execução, criação de índices e refatoração de procedures críticas</li>
           <li>Migração de servidores de banco de dados de Windows Server para Linux, incluindo reescrita de procedures e ajuste de collation</li>
-          <li>Desenvolvimento de sistemas distribuídos com múltiplos repositórios usando Python, Azure Functions (HTTP e Timer Triggers), React e MongoDB</li>
+          <li>Desenvolvimento de sistemas distribuídos com múltiplos repositórios usando Python, Azure Functions (HTTP e Timer Triggers), React, React Native e MongoDB</li>
           <li>Criação e manutenção de APIs REST e SOAP com autenticação, versionamento e documentação</li>
           <li>Desenvolvimento de dashboards analíticos no Power BI com modelagem de dados e métricas em DAX</li>
         </ul>

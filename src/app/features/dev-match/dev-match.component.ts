@@ -24,7 +24,7 @@ const ELIAS_SKILLS: Record<string, number> = {
   'php': 95, 'laravel': 95, 'python': 80, 'node': 80, 'nodejs': 80, 'node.js': 80,
   'express': 75, 'django': 40, 'fastapi': 50, 'rest': 90, 'api': 90, 'graphql': 55,
   'soap': 85, 'websocket': 70,
-  'vue': 85, 'vuejs': 85, 'vue.js': 85, 'react': 75, 'angular': 85, 'typescript': 85,
+  'vue': 85, 'vuejs': 85, 'vue.js': 85, 'react': 75, 'react native': 70, 'reactnative': 70, 'angular': 85, 'typescript': 85,
   'javascript': 90, 'html': 90, 'css': 85, 'tailwind': 90, 'bootstrap': 85,
   'next': 50, 'nextjs': 50, 'nuxt': 60, 'nuxtjs': 60, 'inertia': 75,
   'postgresql': 92, 'postgres': 92, 'mysql': 90, 'sql server': 88, 'mssql': 88,

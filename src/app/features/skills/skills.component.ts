@@ -43,6 +43,7 @@ import { Component, signal } from '@angular/core';
             <div class="flex flex-wrap gap-2 justify-center">
               <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">Vue.js <span class="text-cyan-400/50 font-mono text-[10px]">· 5a</span></span>
               <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">React <span class="text-cyan-400/50 font-mono text-[10px]">· 3a</span></span>
+              <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">React Native <span class="text-cyan-400/50 font-mono text-[10px]">· 2a</span></span>
               <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">Angular <span class="text-cyan-400/50 font-mono text-[10px]">· 2a</span></span>
               <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">TypeScript <span class="text-cyan-400/50 font-mono text-[10px]">· 4a</span></span>
               <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">JavaScript <span class="text-cyan-400/50 font-mono text-[10px]">· 7a</span></span>
