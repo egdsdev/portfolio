@@ -1,7 +1,14 @@
 import { Component } from '@angular/core';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { faPhp, faLaravel, faPython, faNodeJs, faJs, faVuejs, faReact, faAngular, faHtml5, faCss3Alt, faGithub, faDocker, faAws, faGitAlt, faJira, faLinux } from '@fortawesome/free-brands-svg-icons';
 import { faDatabase, faChartBar, faGears, faCode, faCloud, faFire } from '@fortawesome/free-solid-svg-icons';
+
+interface Tech {
+  icon: IconDefinition;
+  label: string;
+  color: string;
+}
 
 @Component({
   selector: 'app-tech-marquee',
@@ -9,72 +16,27 @@ import { faDatabase, faChartBar, faGears, faCode, faCloud, faFire } from '@forta
   imports: [FontAwesomeModule],
   template: `
     <div class="marquee-wrapper">
-
       <!-- Linha 1 -->
       <div class="marquee-track">
-        <div class="marquee-content">
-          <div class="tech-pill indigo"><fa-icon [icon]="phpIcon"></fa-icon><span>PHP</span></div>
-          <div class="tech-pill red"><fa-icon [icon]="laravelIcon"></fa-icon><span>Laravel</span></div>
-          <div class="tech-pill yellow"><fa-icon [icon]="pythonIcon"></fa-icon><span>Python</span></div>
-          <div class="tech-pill green"><fa-icon [icon]="nodeJsIcon"></fa-icon><span>Node.js</span></div>
-          <div class="tech-pill amber"><fa-icon [icon]="jsIcon"></fa-icon><span>JavaScript</span></div>
-          <div class="tech-pill blue"><fa-icon [icon]="codeIcon"></fa-icon><span>TypeScript</span></div>
-          <div class="tech-pill emerald"><fa-icon [icon]="vueIcon"></fa-icon><span>Vue.js</span></div>
-          <div class="tech-pill cyan"><fa-icon [icon]="reactIcon"></fa-icon><span>React</span></div>
-          <div class="tech-pill rose"><fa-icon [icon]="angularIcon"></fa-icon><span>Angular</span></div>
-          <div class="tech-pill orange"><fa-icon [icon]="html5Icon"></fa-icon><span>HTML5</span></div>
-          <div class="tech-pill sky"><fa-icon [icon]="css3Icon"></fa-icon><span>CSS3</span></div>
-          <div class="tech-pill slate"><fa-icon [icon]="githubIcon"></fa-icon><span>GitHub</span></div>
-        </div>
-        <!-- duplicado para loop contínuo -->
-        <div class="marquee-content" aria-hidden="true">
-          <div class="tech-pill indigo"><fa-icon [icon]="phpIcon"></fa-icon><span>PHP</span></div>
-          <div class="tech-pill red"><fa-icon [icon]="laravelIcon"></fa-icon><span>Laravel</span></div>
-          <div class="tech-pill yellow"><fa-icon [icon]="pythonIcon"></fa-icon><span>Python</span></div>
-          <div class="tech-pill green"><fa-icon [icon]="nodeJsIcon"></fa-icon><span>Node.js</span></div>
-          <div class="tech-pill amber"><fa-icon [icon]="jsIcon"></fa-icon><span>JavaScript</span></div>
-          <div class="tech-pill blue"><fa-icon [icon]="codeIcon"></fa-icon><span>TypeScript</span></div>
-          <div class="tech-pill emerald"><fa-icon [icon]="vueIcon"></fa-icon><span>Vue.js</span></div>
-          <div class="tech-pill cyan"><fa-icon [icon]="reactIcon"></fa-icon><span>React</span></div>
-          <div class="tech-pill rose"><fa-icon [icon]="angularIcon"></fa-icon><span>Angular</span></div>
-          <div class="tech-pill orange"><fa-icon [icon]="html5Icon"></fa-icon><span>HTML5</span></div>
-          <div class="tech-pill sky"><fa-icon [icon]="css3Icon"></fa-icon><span>CSS3</span></div>
-          <div class="tech-pill slate"><fa-icon [icon]="githubIcon"></fa-icon><span>GitHub</span></div>
-        </div>
+        @for (copy of [0, 1, 2]; track copy) {
+          <div class="marquee-content" [attr.aria-hidden]="copy > 0 ? true : null">
+            @for (t of row1; track $index) {
+              <div class="tech-pill" [class]="t.color"><fa-icon [icon]="t.icon"></fa-icon><span>{{ t.label }}</span></div>
+            }
+          </div>
+        }
       </div>
 
       <!-- Linha 2 (reversa) -->
       <div class="marquee-track reverse">
-        <div class="marquee-content">
-          <div class="tech-pill green"><fa-icon [icon]="databaseIcon"></fa-icon><span>MongoDB</span></div>
-          <div class="tech-pill blue"><fa-icon [icon]="databaseIcon"></fa-icon><span>PostgreSQL</span></div>
-          <div class="tech-pill red"><fa-icon [icon]="databaseIcon"></fa-icon><span>SQL Server</span></div>
-          <div class="tech-pill yellow"><fa-icon [icon]="awsIcon"></fa-icon><span>AWS</span></div>
-          <div class="tech-pill sky"><fa-icon [icon]="cloudIcon"></fa-icon><span>Azure</span></div>
-          <div class="tech-pill sky"><fa-icon [icon]="dockerIcon"></fa-icon><span>Docker</span></div>
-          <div class="tech-pill orange"><fa-icon [icon]="gitIcon"></fa-icon><span>Git</span></div>
-          <div class="tech-pill amber"><fa-icon [icon]="chartIcon"></fa-icon><span>Power BI</span></div>
-          <div class="tech-pill blue"><fa-icon [icon]="jiraIcon"></fa-icon><span>Jira</span></div>
-          <div class="tech-pill orange"><fa-icon [icon]="gearsIcon"></fa-icon><span>Pentaho</span></div>
-          <div class="tech-pill slate"><fa-icon [icon]="linuxIcon"></fa-icon><span>Linux</span></div>
-          <div class="tech-pill amber"><fa-icon [icon]="fireIcon"></fa-icon><span>Firebase</span></div>
-        </div>
-        <div class="marquee-content" aria-hidden="true">
-          <div class="tech-pill green"><fa-icon [icon]="databaseIcon"></fa-icon><span>MongoDB</span></div>
-          <div class="tech-pill blue"><fa-icon [icon]="databaseIcon"></fa-icon><span>PostgreSQL</span></div>
-          <div class="tech-pill red"><fa-icon [icon]="databaseIcon"></fa-icon><span>SQL Server</span></div>
-          <div class="tech-pill yellow"><fa-icon [icon]="awsIcon"></fa-icon><span>AWS</span></div>
-          <div class="tech-pill sky"><fa-icon [icon]="cloudIcon"></fa-icon><span>Azure</span></div>
-          <div class="tech-pill sky"><fa-icon [icon]="dockerIcon"></fa-icon><span>Docker</span></div>
-          <div class="tech-pill orange"><fa-icon [icon]="gitIcon"></fa-icon><span>Git</span></div>
-          <div class="tech-pill amber"><fa-icon [icon]="chartIcon"></fa-icon><span>Power BI</span></div>
-          <div class="tech-pill blue"><fa-icon [icon]="jiraIcon"></fa-icon><span>Jira</span></div>
-          <div class="tech-pill orange"><fa-icon [icon]="gearsIcon"></fa-icon><span>Pentaho</span></div>
-          <div class="tech-pill slate"><fa-icon [icon]="linuxIcon"></fa-icon><span>Linux</span></div>
-          <div class="tech-pill amber"><fa-icon [icon]="fireIcon"></fa-icon><span>Firebase</span></div>
-        </div>
+        @for (copy of [0, 1, 2]; track copy) {
+          <div class="marquee-content" [attr.aria-hidden]="copy > 0 ? true : null">
+            @for (t of row2; track $index) {
+              <div class="tech-pill" [class]="t.color"><fa-icon [icon]="t.icon"></fa-icon><span>{{ t.label }}</span></div>
+            }
+          </div>
+        }
       </div>
-
     </div>
   `,
   styles: [`
@@ -84,17 +46,19 @@ import { faDatabase, faChartBar, faGears, faCode, faCloud, faFire } from '@forta
       overflow: hidden;
       display: flex;
       flex-direction: column;
-      gap: 0.75rem;
+      gap: 0.85rem;
       padding: 0.5rem 0;
+      -webkit-mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
+      mask-image: linear-gradient(to right, transparent 0%, black 8%, black 92%, transparent 100%);
     }
 
     .marquee-track {
       display: flex;
       width: max-content;
-      animation: scroll-right 35s linear infinite;
+      animation: scroll-left 45s linear infinite;
     }
     .marquee-track.reverse {
-      animation: scroll-left 35s linear infinite;
+      animation: scroll-right 45s linear infinite;
     }
     .marquee-track:hover {
       animation-play-state: paused;
@@ -106,35 +70,40 @@ import { faDatabase, faChartBar, faGears, faCode, faCloud, faFire } from '@forta
       flex-shrink: 0;
     }
 
-    @keyframes scroll-right {
-      0%   { transform: translateX(-50%); }
-      100% { transform: translateX(0); }
-    }
+    /* 3 cópias contíguas → deslocar 1/3 mantém a viewport sempre preenchida,
+       inclusive em telas largas (sem vão inicial no meio da página). */
     @keyframes scroll-left {
       0%   { transform: translateX(0); }
-      100% { transform: translateX(-50%); }
+      100% { transform: translateX(-33.3333%); }
+    }
+    @keyframes scroll-right {
+      0%   { transform: translateX(-33.3333%); }
+      100% { transform: translateX(0); }
     }
 
     .tech-pill {
       display: inline-flex;
       align-items: center;
-      gap: 0.4rem;
-      padding: 0.35rem 0.85rem;
+      gap: 0.45rem;
+      padding: 0.4rem 0.95rem;
       border-radius: 9999px;
-      font-size: 0.75rem;
+      font-size: 0.78rem;
       font-weight: 500;
       white-space: nowrap;
-      margin: 0 0.35rem;
-      background: rgba(255,255,255,0.04);
-      border: 1px solid rgba(255,255,255,0.07);
-      transition: transform 0.2s, background 0.2s;
+      margin: 0 0.4rem;
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.09);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 2px rgba(0,0,0,0.2);
+      transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
       cursor: default;
     }
     .tech-pill:hover {
-      transform: translateY(-2px) scale(1.06);
-      background: rgba(255,255,255,0.08);
+      transform: translateY(-3px) scale(1.06);
+      background: rgba(255,255,255,0.09);
+      border-color: rgba(255,255,255,0.16);
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 6px 16px rgba(0,0,0,0.3);
     }
-    .tech-pill span { color: #94a3b8; font-family: monospace; }
+    .tech-pill span { color: #cbd5e1; font-family: monospace; letter-spacing: 0.01em; }
 
     .indigo { color: #818cf8; }
     .red     { color: #f87171; }
@@ -151,28 +120,33 @@ import { faDatabase, faChartBar, faGears, faCode, faCloud, faFire } from '@forta
   `]
 })
 export class TechMarqueeComponent {
-  phpIcon = faPhp;
-  laravelIcon = faLaravel;
-  pythonIcon = faPython;
-  nodeJsIcon = faNodeJs;
-  jsIcon = faJs;
-  codeIcon = faCode;
-  vueIcon = faVuejs;
-  reactIcon = faReact;
-  angularIcon = faAngular;
-  html5Icon = faHtml5;
-  css3Icon = faCss3Alt;
-  githubIcon = faGithub;
-  databaseIcon = faDatabase;
-  chartIcon = faChartBar;
-  gearsIcon = faGears;
-  cloudIcon = faCloud;
-  dockerIcon = faDocker;
-  gitIcon = faGitAlt;
-  jiraIcon = faJira;
-  awsIcon = faAws;
-  linuxIcon = faLinux;
-  fireIcon = faFire;
+  row1: Tech[] = [
+    { icon: faPhp, label: 'PHP', color: 'indigo' },
+    { icon: faLaravel, label: 'Laravel', color: 'red' },
+    { icon: faPython, label: 'Python', color: 'yellow' },
+    { icon: faNodeJs, label: 'Node.js', color: 'green' },
+    { icon: faJs, label: 'JavaScript', color: 'amber' },
+    { icon: faCode, label: 'TypeScript', color: 'blue' },
+    { icon: faVuejs, label: 'Vue.js', color: 'emerald' },
+    { icon: faReact, label: 'React', color: 'cyan' },
+    { icon: faAngular, label: 'Angular', color: 'rose' },
+    { icon: faHtml5, label: 'HTML5', color: 'orange' },
+    { icon: faCss3Alt, label: 'CSS3', color: 'sky' },
+    { icon: faGithub, label: 'GitHub', color: 'slate' },
+  ];
+
+  row2: Tech[] = [
+    { icon: faDatabase, label: 'MongoDB', color: 'green' },
+    { icon: faDatabase, label: 'PostgreSQL', color: 'blue' },
+    { icon: faDatabase, label: 'SQL Server', color: 'red' },
+    { icon: faAws, label: 'AWS', color: 'yellow' },
+    { icon: faCloud, label: 'Azure', color: 'sky' },
+    { icon: faDocker, label: 'Docker', color: 'sky' },
+    { icon: faGitAlt, label: 'Git', color: 'orange' },
+    { icon: faChartBar, label: 'Power BI', color: 'amber' },
+    { icon: faJira, label: 'Jira', color: 'blue' },
+    { icon: faGears, label: 'Pentaho', color: 'orange' },
+    { icon: faLinux, label: 'Linux', color: 'slate' },
+    { icon: faFire, label: 'Firebase', color: 'amber' },
+  ];
 }
-
-

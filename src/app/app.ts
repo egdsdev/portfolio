@@ -104,9 +104,9 @@ import { TechTimelineComponent } from './features/tech-timeline/tech-timeline.co
         }
         <!-- CTA flutuante contextual -->
         @if (!isAdminRoute() && !isAuthenticated() && contextualCtaVisible()) {
-          <div class="fixed bottom-6 left-6 z-40 flex items-center gap-2 rounded-xl
+          <div class="fixed bottom-24 right-6 left-6 sm:bottom-6 sm:left-6 sm:right-auto z-40 flex items-center gap-2 rounded-xl
                       bg-gray-900/90 border border-gray-700/60 backdrop-blur-md
-                      shadow-xl px-4 py-2.5 animate-fade-in-up">
+                      shadow-xl px-4 py-2.5 animate-fade-in-up max-w-full sm:max-w-xs">
             @if (contextualCta() === 'experience') {
               <a href="#contato" (click)="contextualCtaVisible.set(false)"
                  class="flex items-center gap-2 text-sm font-medium text-cyan-300 hover:text-cyan-200 transition-colors">

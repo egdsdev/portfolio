@@ -16,61 +16,6 @@ om-marquee {
   padding: 1rem 0;
 }
 
-/* Estilos para o Timeline */
-.experiencia-timeline {
-  --om-timeline-circle-size: 1.5rem;
-  --om-timeline-circle-border-width: 0.25rem;
-  --om-timeline-circle-bg: #1e293b;
-  --om-timeline-circle-border-color: #60a5fa;
-}
-
-.timeline-title {
-  font-size: 1.5rem;
-  font-weight: bold;
-  color: #f8fafc;
-  margin-bottom: 0.5rem;
-}
-
-.timeline-content {
-  background: #1e293b80;
-  backdrop-filter: blur(8px);
-  border: 1px solid #334155;
-  border-radius: 1rem;
-  padding: 1.5rem;
-  transition: all 0.3s ease;
-}
-
-.timeline-content:hover {
-  background: #1e293b;
-  border-color: #60a5fa50;
-}
-
-.timeline-content ul {
-  list-style: none;
-  padding: 0;
-  margin: 0;
-}
-
-.timeline-content li {
-  display: flex;
-  align-items: start;
-  color: #cbd5e1;
-  margin-bottom: 0.75rem;
-  font-size: 0.875rem;
-}
-
-.timeline-content li::before {
-  content: "▹";
-  color: #60a5fa;
-  margin-right: 0.5rem;
-  font-size: 1rem;
-  line-height: 1;
-}
-
-.timeline-content li:last-child {
-  margin-bottom: 0;
-}
-
 /* Força animação do marquee independente de IntersectionObserver */
 .om-marquee.marquee-running {
   --om-marquee-pause: running;
@@ -295,19 +240,7 @@ html.light h3.text-green-400,
 html.light h3.text-orange-400,
 html.light h3.text-rose-400 { color: #7c3aed !important; }
 
-/* ---- Timeline ---- */
-html.light .experiencia-timeline {
-  --om-timeline-circle-bg: #5b21b6 !important;
-  --om-timeline-circle-border-color: #7c3aed !important;
-}
-html.light .experiencia-timeline .om-timeline-circle {
-  background-color: #5b21b6 !important;
-  border-color: #7c3aed !important;
-}
-html.light #experiencia .om-timeline-circle {
-  background-color: #5b21b6 !important;
-  border-color: #7c3aed !important;
-}
+/* ---- Timeline de Experiência (light) ---- */
 html.light .timeline-content {
   background: #ffffff !important;
   border-color: #ede9fe !important;
@@ -318,15 +251,11 @@ html.light .timeline-content:hover {
   border-color: rgba(124, 58, 237, 0.35) !important;
 }
 html.light .timeline-content li { color: #4b4570 !important; }
-html.light .timeline-content li::before { color: #7c3aed !important; }
 html.light .timeline-content strong { color: #2d2546 !important; }
-html.light .timeline-title { color: #2d2546 !important; }
-/* Company e date (conteúdo em innerHTML, não sofre scoping) */
+html.light .timeline-content .exp-role { color: #4b4570 !important; }
+html.light .timeline-content .exp-modality { color: #6b7280 !important; }
 html.light .timeline-title .date    { color: #8b5cf6 !important; }
 html.light .timeline-title .company { color: #5b21b6 !important; }
-/* Fallback caso estejam no topo do DOM */
-html.light .date    { color: #8b5cf6 !important; }
-html.light .company { color: #5b21b6 !important; }
 
 /* ---- Skills pills ---- */
 html.light .skill-pill {
@@ -433,7 +362,7 @@ html.light span.rounded-full[class*="bg-gray-700"] {
 
 /* ── Como Eu Trabalho — light mode ──────────────────────────────────────── */
 /* Ícone box: fundo sólido branco + borda colorida visível */
-html.light #como-trabalho .w-20.bg-gray-900 {
+html.light #como-trabalho .step-icon-box {
   background-color: #ffffff !important;
 }
 html.light #como-trabalho .border-purple-500\/50 { border-color: rgba(124,58,237,0.55) !important; }
@@ -448,16 +377,21 @@ html.light #como-trabalho .group:hover .border-cyan-500\/50   { background-color
 html.light #como-trabalho .group:hover .border-green-500\/50  { background-color: #f0fdf4 !important; border-color: #16a34a !important; }
 html.light #como-trabalho .group:hover .border-amber-500\/50  { background-color: #fffbeb !important; border-color: #d97706 !important; }
 /* Badge numérico */
-html.light #como-trabalho .bg-gray-900.border-gray-700 {
+html.light #como-trabalho .step-num {
   background-color: #ffffff !important;
   border-color: #ddd6fe !important;
   color: #7c3aed !important;
 }
 /* Tags dentro dos steps */
-html.light #como-trabalho span.bg-gray-800\/80 {
+html.light #como-trabalho .step-tag {
   background-color: #f5f3ff !important;
   color: #4b4570 !important;
   border-color: #ddd6fe !important;
+}
+/* Cards de descrição no mobile */
+html.light #como-trabalho .step-mobile-card {
+  background-color: #ffffff !important;
+  border-color: #ede9fe !important;
 }
 /* Linha conectora — em tom violeta suave */
 html.light #como-trabalho .bg-linear-to-r.from-purple-500\/30 {
@@ -472,7 +406,8 @@ html.light #como-trabalho .border-gray-800\/60.bg-gray-900\/40:hover {
   border-color: #c4b5fd !important;
 }
 /* Texto dos steps */
-html.light #como-trabalho h3.text-white { color: #2d2546 !important; }
+html.light #como-trabalho h3.text-white,
+html.light #como-trabalho h4.text-white { color: #2d2546 !important; }
 html.light #como-trabalho p.text-gray-500 { color: #6b7280 !important; }
 html.light #como-trabalho p.text-gray-400 { color: #6b7280 !important; }
 /* Ícone da seta entre steps */
@@ -587,18 +522,6 @@ html.light .ai-match-btn:hover:not(:disabled) {
 html.light .ai-loading-ring {
   border-color: rgba(124,58,237,0.15) !important;
   border-top-color: #7c3aed !important;
-}
-
-/* ---- Timeline path/gradient (light) ---- */
-html.light .experiencia-timeline {
-  --om-timeline-circle-border-color: #7c3aed !important;
-  --om-timeline-circle-bg: #5b21b6 !important;
-}
-html.light .experiencia-timeline .om-timeline-circle,
-html.light #experiencia .om-timeline-circle,
-html.light om-timeline .om-timeline-circle {
-  background-color: #5b21b6 !important;
-  border-color: #7c3aed !important;
 }
 
 /* ---- Theme toggle alinhamento ---- */

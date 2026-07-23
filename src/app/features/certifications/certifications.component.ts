@@ -11,6 +11,7 @@ import { Component } from '@angular/core';
             Certificações & Licenças
           </h2>
           <div class="mt-3 mx-auto w-16 h-px bg-linear-to-r from-blue-400 to-cyan-400 rounded-full"></div>
+          <p class="text-gray-400 mt-4">Reconhecimentos acadêmicos e técnicos ao longo da trajetória</p>
         </div>
         <div class="group bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50 hover:border-yellow-500/30
                     shadow-lg transition-all duration-300 hover:-translate-y-0.5 relative overflow-hidden">

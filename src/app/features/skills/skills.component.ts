@@ -1,5 +1,20 @@
 import { Component, signal } from '@angular/core';
 
+interface SkillPill {
+  name: string;
+  years?: string;
+}
+
+interface SkillGroup {
+  icon: string;
+  title: string;
+  accent: string;      // classe de cor do título / hover
+  border: string;      // classe de hover da borda do card
+  iconBg: string;      // classe de fundo do ícone
+  pills: SkillPill[];
+  collapsible?: boolean;
+}
+
 @Component({
   selector: 'app-skills',
   standalone: true,
@@ -11,146 +26,46 @@ import { Component, signal } from '@angular/core';
             Habilidades e Competências
           </h2>
           <div class="mt-3 mx-auto w-16 h-px bg-linear-to-r from-blue-400 to-cyan-400 rounded-full"></div>
+          <p class="text-gray-400 mt-4">Stack full stack completa — do banco de dados à interface, com foco em performance</p>
         </div>
-        <div class="flex flex-wrap justify-center items-stretch gap-6 mx-auto max-w-6xl">
-          <!-- Backend -->
-          <div class="group p-6 bg-gray-800/50 rounded-2xl border border-gray-700/50 hover:border-blue-500/40 transition-all duration-300
-                      backdrop-blur-sm w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-1.5rem)] flex flex-col items-center hover:-translate-y-1">
-            <div class="w-12 h-12 rounded-xl bg-blue-500/10 flex items-center justify-center mb-4 group-hover:bg-blue-500/20 transition-colors">
-              <span class="text-xl">⚙️</span>
-            </div>
-            <h3 class="text-lg font-semibold text-blue-400 mb-4">Backend</h3>
-            <div class="flex flex-wrap gap-2 justify-center">
-              <span class="skill-pill border border-gray-600/50 hover:border-blue-500/50 hover:text-blue-300">PHP <span class="text-blue-400/50 font-mono text-[10px]">· 7a</span></span>
-              <span class="skill-pill border border-gray-600/50 hover:border-blue-500/50 hover:text-blue-300">Laravel <span class="text-blue-400/50 font-mono text-[10px]">· 6a</span></span>
-              <span class="skill-pill border border-gray-600/50 hover:border-blue-500/50 hover:text-blue-300">Python <span class="text-blue-400/50 font-mono text-[10px]">· 3a</span></span>
-              <span class="skill-pill border border-gray-600/50 hover:border-blue-500/50 hover:text-blue-300">Node.js <span class="text-blue-400/50 font-mono text-[10px]">· 5a</span></span>
-              <span class="skill-pill border border-gray-600/50 hover:border-blue-500/50 hover:text-blue-300">REST API</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-blue-500/50 hover:text-blue-300">SOAP</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-blue-500/50 hover:text-blue-300">Filas (Queues)</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-blue-500/50 hover:text-blue-300">Cron Jobs</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-blue-500/50 hover:text-blue-300">WebSocket</span>
-            </div>
-          </div>
 
-          <!-- Frontend -->
-          <div class="group p-6 bg-gray-800/50 rounded-2xl border border-gray-700/50 hover:border-cyan-500/40 transition-all duration-300
-                      backdrop-blur-sm w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-1.5rem)] flex flex-col items-center hover:-translate-y-1">
-            <div class="w-12 h-12 rounded-xl bg-cyan-500/10 flex items-center justify-center mb-4 group-hover:bg-cyan-500/20 transition-colors">
-              <span class="text-xl">🖥️</span>
-            </div>
-            <h3 class="text-lg font-semibold text-cyan-400 mb-4">Frontend</h3>
-            <div class="flex flex-wrap gap-2 justify-center">
-              <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">Vue.js <span class="text-cyan-400/50 font-mono text-[10px]">· 5a</span></span>
-              <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">React <span class="text-cyan-400/50 font-mono text-[10px]">· 3a</span></span>
-              <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">React Native <span class="text-cyan-400/50 font-mono text-[10px]">· 2a</span></span>
-              <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">Angular <span class="text-cyan-400/50 font-mono text-[10px]">· 2a</span></span>
-              <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">TypeScript <span class="text-cyan-400/50 font-mono text-[10px]">· 4a</span></span>
-              <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">JavaScript <span class="text-cyan-400/50 font-mono text-[10px]">· 7a</span></span>
-              <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">HTML5</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">CSS3</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-cyan-500/50 hover:text-cyan-300">Tailwind CSS</span>
-            </div>
-          </div>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          @for (group of groups; track group.title) {
+            @if (!group.collapsible || showAll()) {
+              <div class="group p-6 bg-gray-800/50 rounded-2xl border border-gray-700/50 transition-all duration-300
+                          backdrop-blur-sm flex flex-col items-center hover:-translate-y-1"
+                   [class]="group.border">
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center mb-4 transition-colors"
+                     [class]="group.iconBg">
+                  <span class="text-xl">{{ group.icon }}</span>
+                </div>
+                <h3 class="text-lg font-semibold mb-4" [class]="group.accent">{{ group.title }}</h3>
+                <div class="flex flex-wrap gap-2 justify-center">
+                  @for (pill of group.pills; track pill.name) {
+                    <span class="skill-pill border border-gray-600/50">
+                      {{ pill.name }}
+                      @if (pill.years) {
+                        <span class="opacity-50 font-mono text-[10px] ml-0.5">· {{ pill.years }}</span>
+                      }
+                    </span>
+                  }
+                </div>
+              </div>
+            }
+          }
+        </div>
 
-          <!-- Banco de Dados -->
-          <div class="group p-6 bg-gray-800/50 rounded-2xl border border-gray-700/50 hover:border-purple-500/40 transition-all duration-300
-                      backdrop-blur-sm w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-1.5rem)] flex flex-col items-center hover:-translate-y-1">
-            <div class="w-12 h-12 rounded-xl bg-purple-500/10 flex items-center justify-center mb-4 group-hover:bg-purple-500/20 transition-colors">
-              <span class="text-xl">🗄️</span>
-            </div>
-            <h3 class="text-lg font-semibold text-purple-400 mb-4">Banco de Dados</h3>
-            <div class="flex flex-wrap gap-2 justify-center">
-              <span class="skill-pill border border-gray-600/50 hover:border-purple-500/50 hover:text-purple-300">PostgreSQL <span class="text-purple-400/50 font-mono text-[10px]">· 4a</span></span>
-              <span class="skill-pill border border-gray-600/50 hover:border-purple-500/50 hover:text-purple-300">SQL Server <span class="text-purple-400/50 font-mono text-[10px]">· 4a</span></span>
-              <span class="skill-pill border border-gray-600/50 hover:border-purple-500/50 hover:text-purple-300">MySQL <span class="text-purple-400/50 font-mono text-[10px]">· 5a</span></span>
-              <span class="skill-pill border border-gray-600/50 hover:border-purple-500/50 hover:text-purple-300">MongoDB <span class="text-purple-400/50 font-mono text-[10px]">· 3a</span></span>
-              <span class="skill-pill border border-gray-600/50 hover:border-purple-500/50 hover:text-purple-300">Stored Procedures</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-purple-500/50 hover:text-purple-300">Triggers</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-purple-500/50 hover:text-purple-300">Views</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-purple-500/50 hover:text-purple-300">Migrations</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-purple-500/50 hover:text-purple-300">Indexação</span>
-            </div>
-          </div>
-
-          <!-- DevOps & Cloud, BI & Dados, Boas Práticas: colapsáveis -->
-          <div class="w-full flex flex-wrap justify-center items-stretch gap-6" [class.hidden]="!showAll()">
-          <!-- DevOps & Cloud -->
-          <div class="group p-6 bg-gray-800/50 rounded-2xl border border-gray-700/50 hover:border-green-500/40 transition-all duration-300
-                      backdrop-blur-sm w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-1.5rem)] flex flex-col items-center hover:-translate-y-1">
-            <div class="w-12 h-12 rounded-xl bg-green-500/10 flex items-center justify-center mb-4 group-hover:bg-green-500/20 transition-colors">
-              <span class="text-xl">☁️</span>
-            </div>
-            <h3 class="text-lg font-semibold text-green-400 mb-4">DevOps & Cloud</h3>
-            <div class="flex flex-wrap gap-2 justify-center">
-              <span class="skill-pill border border-gray-600/50 hover:border-green-500/50 hover:text-green-300">Docker</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-green-500/50 hover:text-green-300">Git</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-green-500/50 hover:text-green-300">GitHub Actions</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-green-500/50 hover:text-green-300">CI/CD</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-green-500/50 hover:text-green-300">Azure</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-green-500/50 hover:text-green-300">Azure Functions</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-green-500/50 hover:text-green-300">AWS</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-green-500/50 hover:text-green-300">Firebase</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-green-500/50 hover:text-green-300">Linux</span>
-            </div>
-          </div>
-
-          <!-- BI & Dados -->
-          <div class="group p-6 bg-gray-800/50 rounded-2xl border border-gray-700/50 hover:border-orange-500/40 transition-all duration-300
-                      backdrop-blur-sm w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-1.5rem)] flex flex-col items-center hover:-translate-y-1">
-            <div class="w-12 h-12 rounded-xl bg-orange-500/10 flex items-center justify-center mb-4 group-hover:bg-orange-500/20 transition-colors">
-              <span class="text-xl">📊</span>
-            </div>
-            <h3 class="text-lg font-semibold text-orange-400 mb-4">BI & Dados</h3>
-            <div class="flex flex-wrap gap-2 justify-center">
-              <span class="skill-pill border border-gray-600/50 hover:border-orange-500/50 hover:text-orange-300">Power BI</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-orange-500/50 hover:text-orange-300">DAX</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-orange-500/50 hover:text-orange-300">Pentaho ETL</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-orange-500/50 hover:text-orange-300">Modelagem Dimensional</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-orange-500/50 hover:text-orange-300">Star Schema</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-orange-500/50 hover:text-orange-300">SQL Analítico</span>
-            </div>
-          </div>
-
-          <!-- Boas Práticas -->
-          <div class="group p-6 bg-gray-800/50 rounded-2xl border border-gray-700/50 hover:border-rose-500/40 transition-all duration-300
-                      backdrop-blur-sm w-full md:w-[calc(50%-1.5rem)] lg:w-[calc(33.33%-1.5rem)] flex flex-col items-center hover:-translate-y-1">
-            <div class="w-12 h-12 rounded-xl bg-rose-500/10 flex items-center justify-center mb-4 group-hover:bg-rose-500/20 transition-colors">
-              <span class="text-xl">🏆</span>
-            </div>
-            <h3 class="text-lg font-semibold text-rose-400 mb-4">Boas Práticas</h3>
-            <div class="flex flex-wrap gap-2 justify-center">
-              <span class="skill-pill border border-gray-600/50 hover:border-rose-500/50 hover:text-rose-300">SOLID</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-rose-500/50 hover:text-rose-300">Clean Code</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-rose-500/50 hover:text-rose-300">Design Patterns</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-rose-500/50 hover:text-rose-300">DDD</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-rose-500/50 hover:text-rose-300">Code Review</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-rose-500/50 hover:text-rose-300">Scrum</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-rose-500/50 hover:text-rose-300">Kanban</span>
-              <span class="skill-pill border border-gray-600/50 hover:border-rose-500/50 hover:text-rose-300">Jira</span>
-            </div>
-          </div>
-          </div> <!-- /showAll wrapper -->
-
-          <!-- Botão expandir/recolher -->
-          <div class="w-full flex justify-center pt-2">
-            <button (click)="showAll.set(!showAll())"
-                    class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-gray-600/50 text-gray-400
-                           hover:border-cyan-500/50 hover:text-cyan-300 text-sm transition-all duration-300">
-              @if (showAll()) {
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M5 15l7-7 7 7"/>
-                </svg>
-                Ver menos
-              } @else {
-                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                  <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
-                </svg>
-                Ver todas as habilidades
-              }
-            </button>
-          </div>
-
+        <!-- Botão expandir/recolher -->
+        <div class="flex justify-center pt-8">
+          <button (click)="showAll.set(!showAll())"
+                  class="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-gray-600/50 text-gray-400
+                         hover:border-cyan-500/50 hover:text-cyan-300 text-sm transition-all duration-300">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 transition-transform duration-300"
+                 [class.rotate-180]="showAll()" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+              <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+            </svg>
+            {{ showAll() ? 'Ver menos' : 'Ver todas as habilidades' }}
+          </button>
         </div>
       </div>
     </section>
@@ -158,4 +73,58 @@ import { Component, signal } from '@angular/core';
 })
 export class SkillsComponent {
   showAll = signal(false);
+
+  groups: SkillGroup[] = [
+    {
+      icon: '⚙️', title: 'Backend', accent: 'text-blue-400',
+      border: 'hover:border-blue-500/40', iconBg: 'bg-blue-500/10 group-hover:bg-blue-500/20',
+      pills: [
+        { name: 'PHP', years: '7a' }, { name: 'Laravel', years: '6a' }, { name: 'Python', years: '3a' },
+        { name: 'Node.js', years: '5a' }, { name: 'REST API' }, { name: 'SOAP' },
+        { name: 'Filas (Queues)' }, { name: 'Cron Jobs' }, { name: 'WebSocket' },
+      ],
+    },
+    {
+      icon: '🖥️', title: 'Frontend', accent: 'text-cyan-400',
+      border: 'hover:border-cyan-500/40', iconBg: 'bg-cyan-500/10 group-hover:bg-cyan-500/20',
+      pills: [
+        { name: 'Vue.js', years: '5a' }, { name: 'React', years: '3a' }, { name: 'React Native', years: '2a' },
+        { name: 'Angular', years: '2a' }, { name: 'TypeScript', years: '4a' }, { name: 'JavaScript', years: '7a' },
+        { name: 'HTML5' }, { name: 'CSS3' }, { name: 'Tailwind CSS' },
+      ],
+    },
+    {
+      icon: '🗄️', title: 'Banco de Dados', accent: 'text-purple-400',
+      border: 'hover:border-purple-500/40', iconBg: 'bg-purple-500/10 group-hover:bg-purple-500/20',
+      pills: [
+        { name: 'PostgreSQL', years: '4a' }, { name: 'SQL Server', years: '4a' }, { name: 'MySQL', years: '5a' },
+        { name: 'MongoDB', years: '3a' }, { name: 'Stored Procedures' }, { name: 'Triggers' },
+        { name: 'Views' }, { name: 'Migrations' }, { name: 'Indexação' },
+      ],
+    },
+    {
+      icon: '☁️', title: 'DevOps & Cloud', accent: 'text-green-400', collapsible: true,
+      border: 'hover:border-green-500/40', iconBg: 'bg-green-500/10 group-hover:bg-green-500/20',
+      pills: [
+        { name: 'Docker' }, { name: 'Git' }, { name: 'GitHub Actions' }, { name: 'CI/CD' }, { name: 'Azure' },
+        { name: 'Azure Functions' }, { name: 'AWS' }, { name: 'Firebase' }, { name: 'Linux' },
+      ],
+    },
+    {
+      icon: '📊', title: 'BI & Dados', accent: 'text-orange-400', collapsible: true,
+      border: 'hover:border-orange-500/40', iconBg: 'bg-orange-500/10 group-hover:bg-orange-500/20',
+      pills: [
+        { name: 'Power BI' }, { name: 'DAX' }, { name: 'Pentaho ETL' },
+        { name: 'Modelagem Dimensional' }, { name: 'Star Schema' }, { name: 'SQL Analítico' },
+      ],
+    },
+    {
+      icon: '🏆', title: 'Boas Práticas', accent: 'text-rose-400', collapsible: true,
+      border: 'hover:border-rose-500/40', iconBg: 'bg-rose-500/10 group-hover:bg-rose-500/20',
+      pills: [
+        { name: 'SOLID' }, { name: 'Clean Code' }, { name: 'Design Patterns' }, { name: 'DDD' },
+        { name: 'Code Review' }, { name: 'Scrum' }, { name: 'Kanban' }, { name: 'Jira' },
+      ],
+    },
+  ];
 }

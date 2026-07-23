@@ -16,8 +16,8 @@ import { AnalyticsService } from '../../core/services/analytics.service';
     </div>
 
     <!-- Header Desktop: oculto no mobile -->
-    <nav class="fixed top-0 left-0 right-0 bg-gray-900/90 backdrop-blur-md z-50 border-b border-gray-800/50 hidden md:block">
-      <div class="max-w-screen-2xl mx-auto px-8 py-3 flex items-center justify-between">
+    <nav class="nav-desktop fixed top-0 left-0 right-0 bg-gray-900/90 backdrop-blur-md z-50 border-b border-gray-800/50">
+      <div class="max-w-[1536px] mx-auto px-8 py-3 flex items-center justify-between">
         <a href="#detalhes" class="text-cyan-400 font-bold text-base tracking-widest font-mono hover:text-cyan-300 transition-colors">&lt;EG /&gt;</a>
         <ul class="flex items-center space-x-6">
           <li><a href="#escolaridade" class="nav-link text-gray-400 hover:text-cyan-400 transition-colors text-sm tracking-wide">Formação</a></li>
@@ -58,7 +58,7 @@ import { AnalyticsService } from '../../core/services/analytics.service';
 
     <!-- Botão Hambúrguer: visível somente no mobile -->
     <button
-      class="fixed top-4 right-4 z-70 md:hidden flex items-center justify-center w-10 h-10 rounded-xl bg-gray-900/90 backdrop-blur-md border border-gray-800/50 text-cyan-400 transition-colors hover:text-cyan-300"
+      class="nav-burger fixed top-4 right-4 z-70 items-center justify-center w-10 h-10 rounded-xl bg-gray-900/90 backdrop-blur-md border border-gray-800/50 text-cyan-400 transition-colors hover:text-cyan-300"
       (click)="toggleMenu()"
       aria-label="Abrir menu">
       @if (isOpen()) {
@@ -74,7 +74,7 @@ import { AnalyticsService } from '../../core/services/analytics.service';
 
     <!-- Overlay escuro -->
     <div
-      class="fixed inset-0 bg-black/60 z-55 md:hidden transition-opacity duration-300"
+      class="nav-mobile-only fixed inset-0 bg-black/60 z-55 transition-opacity duration-300"
       [class.opacity-0]="!isOpen()"
       [class.pointer-events-none]="!isOpen()"
       [class.opacity-100]="isOpen()"
@@ -83,7 +83,7 @@ import { AnalyticsService } from '../../core/services/analytics.service';
 
     <!-- Drawer lateral esquerdo -->
     <aside
-      class="fixed top-0 left-0 h-full w-64 bg-gray-900 border-r border-gray-800/50 z-60 transform transition-transform duration-300 ease-in-out md:hidden flex flex-col"
+      class="nav-drawer fixed top-0 left-0 h-full w-64 bg-gray-900 border-r border-gray-800/50 z-60 transform transition-transform duration-300 ease-in-out flex flex-col"
       [class.-translate-x-full]="!isOpen()"
       [class.translate-x-0]="isOpen()">
 
@@ -119,6 +119,21 @@ import { AnalyticsService } from '../../core/services/analytics.service';
     </aside>
   `,
   styles: [`
+    /* Visibilidade responsiva do menu — media query própria, à prova de falha do pipeline Tailwind */
+    .nav-desktop { display: none; }
+    .nav-burger { display: none; }
+
+    @media (min-width: 768px) {
+      .nav-desktop { display: block; }
+      .nav-burger,
+      .nav-mobile-only,
+      .nav-drawer { display: none !important; }
+    }
+
+    @media (max-width: 767px) {
+      .nav-burger { display: flex; }
+    }
+
     :host om-theme-toggle {
       cursor: pointer;
     }

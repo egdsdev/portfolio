@@ -18,6 +18,7 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
             Vamos Conversar?
           </h2>
           <div class="mt-3 mx-auto w-16 h-px bg-linear-to-r from-blue-400 to-cyan-400 rounded-full"></div>
+          <p class="text-gray-400 mt-4">Aberto a novos projetos e oportunidades — escolha o canal que preferir</p>
         </div>
         <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
@@ -34,7 +35,7 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
           </a>
 
           <!-- WhatsApp -->
-          <a href="https://wa.me/5562981476096"
+          <a href="https://wa.me/5564981476096"
              target="_blank"
              rel="noopener noreferrer"
              (click)="onWhatsappClick($event)"

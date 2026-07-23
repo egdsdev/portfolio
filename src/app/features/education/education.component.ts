@@ -11,13 +11,14 @@ import { Component } from '@angular/core';
             Formação Acadêmica
           </h2>
           <div class="mt-3 mx-auto w-16 h-px bg-linear-to-r from-blue-400 to-cyan-400 rounded-full"></div>
+          <p class="text-gray-400 mt-4">Base sólida em Engenharia da Computação com especialização em qualidade de software</p>
         </div>
         <div class="space-y-6">
           <div class="group bg-gray-800/50 backdrop-blur-sm rounded-2xl p-8 border border-gray-700/50 hover:border-cyan-500/30
                       shadow-lg transition-all duration-300 hover:-translate-y-0.5 relative overflow-hidden">
             <div class="absolute left-0 top-0 bottom-0 w-1 bg-linear-to-b from-blue-400 to-cyan-400 rounded-l-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <div class="flex items-start space-x-5">
-              <div class="w-11 h-11 rounded-xl bg-cyan-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <div class="w-11 h-11 rounded-xl bg-cyan-500/10 flex items-center justify-center shrink-0 mt-0.5">
                 <span class="text-xl">🎓</span>
               </div>
               <div>
@@ -32,7 +33,7 @@ import { Component } from '@angular/core';
                       shadow-lg transition-all duration-300 hover:-translate-y-0.5 relative overflow-hidden">
             <div class="absolute left-0 top-0 bottom-0 w-1 bg-linear-to-b from-blue-400 to-cyan-400 rounded-l-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
             <div class="flex items-start space-x-5">
-              <div class="w-11 h-11 rounded-xl bg-cyan-500/10 flex items-center justify-center flex-shrink-0 mt-0.5">
+              <div class="w-11 h-11 rounded-xl bg-cyan-500/10 flex items-center justify-center shrink-0 mt-0.5">
                 <span class="text-xl">🎓</span>
               </div>
               <div>

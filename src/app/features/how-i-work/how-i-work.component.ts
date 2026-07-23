@@ -22,49 +22,76 @@ interface WorkStep {
           <p class="text-gray-400 mt-4">Do problema ao produto — processo claro, entrega previsível</p>
         </div>
 
-        <!-- Steps horizontais (desktop) / verticais (mobile) -->
+        <!-- Steps: sempre em uma única linha horizontal, densidade cresce com a tela -->
         <div class="relative">
-          <!-- Linha conectora desktop -->
-          <div class="hidden lg:block absolute top-12 left-0 right-0 h-px bg-linear-to-r from-purple-500/30 via-cyan-500/30 to-purple-500/30 z-0"></div>
+          <!-- Trilha conectora -->
+          <div class="absolute top-6 sm:top-8 lg:top-10 left-0 right-0 h-px
+                      bg-linear-to-r from-purple-500/30 via-cyan-500/30 to-purple-500/30 z-0"></div>
 
-          <div class="flex flex-col lg:flex-row items-start gap-6 lg:gap-0 relative z-10">
+          <div class="flex flex-row items-start gap-1.5 sm:gap-3 lg:gap-4 relative z-10">
             @for (step of steps; track step.title; let i = $index) {
-              <div class="group flex flex-col items-center text-center lg:flex-1">
+              <div class="group flex flex-col items-center text-center flex-1 min-w-0">
                 <!-- Ícone com número -->
-                <div class="relative mb-4">
-                  <div class="w-20 h-20 rounded-2xl flex items-center justify-center text-3xl
+                <div class="relative mb-3 sm:mb-4 shrink-0">
+                  <div class="step-icon-box w-12 h-12 sm:w-16 sm:h-16 lg:w-20 lg:h-20 rounded-xl sm:rounded-2xl
+                               flex items-center justify-center text-xl sm:text-2xl lg:text-3xl
                                bg-gray-900 border transition-all duration-300 group-hover:scale-110 group-hover:shadow-lg"
                        [class]="step.accent">
                     {{ step.icon }}
                   </div>
-                  <span class="absolute -top-2 -right-2 w-6 h-6 rounded-full bg-gray-900 border border-gray-700
-                               text-xs font-bold text-gray-400 flex items-center justify-center">
+                  <span class="step-num absolute -top-1.5 -right-1.5 sm:-top-2 sm:-right-2 w-5 h-5 sm:w-6 sm:h-6
+                               rounded-full bg-gray-900 border border-gray-700 text-[10px] sm:text-xs font-bold
+                               text-gray-400 flex items-center justify-center">
                     {{ i + 1 }}
                   </span>
                 </div>
 
-                <!-- Conteúdo -->
-                <h3 class="text-sm font-bold text-white mb-2 leading-tight">{{ step.title }}</h3>
-                <p class="text-gray-500 text-sm leading-relaxed mb-3">{{ step.description }}</p>
+                <!-- Título (sempre visível) -->
+                <h3 class="text-[11px] leading-tight sm:text-sm font-bold text-white mb-1 sm:mb-2 px-0.5">{{ step.title }}</h3>
 
-                <!-- Tags -->
-                <div class="flex flex-wrap justify-center gap-1">
+                <!-- Descrição (a partir de sm) -->
+                <p class="hidden sm:block text-gray-500 text-xs lg:text-sm leading-relaxed mb-3 max-w-[13rem] lg:max-w-56">{{ step.description }}</p>
+
+                <!-- Tags (a partir de lg) -->
+                <div class="hidden lg:flex flex-wrap justify-center gap-1.5">
                   @for (tag of step.tags; track tag) {
-                    <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-800/80 text-gray-400 border border-gray-700/60">
+                    <span class="step-tag px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-800/80 text-gray-400 border border-gray-700/60">
                       {{ tag }}
                     </span>
                   }
                 </div>
               </div>
 
-              <!-- Seta entre etapas (desktop) -->
+              <!-- Seta entre etapas: mesma altura do ícone p/ centralizar na trilha -->
               @if (i < steps.length - 1) {
-                <div class="hidden lg:flex items-start justify-center pt-10 shrink-0 w-8">
-                  <svg class="w-5 h-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <div class="flex items-center justify-center h-12 sm:h-16 lg:h-20 shrink-0 w-2 sm:w-4 lg:w-6">
+                  <svg class="w-3 h-3 sm:w-4 sm:h-4 lg:w-5 lg:h-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5l7 7-7 7"/>
                   </svg>
                 </div>
               }
+            }
+          </div>
+
+          <!-- Descrições em cards, só no mobile (onde a linha acima é compacta) -->
+          <div class="mt-10 space-y-3 sm:hidden">
+            @for (step of steps; track step.title; let i = $index) {
+              <div class="flex gap-3 rounded-xl border border-gray-800/60 bg-gray-900/40 p-3.5 step-mobile-card">
+                <span class="step-num shrink-0 w-6 h-6 rounded-full bg-gray-900 border border-gray-700 text-xs font-bold text-gray-400 flex items-center justify-center mt-0.5">
+                  {{ i + 1 }}
+                </span>
+                <div>
+                  <h4 class="text-sm font-bold text-white mb-1">{{ step.icon }} {{ step.title }}</h4>
+                  <p class="text-gray-500 text-xs leading-relaxed mb-2">{{ step.description }}</p>
+                  <div class="flex flex-wrap gap-1.5">
+                    @for (tag of step.tags; track tag) {
+                      <span class="step-tag px-2 py-0.5 rounded-full text-xs font-semibold bg-gray-800/80 text-gray-400 border border-gray-700/60">
+                        {{ tag }}
+                      </span>
+                    }
+                  </div>
+                </div>
+              </div>
             }
           </div>
         </div>

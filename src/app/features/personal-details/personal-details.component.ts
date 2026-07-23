@@ -28,16 +28,29 @@ import { AnalyticsService } from '../../core/services/analytics.service';
         </div>
 
         <!-- Badge -->
-        <div class="inline-flex items-center gap-2 px-4 py-1.5 mb-8 rounded-full border border-cyan-500/30 bg-cyan-500/5 text-cyan-300 text-sm font-medium">
-          <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse"></span>
+        <div class="inline-flex items-center gap-2 px-4 py-1.5 mb-8 rounded-full border border-cyan-500/30 bg-cyan-500/5 text-cyan-300 text-sm font-medium backdrop-blur-sm shadow-[0_0_20px_rgba(34,211,238,0.1)]">
+          <span class="relative flex h-2 w-2">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-2 w-2 bg-green-400"></span>
+          </span>
           Disponível para novos projetos
         </div>
 
-        <h1 class="text-5xl md:text-6xl font-bold mb-3 text-gradient-name">
+        <h1 class="text-5xl md:text-7xl font-bold mb-4 text-gradient-name tracking-tight">
           Elias Gomes da Silva
         </h1>
-        <p class="text-xl md:text-2xl text-gray-300 opacity-90 mb-2">{{ displayTitle() }}<span class="typewriter-cursor">|</span></p>
-        <p class="text-gray-500 text-xs tracking-widest uppercase font-mono mb-10">PHP · Python · Angular · Cloud</p>
+        <p class="text-xl md:text-2xl text-gray-300 opacity-90 mb-4 font-light">{{ displayTitle() }}<span class="typewriter-cursor">|</span></p>
+
+        <!-- Stack em destaque -->
+        <div class="flex items-center justify-center gap-2.5 mb-10 text-gray-500 text-xs tracking-[0.2em] uppercase font-mono">
+          <span>PHP</span>
+          <span class="w-1 h-1 rounded-full bg-cyan-500/60"></span>
+          <span>Python</span>
+          <span class="w-1 h-1 rounded-full bg-cyan-500/60"></span>
+          <span>Angular</span>
+          <span class="w-1 h-1 rounded-full bg-cyan-500/60"></span>
+          <span>Cloud</span>
+        </div>
 
         <app-tech-marquee></app-tech-marquee>
 

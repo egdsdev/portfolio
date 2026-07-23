@@ -59,8 +59,16 @@ function findSkillScore(input: string): number | null {
   standalone: true,
   imports: [FormsModule],
   template: `
-    <section id="dev-match" class="py-16 px-4 flex flex-col items-center gap-4">
-      <p class="text-gray-500 text-sm text-center max-w-xs">Quer saber se eu me encaixo na sua vaga?</p>
+    <section id="dev-match" class="py-24 px-4 flex flex-col items-center gap-4">
+      <div class="text-center mb-4">
+        <h2 class="text-4xl font-bold bg-linear-to-r from-blue-400 to-cyan-400 text-transparent bg-clip-text inline-block">
+          Dev Match
+        </h2>
+        <div class="mt-3 mx-auto w-16 h-px bg-linear-to-r from-blue-400 to-cyan-400 rounded-full"></div>
+        <p class="text-gray-400 mt-4 text-sm max-w-md mx-auto">
+          Cole os requisitos da vaga e descubra, na hora, o quanto meu perfil se encaixa — por tags ou por IA.
+        </p>
+      </div>
       <button (click)="openModal()"
               class="dev-match-open-btn group relative flex items-center gap-3 px-8 py-4 rounded-2xl font-bold text-base tracking-wide transition-all duration-300">
         <svg class="w-5 h-5 transition-transform group-hover:rotate-12" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
@@ -130,9 +138,9 @@ function findSkillScore(input: string): number | null {
             </button>
           </div>
 
-          <div class="flex flex-col lg:flex-row flex-1 overflow-hidden">
+          <div class="flex flex-col md:flex-row flex-1 overflow-hidden">
 
-            <div class="lg:w-1/2 flex flex-col p-6 border-b lg:border-b-0 lg:border-r border-gray-800 overflow-y-auto">
+            <div class="md:w-1/2 flex flex-col p-6 border-b md:border-b-0 md:border-r border-gray-800 overflow-y-auto">
 
               @if (activeTab() === 'tags') {
                 <p class="text-gray-400 text-sm mb-4 leading-relaxed">
@@ -375,7 +383,7 @@ function findSkillScore(input: string): number | null {
 
             </div>
 
-            <div class="lg:w-1/2 flex flex-col items-center justify-center p-6 bg-gray-900/50 relative overflow-hidden min-h-[320px]">
+            <div class="md:w-1/2 flex flex-col items-center justify-center p-6 bg-gray-900/50 relative overflow-hidden min-h-[320px]">
               <div class="absolute inset-0 pointer-events-none transition-all duration-1000"
                    [style.background]="'radial-gradient(ellipse at 50% 80%, ' + matchColor() + '18 0%, transparent 65%)'"></div>
 
