@@ -3,6 +3,8 @@ import { Component } from '@angular/core';
 interface ExperienceEntry {
   date: string;
   company: string;
+  /** O que a empresa faz — dá contexto de negócio para as entregas abaixo. */
+  context: string;
   role: string;
   modality: string;
   stack: string[];
@@ -22,11 +24,12 @@ export class ExperienceComponent {
     {
       date: '2026 — Atual',
       company: 'Dadus',
+      context: 'Software house do setor automotivo — ERP, BI e integrações para distribuidores e varejo de autopeças',
       role: 'Supervisor da Equipe de Backend',
       modality: 'Goiânia, GO',
       stack: ['PHP', 'Laravel', 'Python', 'Vue.js', 'PostgreSQL', 'Redis', 'AWS SQS', 'S3', 'Docker', 'GitLab CI'],
       bullets: [
-        'Supervisiono a equipe de backend em uma plataforma distribuída de ~12 serviços: ERP, SSO, Data Warehouse, motor de relatórios e SDK de autenticação compartilhado',
+        'Supervisiono a equipe de backend do ERP de autopeças e dos serviços ao redor: SSO, Data Warehouse, motor de relatórios e SDK de autenticação compartilhado (~12 serviços)',
         'Projetei o Data Warehouse do zero — modelo estrela em PostgreSQL com ETL em Python, carga incremental por watermark e consultas de BI servidas via fila SQS com cache em Redis',
         'Defini o processo de release adotado por todos os projetos: GitFlow com Release Candidate, versionamento semanal e automação de merge requests integrada ao Discord',
         'Construí o serviço de relatórios assíncrono: a API publica na fila SQS, worker Python gera PDF/CSV no S3 e devolve o resultado por Redis, sem prender a requisição do usuário',
@@ -37,11 +40,12 @@ export class ExperienceComponent {
     {
       date: '2026',
       company: 'ByToken',
+      context: 'SaaS de governança de certificados digitais ICP-Brasil para escritórios contábeis',
       role: 'Desenvolvedor Full Stack',
       modality: 'Presencial · Goiânia, GO',
       stack: ['PHP', 'Laravel', 'Vue.js', 'PostgreSQL', 'Redis', 'WebSocket', 'Firebase'],
       bullets: [
-        'Plataforma SaaS multi-tenant para gestão de certificados digitais ICP-Brasil, do banco de dados à interface (PHP, Laravel, Vue.js, PostgreSQL)',
+        'Plataforma SaaS multi-tenant que centraliza o uso de certificados digitais: cada escritório controla quem acessa qual certificado, com trilha de auditoria e sem distribuir arquivo ou senha',
         'Otimização de banco em ambiente multi-tenant com stored procedures, triggers, views e índices, sustentando consultas sobre bases isoladas por cliente',
         'Processamento assíncrono com Laravel Queues e Redis para notificações, geração de documentos e tarefas de longa duração',
         'Automação de rotinas com Laravel Scheduler: alertas de vencimento de certificados, sincronizações e relatórios periódicos',
@@ -55,25 +59,27 @@ export class ExperienceComponent {
     {
       date: '2025',
       company: 'EQ Seguros',
+      context: 'Seguradora de vida e previdência autorizada pela SUSEP, com distribuição digital via parceiros',
       role: 'Desenvolvedor Backend / BI',
       modality: 'Presencial · Goiânia, GO',
       stack: ['SQL Server', 'Power BI', 'DAX', 'Modelagem dimensional'],
       bullets: [
-        'Dashboards analíticos no Power BI para acompanhamento de KPIs comerciais e operacionais usados pela área de negócio',
-        'Modelagem dimensional (star schema) e queries SQL complexas no SQL Server para reduzir o tempo de carga dos relatórios',
-        'Medidas e colunas calculadas em DAX para métricas de negócio: conversão, churn e comissões',
+        'Dashboards de Power BI sobre a operação de seguros — apólices, produção por canal e desempenho da rede de parceiros — usados pela área de negócio para decisão comercial',
+        'Modelagem dimensional (star schema) e queries SQL complexas no SQL Server para sustentar relatórios sobre alto volume de vendas mensais',
+        'Medidas e colunas calculadas em DAX para métricas do setor: conversão, churn de apólices e comissionamento',
       ],
     },
     {
       date: '2022 — 2025',
       company: 'Meeta Solutions',
+      context: 'Fábrica de software de CX e inteligência de dados, com soluções para operações de atendimento na América Latina',
       role: 'Desenvolvedor Backend',
       modality: 'Remoto',
       stack: ['PHP', 'Laravel', 'SQL Server', 'PostgreSQL', 'Python', 'Azure Functions', 'React Native', 'MongoDB'],
       bullets: [
-        'Otimização de queries lentas com análise de plano de execução, criação de índices e refatoração de procedures críticas',
+        'Otimização de queries lentas com análise de plano de execução, criação de índices e refatoração de procedures críticas em bases de alto volume de atendimento',
         'Migração de servidores de banco de dados de Windows Server para Linux, incluindo reescrita de procedures e ajuste de collation',
-        'Desenvolvimento e manutenção de sistemas corporativos com PHP/Laravel, SQL Server e PostgreSQL',
+        'Desenvolvimento e manutenção de sistemas corporativos sob demanda para clientes, com PHP/Laravel, SQL Server e PostgreSQL',
         'Stored procedures, functions, triggers e views para encapsular regras de negócio e garantir integridade dos dados',
         'Agendamentos com SQL Server Agent e cron jobs Linux para rotinas de processamento, relatórios e manutenção',
         'Sistemas distribuídos com múltiplos repositórios usando Python, Azure Functions (HTTP e Timer Triggers), React, React Native e MongoDB',
@@ -84,6 +90,7 @@ export class ExperienceComponent {
     {
       date: '2020 — 2023',
       company: 'Dadus (ex-Mattos & Cia)',
+      context: 'Mesma empresa onde atuo hoje, antes do rebranding — na época com operação industrial e sistemas internos',
       role: 'Desenvolvedor Full Stack Pleno',
       modality: 'Remoto',
       stack: ['Power BI', 'Pentaho ETL', 'SQL Server', 'MySQL', 'PHP', 'Vue.js', 'Electron'],
@@ -97,26 +104,28 @@ export class ExperienceComponent {
     },
     {
       date: '2022 — 2023',
-      company: 'Sales Farm',
+      company: 'SalesFarm',
+      context: 'Startup de Sales as a Service — plataforma que conecta empresas a vendedores e SDRs terceirizados',
       role: 'Desenvolvedor Web Full Stack',
       modality: 'Remoto',
       stack: ['PHP', 'Laravel', 'MySQL', 'Code review', 'Scrum'],
       bullets: [
-        'Refatoração de queries e stored procedures para redução do tempo de resposta em relatórios de alta demanda',
-        'Mentoria e onboarding técnico de novos desenvolvedores, conduzindo code reviews e definindo padrões do time',
-        'Novas funcionalidades, correção de bugs e otimização de performance na plataforma de vendas',
+        'Refatoração de queries e stored procedures para reduzir o tempo de resposta dos relatórios de performance de vendas, consultados por gestores durante a operação',
+        'Mentoria e onboarding técnico de novos desenvolvedores, conduzindo code reviews e definindo padrões do time em fase de crescimento acelerado',
+        'Novas funcionalidades, correção de bugs e otimização de performance na plataforma que conecta vendedores às empresas contratantes',
         'Participação em planejamento de sprint, definição de stack e levantamento de requisitos',
       ],
     },
     {
       date: '2021 — 2022',
       company: 'VirtuaMax Comunicação',
+      context: 'Agência de comunicação e desenvolvimento web, com produto próprio de atendimento ao cliente',
       role: 'Desenvolvedor Web Full Stack Pleno',
       modality: 'Remoto',
       stack: ['PHP', 'Laravel', 'Vue.js', 'MySQL', 'Twilio', 'Jira'],
       bullets: [
-        'Desenvolvimento full stack da plataforma Deskkio (suporte e atendimento ao cliente) com PHP/Laravel, Vue.js e MySQL',
-        'Integração de chatbot automatizado com Twilio para atendimento via WhatsApp e SMS',
+        'Desenvolvimento full stack do Deskkio, produto de help desk da empresa: tickets, histórico de atendimento e painel do operador (PHP/Laravel, Vue.js, MySQL)',
+        'Integração de chatbot automatizado com Twilio para atendimento via WhatsApp e SMS, reduzindo o volume que chegava ao atendimento humano',
         'Modelagem de banco relacional com relacionamentos complexos, queries otimizadas e stored procedures',
         'Sites e landing pages responsivos (PHP, JavaScript, CSS3, HTML5, Vue.js, Node.js, MySQL)',
       ],

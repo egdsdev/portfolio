@@ -69,9 +69,9 @@ export class PersonalDetailsComponent implements OnInit, OnDestroy {
   private analytics = inject(AnalyticsService);
 
   readonly titles = [
+    'Engenheiro de Computação',
     'Supervisor de Backend · PHP, Laravel, Python',
     'Arquitetura distribuída, filas e Data Warehouse',
-    'Backend & banco de dados de alta performance',
   ];
 
   displayTitle = signal(this.titles[0]);

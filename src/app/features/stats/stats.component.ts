@@ -4,6 +4,7 @@ interface Stat {
   target: number;
   suffix: string;
   label: string;
+  detail: string;
   current: number;
 }
 
@@ -12,20 +13,33 @@ interface Stat {
   standalone: true,
   template: `
     <div class="border-b border-zinc-900">
-      <div #trigger class="max-w-6xl mx-auto px-8 py-16 grid grid-cols-2 md:grid-cols-4 gap-y-10 gap-x-8">
+      <div #trigger class="max-w-6xl mx-auto px-8 py-20 grid grid-cols-1 md:grid-cols-3">
         @for (stat of stats; track stat.label) {
-          <div class="stat-fade" [class.stat-visible]="started">
-            <div class="stat-number display text-5xl md:text-6xl text-zinc-50">
-              {{ stat.current }}<span class="text-zinc-600">{{ stat.suffix }}</span>
+          <div class="stat-cell stat-fade" [class.stat-visible]="started">
+            <div class="flex items-baseline gap-1.5">
+              <span class="stat-number display text-6xl md:text-7xl text-zinc-50">{{ stat.current }}</span>
+              <span class="stat-number display text-3xl md:text-4xl text-zinc-600">{{ stat.suffix }}</span>
             </div>
-            <div class="eyebrow mt-3">{{ stat.label }}</div>
+            <div class="text-zinc-200 text-[0.9375rem] font-medium mt-4">{{ stat.label }}</div>
+            <div class="text-zinc-500 text-sm mt-1.5 leading-relaxed">{{ stat.detail }}</div>
           </div>
         }
       </div>
     </div>
   `,
   styles: [`
-    .stat-number { font-weight: 600; letter-spacing: -0.04em; }
+    .stat-number { font-weight: 600; letter-spacing: -0.045em; line-height: 1; }
+
+    .stat-cell { padding: 2rem 0; border-top: 1px solid var(--border); }
+
+    @media (min-width: 768px) {
+      .stat-cell {
+        padding: 0 2.5rem;
+        border-top: none;
+        border-left: 1px solid var(--border);
+      }
+      .stat-cell:first-child { padding-left: 0; border-left: none; }
+    }
 
     .stat-fade {
       opacity: 0;
@@ -33,9 +47,8 @@ interface Stat {
       transition: opacity 0.6s ease, transform 0.6s ease;
     }
     .stat-fade.stat-visible { opacity: 1; transform: translateY(0); }
-    .stat-fade:nth-child(2) { transition-delay: 0.08s; }
-    .stat-fade:nth-child(3) { transition-delay: 0.16s; }
-    .stat-fade:nth-child(4) { transition-delay: 0.24s; }
+    .stat-fade:nth-child(2) { transition-delay: 0.1s; }
+    .stat-fade:nth-child(3) { transition-delay: 0.2s; }
   `]
 })
 export class StatsComponent implements AfterViewInit, OnDestroy {
@@ -46,10 +59,21 @@ export class StatsComponent implements AfterViewInit, OnDestroy {
   started = false;
 
   stats: Stat[] = [
-    { target: 7,  suffix: '+', label: 'Anos em produção',      current: 0 },
-    { target: 12, suffix: '',  label: 'Serviços em plataforma', current: 0 },
-    { target: 4,  suffix: '',  label: 'Bancos de dados',       current: 0 },
-    { target: 20, suffix: '+', label: 'Tecnologias',           current: 0 },
+    {
+      target: 7, suffix: '+', current: 0,
+      label: 'Anos em produção',
+      detail: 'Sistemas usados diariamente por empresas de varejo automotivo, seguros e indústria.',
+    },
+    {
+      target: 12, suffix: '', current: 0,
+      label: 'Serviços na plataforma',
+      detail: 'ERP, SSO, Data Warehouse, relatórios e integrações que superviso hoje.',
+    },
+    {
+      target: 6, suffix: '', current: 0,
+      label: 'Times por onde passei',
+      detail: 'De agência e startup a software house — hoje liderando a equipe de backend.',
+    },
   ];
 
   ngAfterViewInit() {

@@ -41,6 +41,15 @@
   margin-bottom: 0.35rem;
 }
 
+/* O que a empresa faz — o recrutador entende o negócio antes das entregas. */
+.exp-context {
+  color: var(--fg-faint);
+  font-size: 0.875rem;
+  line-height: 1.6;
+  max-width: 62ch;
+  margin-bottom: 0.75rem;
+}
+
 .exp-role {
   color: var(--fg-muted);
   font-size: 0.9375rem;
