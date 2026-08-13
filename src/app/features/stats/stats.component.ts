@@ -46,10 +46,10 @@ export class StatsComponent implements AfterViewInit, OnDestroy {
   started = false;
 
   stats: Stat[] = [
-    { target: 7,  suffix: '+', label: 'Anos em produção',    current: 0 },
-    { target: 6,  suffix: '',  label: 'Empresas',            current: 0 },
-    { target: 4,  suffix: '',  label: 'Bancos de dados',     current: 0 },
-    { target: 20, suffix: '+', label: 'Tecnologias',         current: 0 },
+    { target: 7,  suffix: '+', label: 'Anos em produção',      current: 0 },
+    { target: 12, suffix: '',  label: 'Serviços em plataforma', current: 0 },
+    { target: 4,  suffix: '',  label: 'Bancos de dados',       current: 0 },
+    { target: 20, suffix: '+', label: 'Tecnologias',           current: 0 },
   ];
 
   ngAfterViewInit() {

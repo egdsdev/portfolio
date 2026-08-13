@@ -15,8 +15,8 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
           <div class="eyebrow mb-5">05 — Contato</div>
           <h2 class="section-title mb-6">Disponível para<br>novas oportunidades</h2>
           <p class="section-lead">
-            Aberto a posições full stack, backend ou de dados — presencial em Goiânia ou remoto.
-            Respondo em até 24h.
+            Aberto a conversas sobre posições de backend, liderança técnica ou dados —
+            presencial em Goiânia ou remoto. Respondo em até 24h.
           </p>
         </div>
 

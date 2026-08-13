@@ -21,6 +21,21 @@ export class ExperienceComponent {
   entries: ExperienceEntry[] = [
     {
       date: '2026 — Atual',
+      company: 'Dadus',
+      role: 'Supervisor da Equipe de Backend',
+      modality: 'Goiânia, GO',
+      stack: ['PHP', 'Laravel', 'Python', 'Vue.js', 'PostgreSQL', 'Redis', 'AWS SQS', 'S3', 'Docker', 'GitLab CI'],
+      bullets: [
+        'Supervisiono a equipe de backend em uma plataforma distribuída de ~12 serviços: ERP, SSO, Data Warehouse, motor de relatórios e SDK de autenticação compartilhado',
+        'Projetei o Data Warehouse do zero — modelo estrela em PostgreSQL com ETL em Python, carga incremental por watermark e consultas de BI servidas via fila SQS com cache em Redis',
+        'Defini o processo de release adotado por todos os projetos: GitFlow com Release Candidate, versionamento semanal e automação de merge requests integrada ao Discord',
+        'Construí o serviço de relatórios assíncrono: a API publica na fila SQS, worker Python gera PDF/CSV no S3 e devolve o resultado por Redis, sem prender a requisição do usuário',
+        'Autenticação centralizada com SSO em Laravel e SDK PHP próprio (JWT/JWKS, PSR-15) consumido pelos demais serviços',
+        'Conduzo code review e integração das entregas do time nas branches de desenvolvimento, além de manter a documentação de APIs em OpenAPI',
+      ],
+    },
+    {
+      date: '2026',
       company: 'ByToken',
       role: 'Desenvolvedor Full Stack',
       modality: 'Presencial · Goiânia, GO',
@@ -68,7 +83,7 @@ export class ExperienceComponent {
     },
     {
       date: '2020 — 2023',
-      company: 'Mattos & Cia',
+      company: 'Dadus (ex-Mattos & Cia)',
       role: 'Desenvolvedor Full Stack Pleno',
       modality: 'Remoto',
       stack: ['Power BI', 'Pentaho ETL', 'SQL Server', 'MySQL', 'PHP', 'Vue.js', 'Electron'],

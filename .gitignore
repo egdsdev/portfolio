@@ -44,3 +44,7 @@ Thumbs.db
 
 # Environments with secrets
 src/environments/environment.ts
+
+# Dependencias das Cloud Functions
+functions/node_modules/
+functions/lib/

@@ -52,7 +52,8 @@ export class SkillsComponent {
       pills: [
         { name: 'PHP', years: '7a' }, { name: 'Laravel', years: '6a' }, { name: 'Node.js', years: '5a' },
         { name: 'Python', years: '3a' }, { name: 'REST API' }, { name: 'SOAP' },
-        { name: 'Filas / Queues' }, { name: 'Cron Jobs' }, { name: 'WebSocket' },
+        { name: 'AWS SQS' }, { name: 'Redis' }, { name: 'WebSocket' },
+        { name: 'JWT / SSO' }, { name: 'OpenAPI' }, { name: 'Cron Jobs' },
       ],
     },
     {
@@ -81,15 +82,17 @@ export class SkillsComponent {
     {
       title: 'DevOps & Cloud',
       pills: [
-        { name: 'Docker' }, { name: 'Git' }, { name: 'GitHub Actions' }, { name: 'CI/CD' },
-        { name: 'Azure' }, { name: 'Azure Functions' }, { name: 'AWS' }, { name: 'Firebase' }, { name: 'Linux' },
+        { name: 'Docker' }, { name: 'Git' }, { name: 'GitLab CI' }, { name: 'GitHub Actions' },
+        { name: 'CI/CD' }, { name: 'AWS (S3, SQS)' }, { name: 'Azure' }, { name: 'Azure Functions' },
+        { name: 'Firebase' }, { name: 'Linux' },
       ],
     },
     {
-      title: 'Processo',
+      title: 'Liderança & Processo',
       pills: [
+        { name: 'Supervisão de equipe' }, { name: 'Code Review' }, { name: 'GitFlow / Release' },
         { name: 'SOLID' }, { name: 'Clean Code' }, { name: 'Design Patterns' },
-        { name: 'Code Review' }, { name: 'Scrum' }, { name: 'Kanban' }, { name: 'Jira' },
+        { name: 'Scrum' }, { name: 'Kanban' }, { name: 'Jira' },
       ],
     },
   ];
