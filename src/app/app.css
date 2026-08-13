@@ -1,87 +1,21 @@
-/* ===== Starfield background (CSS only, zero JS) ===== */
 :host {
   display: block;
-  background: radial-gradient(ellipse at 20% 50%, #0c1929 0%, #06090f 70%);
+  background: var(--bg);
   min-height: 100vh;
   position: relative;
 }
 
-.starfield {
+/* Grade sutil de fundo — substitui o starfield/blobs.
+   Estática, sem custo de animação. */
+:host::before {
+  content: '';
   position: fixed;
   inset: 0;
   z-index: 0;
   pointer-events: none;
-}
-
-/* Generate random-looking stars via box-shadows */
-.stars {
-  position: absolute;
-  inset: 0;
-  border-radius: 50%;
-}
-
-.stars-sm {
-  width: 1px;
-  height: 1px;
-  box-shadow:
-    40vw 15vh 0 0 rgba(255,255,255,0.5),
-    85vw 8vh 0 0 rgba(255,255,255,0.4),
-    12vw 45vh 0 0 rgba(255,255,255,0.3),
-    70vw 32vh 0 0 rgba(255,255,255,0.5),
-    25vw 78vh 0 0 rgba(255,255,255,0.4),
-    92vw 60vh 0 0 rgba(255,255,255,0.3),
-    55vw 88vh 0 0 rgba(255,255,255,0.5),
-    8vw 22vh 0 0 rgba(255,255,255,0.4),
-    63vw 55vh 0 0 rgba(255,255,255,0.3),
-    33vw 92vh 0 0 rgba(255,255,255,0.5),
-    77vw 42vh 0 0 rgba(255,255,255,0.4),
-    18vw 67vh 0 0 rgba(255,255,255,0.3),
-    48vw 5vh 0 0 rgba(255,255,255,0.5),
-    95vw 75vh 0 0 rgba(255,255,255,0.4),
-    5vw 50vh 0 0 rgba(255,255,255,0.3),
-    60vw 18vh 0 0 rgba(255,255,255,0.4),
-    30vw 35vh 0 0 rgba(255,255,255,0.5),
-    82vw 90vh 0 0 rgba(255,255,255,0.3),
-    15vw 12vh 0 0 rgba(255,255,255,0.4),
-    72vw 68vh 0 0 rgba(255,255,255,0.3),
-    45vw 48vh 0 0 rgba(255,255,255,0.5),
-    88vw 25vh 0 0 rgba(255,255,255,0.4),
-    3vw 82vh 0 0 rgba(255,255,255,0.3),
-    52vw 72vh 0 0 rgba(255,255,255,0.4),
-    38vw 8vh 0 0 rgba(255,255,255,0.5);
-  animation: twinkle 4s ease-in-out infinite alternate;
-}
-
-.stars-md {
-  width: 1.5px;
-  height: 1.5px;
-  box-shadow:
-    20vw 30vh 0 0 rgba(147,197,253,0.5),
-    65vw 12vh 0 0 rgba(147,197,253,0.4),
-    42vw 65vh 0 0 rgba(255,255,255,0.5),
-    78vw 50vh 0 0 rgba(147,197,253,0.4),
-    10vw 85vh 0 0 rgba(255,255,255,0.5),
-    50vw 38vh 0 0 rgba(147,197,253,0.4),
-    88vw 70vh 0 0 rgba(255,255,255,0.5),
-    35vw 20vh 0 0 rgba(147,197,253,0.4),
-    73vw 82vh 0 0 rgba(255,255,255,0.5),
-    58vw 28vh 0 0 rgba(147,197,253,0.4);
-  animation: twinkle 5s ease-in-out 1s infinite alternate;
-}
-
-.stars-lg {
-  width: 2px;
-  height: 2px;
-  box-shadow:
-    28vw 55vh 0 0 rgba(34,211,238,0.5),
-    75vw 22vh 0 0 rgba(96,165,250,0.5),
-    50vw 80vh 0 0 rgba(34,211,238,0.4),
-    15vw 40vh 0 0 rgba(96,165,250,0.4),
-    90vw 15vh 0 0 rgba(34,211,238,0.3);
-  animation: twinkle 6s ease-in-out 2s infinite alternate;
-}
-
-@keyframes twinkle {
-  0% { opacity: 0.6; }
-  100% { opacity: 1; }
+  background-image:
+    linear-gradient(to right, rgba(255,255,255,0.022) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(255,255,255,0.022) 1px, transparent 1px);
+  background-size: 64px 64px;
+  mask-image: radial-gradient(ellipse 90% 60% at 50% 0%, #000 40%, transparent 100%);
 }

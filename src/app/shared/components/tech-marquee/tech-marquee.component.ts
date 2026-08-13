@@ -7,7 +7,6 @@ import { faDatabase, faChartBar, faGears, faCode, faCloud, faFire } from '@forta
 interface Tech {
   icon: IconDefinition;
   label: string;
-  color: string;
 }
 
 @Component({
@@ -21,7 +20,7 @@ interface Tech {
         @for (copy of [0, 1, 2]; track copy) {
           <div class="marquee-content" [attr.aria-hidden]="copy > 0 ? true : null">
             @for (t of row1; track $index) {
-              <div class="tech-pill" [class]="t.color"><fa-icon [icon]="t.icon"></fa-icon><span>{{ t.label }}</span></div>
+              <div class="tech-pill"><fa-icon [icon]="t.icon"></fa-icon><span>{{ t.label }}</span></div>
             }
           </div>
         }
@@ -32,7 +31,7 @@ interface Tech {
         @for (copy of [0, 1, 2]; track copy) {
           <div class="marquee-content" [attr.aria-hidden]="copy > 0 ? true : null">
             @for (t of row2; track $index) {
-              <div class="tech-pill" [class]="t.color"><fa-icon [icon]="t.icon"></fa-icon><span>{{ t.label }}</span></div>
+              <div class="tech-pill"><fa-icon [icon]="t.icon"></fa-icon><span>{{ t.label }}</span></div>
             }
           </div>
         }
@@ -40,9 +39,10 @@ interface Tech {
     </div>
   `,
   styles: [`
+    :host { display: block; width: 100%; }
+
     .marquee-wrapper {
-      width: 100vw;
-      margin-left: calc(-50vw + 50%);
+      width: 100%;
       overflow: hidden;
       display: flex;
       flex-direction: column;
@@ -81,72 +81,52 @@ interface Tech {
       100% { transform: translateX(0); }
     }
 
+    /* Monocromático: as tecnologias viram uma faixa de textura, não um arco-íris.
+       A cor fica reservada para o accent do site. */
     .tech-pill {
       display: inline-flex;
       align-items: center;
-      gap: 0.45rem;
-      padding: 0.4rem 0.95rem;
-      border-radius: 9999px;
-      font-size: 0.78rem;
-      font-weight: 500;
+      gap: 0.5rem;
+      padding: 0.35rem 0.9rem;
+      font-size: 0.8125rem;
       white-space: nowrap;
-      margin: 0 0.4rem;
-      background: rgba(255,255,255,0.05);
-      border: 1px solid rgba(255,255,255,0.09);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 1px 2px rgba(0,0,0,0.2);
-      transition: transform 0.25s ease, background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+      margin: 0 0.35rem;
+      color: var(--fg-faint);
+      transition: color 0.25s ease;
       cursor: default;
     }
-    .tech-pill:hover {
-      transform: translateY(-3px) scale(1.06);
-      background: rgba(255,255,255,0.09);
-      border-color: rgba(255,255,255,0.16);
-      box-shadow: inset 0 1px 0 rgba(255,255,255,0.06), 0 6px 16px rgba(0,0,0,0.3);
-    }
-    .tech-pill span { color: #cbd5e1; font-family: monospace; letter-spacing: 0.01em; }
-
-    .indigo { color: #818cf8; }
-    .red     { color: #f87171; }
-    .yellow  { color: #fde68a; }
-    .green   { color: #4ade80; }
-    .amber   { color: #fbbf24; }
-    .blue    { color: #60a5fa; }
-    .emerald { color: #34d399; }
-    .cyan    { color: #22d3ee; }
-    .rose    { color: #fb7185; }
-    .orange  { color: #fb923c; }
-    .sky     { color: #38bdf8; }
-    .slate   { color: #94a3b8; }
+    .tech-pill:hover { color: var(--fg); }
+    .tech-pill span { font-family: var(--font-mono); letter-spacing: 0.01em; }
   `]
 })
 export class TechMarqueeComponent {
   row1: Tech[] = [
-    { icon: faPhp, label: 'PHP', color: 'indigo' },
-    { icon: faLaravel, label: 'Laravel', color: 'red' },
-    { icon: faPython, label: 'Python', color: 'yellow' },
-    { icon: faNodeJs, label: 'Node.js', color: 'green' },
-    { icon: faJs, label: 'JavaScript', color: 'amber' },
-    { icon: faCode, label: 'TypeScript', color: 'blue' },
-    { icon: faVuejs, label: 'Vue.js', color: 'emerald' },
-    { icon: faReact, label: 'React', color: 'cyan' },
-    { icon: faAngular, label: 'Angular', color: 'rose' },
-    { icon: faHtml5, label: 'HTML5', color: 'orange' },
-    { icon: faCss3Alt, label: 'CSS3', color: 'sky' },
-    { icon: faGithub, label: 'GitHub', color: 'slate' },
+    { icon: faPhp, label: 'PHP' },
+    { icon: faLaravel, label: 'Laravel' },
+    { icon: faPython, label: 'Python' },
+    { icon: faNodeJs, label: 'Node.js' },
+    { icon: faJs, label: 'JavaScript' },
+    { icon: faCode, label: 'TypeScript' },
+    { icon: faVuejs, label: 'Vue.js' },
+    { icon: faReact, label: 'React' },
+    { icon: faAngular, label: 'Angular' },
+    { icon: faHtml5, label: 'HTML5' },
+    { icon: faCss3Alt, label: 'CSS3' },
+    { icon: faGithub, label: 'GitHub' },
   ];
 
   row2: Tech[] = [
-    { icon: faDatabase, label: 'MongoDB', color: 'green' },
-    { icon: faDatabase, label: 'PostgreSQL', color: 'blue' },
-    { icon: faDatabase, label: 'SQL Server', color: 'red' },
-    { icon: faAws, label: 'AWS', color: 'yellow' },
-    { icon: faCloud, label: 'Azure', color: 'sky' },
-    { icon: faDocker, label: 'Docker', color: 'sky' },
-    { icon: faGitAlt, label: 'Git', color: 'orange' },
-    { icon: faChartBar, label: 'Power BI', color: 'amber' },
-    { icon: faJira, label: 'Jira', color: 'blue' },
-    { icon: faGears, label: 'Pentaho', color: 'orange' },
-    { icon: faLinux, label: 'Linux', color: 'slate' },
-    { icon: faFire, label: 'Firebase', color: 'amber' },
+    { icon: faDatabase, label: 'MongoDB' },
+    { icon: faDatabase, label: 'PostgreSQL' },
+    { icon: faDatabase, label: 'SQL Server' },
+    { icon: faAws, label: 'AWS' },
+    { icon: faCloud, label: 'Azure' },
+    { icon: faDocker, label: 'Docker' },
+    { icon: faGitAlt, label: 'Git' },
+    { icon: faChartBar, label: 'Power BI' },
+    { icon: faJira, label: 'Jira' },
+    { icon: faGears, label: 'Pentaho' },
+    { icon: faLinux, label: 'Linux' },
+    { icon: faFire, label: 'Firebase' },
   ];
 }

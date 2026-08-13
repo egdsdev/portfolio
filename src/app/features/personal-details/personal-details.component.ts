@@ -9,80 +9,58 @@ import { AnalyticsService } from '../../core/services/analytics.service';
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   styleUrls: ['./personal-details.scss'],
   template: `
-    <section id="detalhes" class="min-h-screen pt-20 flex items-center justify-center relative overflow-hidden">
-      <!-- Círculos decorativos -->
-      <div class="absolute top-20 left-20 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob"></div>
-      <div class="absolute top-20 right-20 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-2000"></div>
-      <div class="absolute -bottom-8 left-40 w-72 h-72 bg-cyan-500 rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-blob animation-delay-4000"></div>
-
-      <div class="relative z-10 text-center justify-center px-8 flex flex-col items-center">
-        <!-- Avatar -->
-        <div class="relative inline-flex items-center justify-center mb-5">
-          <div class="avatar-ring w-32 h-32 rounded-full border-2 border-cyan-400/40 overflow-hidden">
-            <img src="profile.jpg" alt="Elias Gomes" class="w-full h-full object-cover object-top">
-          </div>
-          <span class="absolute top-1 right-1 flex h-4 w-4">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-4 w-4 bg-green-500 border-2 border-gray-900"></span>
-          </span>
-        </div>
-
-        <!-- Badge -->
-        <div class="inline-flex items-center gap-2 px-4 py-1.5 mb-8 rounded-full border border-cyan-500/30 bg-cyan-500/5 text-cyan-300 text-sm font-medium backdrop-blur-sm shadow-[0_0_20px_rgba(34,211,238,0.1)]">
-          <span class="relative flex h-2 w-2">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-2 w-2 bg-green-400"></span>
+    <section id="detalhes" class="min-h-screen flex flex-col justify-center relative">
+      <div class="relative z-10 w-full max-w-6xl mx-auto px-8 pt-32 pb-16 flex-1 flex flex-col justify-center">
+        <!-- Status -->
+        <div class="inline-flex items-center gap-2.5 mb-10 eyebrow">
+          <span class="relative flex h-1.5 w-1.5">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400"></span>
           </span>
           Disponível para novos projetos
         </div>
 
-        <h1 class="text-5xl md:text-7xl font-bold mb-4 text-gradient-name tracking-tight">
-          Elias Gomes da Silva
+        <!-- Nome: o elemento dominante da página -->
+        <h1 class="display text-zinc-50 mb-8"
+            style="font-size: clamp(3rem, 11vw, 8.5rem); font-weight: 700;">
+          Elias Gomes<br>da Silva
         </h1>
-        <p class="text-xl md:text-2xl text-gray-300 opacity-90 mb-4 font-light">{{ displayTitle() }}<span class="typewriter-cursor">|</span></p>
 
-        <!-- Stack em destaque -->
-        <div class="flex items-center justify-center gap-2.5 mb-10 text-gray-500 text-xs tracking-[0.2em] uppercase font-mono">
-          <span>PHP</span>
-          <span class="w-1 h-1 rounded-full bg-cyan-500/60"></span>
-          <span>Python</span>
-          <span class="w-1 h-1 rounded-full bg-cyan-500/60"></span>
-          <span>Angular</span>
-          <span class="w-1 h-1 rounded-full bg-cyan-500/60"></span>
-          <span>Cloud</span>
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-10 mb-14">
+          <p class="text-xl md:text-2xl text-zinc-400 font-normal max-w-xl leading-snug">
+            {{ displayTitle() }}<span class="typewriter-cursor text-zinc-600">|</span>
+          </p>
+
+          <div class="flex items-center gap-6 shrink-0">
+            <div class="w-16 h-16 rounded-full overflow-hidden border border-zinc-800 shrink-0">
+              <img src="profile.jpg" alt="Elias Gomes" class="w-full h-full object-cover object-top">
+            </div>
+            <div class="eyebrow leading-relaxed">
+              <div>7+ anos</div>
+              <div class="text-zinc-500">Goiânia, GO</div>
+            </div>
+          </div>
         </div>
 
-        <app-tech-marquee></app-tech-marquee>
-
-        <div class="mt-10 flex flex-wrap justify-center gap-4">
-          <a href="#contato"
-             (click)="onHeroContactClick()"
-             class="inline-flex items-center gap-2 px-10 py-3.5 bg-linear-to-r from-blue-500 to-cyan-500 text-white font-bold rounded-xl
-                    transform hover:scale-105 transition-all duration-300 hover:shadow-2xl hover:shadow-cyan-500/50 text-sm tracking-wide contact-btn ring-2 ring-cyan-500/30">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-            </svg>
-            Entre em Contato
+        <div class="flex flex-wrap gap-3">
+          <a href="#contato" (click)="onHeroContactClick()" class="btn-primary">
+            Entre em contato
           </a>
           <a href="curriculo-elias-gomes.pdf"
              download="Curriculo-Elias-Gomes-da-Silva.pdf"
              (click)="onResumeDownload($event)"
-             class="inline-flex items-center gap-2 px-8 py-3.5 border border-cyan-500/50 text-cyan-300 font-semibold rounded-xl
-                    transform hover:scale-105 transition-all duration-300 hover:bg-cyan-500/10 hover:border-cyan-400 text-sm tracking-wide">
+             class="btn-ghost">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
               <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
             </svg>
-            Baixar Currículo
+            Currículo
           </a>
         </div>
       </div>
 
-      <!-- Scroll indicator: oculto no mobile para não sobrepor os botões -->
-      <div class="absolute bottom-8 left-1/2 -translate-x-1/2 hidden sm:flex flex-col items-center gap-1 text-gray-500 scroll-indicator z-10">
-        <span class="text-xs tracking-widest uppercase font-mono">scroll</span>
-        <div class="w-5 h-8 border border-gray-500 rounded-full flex justify-center pt-1.5 scroll-mouse">
-          <div class="scroll-dot w-1 h-2 bg-cyan-400 rounded-full"></div>
-        </div>
+      <!-- Marquee em faixa própria na base da dobra -->
+      <div class="relative z-10 border-t border-zinc-900 py-6">
+        <app-tech-marquee></app-tech-marquee>
       </div>
     </section>
   `
@@ -91,10 +69,9 @@ export class PersonalDetailsComponent implements OnInit, OnDestroy {
   private analytics = inject(AnalyticsService);
 
   readonly titles = [
-    'Desenvolvedor Full Stack',
-    'Engenheiro de Software',
-    'Especialista em PHP & Laravel',
-    'Arquiteto de Backend',
+    'Desenvolvedor Full Stack · PHP, Laravel, Vue',
+    'Backend & Banco de Dados de alta performance',
+    'BI e dados — Power BI, SQL, ETL',
   ];
 
   displayTitle = signal(this.titles[0]);

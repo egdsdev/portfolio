@@ -5,7 +5,11 @@
   <title>Elias Gomes da Silva · Desenvolvedor Full Stack | PHP, Laravel, Angular</title>
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#60a5fa">
+  <meta name="theme-color" content="#09090b">
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=Inter:wght@400..600&display=swap">
   <meta name="description" content="7+ anos desenvolvendo sistemas com PHP, Laravel, Python, Angular, React e Cloud. Disponível para novas oportunidades. Goiânia, GO.">
 
   <!-- OpenGraph (LinkedIn, WhatsApp, Facebook) -->
@@ -30,15 +34,6 @@
   <!-- PWA -->
   <link rel="manifest" href="manifest.json">
 
-  <!-- Restaura tema salvo antes do Angular carregar (evita flash) -->
-  <script>
-    (function() {
-      var saved = localStorage.getItem('portfolio-theme');
-      var html = document.documentElement;
-      html.classList.remove('dark', 'light');
-      html.classList.add(saved === 'light' ? 'light' : 'dark');
-    })();
-  </script>
 </head>
 <body>
   <app-root></app-root>

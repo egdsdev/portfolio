@@ -1,1007 +1,163 @@
 @import "tailwindcss";
 
-/* You can add global styles to this file, and also import other style files */
+/* ============================================================
+   DESIGN TOKENS — dark-only, quase-monocromático + 1 accent
+   ============================================================ */
+:root {
+  --bg:        #09090b;  /* zinc-950 */
+  --bg-raised: #111113;
+  --surface:   #18181b;  /* zinc-900 */
+  --border:    #27272a;  /* zinc-800 */
+  --border-hi: #3f3f46;  /* zinc-700 */
+  --fg:        #fafafa;  /* zinc-50  */
+  --fg-muted:  #a1a1aa;  /* zinc-400 */
+  --fg-faint:  #52525b;  /* zinc-600 */
+  --accent:    #6366f1;  /* indigo-500 — único accent do site */
+  --accent-fg: #a5b4fc;
 
-/* Garante cursor pointer em todos os botões interativos independente de versão do Tailwind/preflight */
+  --font-display: 'Bricolage Grotesque', 'Inter', system-ui, sans-serif;
+  --font-sans:    'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono:    ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
+}
+
+html { color-scheme: dark; scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
 button:not(:disabled),
 a[role="button"]:not(:disabled) { cursor: pointer; }
 
-@keyframes slideUp {
-  from { opacity: 0; transform: translateY(1rem); }
-  to   { opacity: 1; transform: translateY(0); }
+::selection { background: var(--accent); color: #fff; }
+
+/* ============================================================
+   TIPOGRAFIA — a assinatura do layout
+   ============================================================ */
+.display {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.05;
 }
 
-/* Estilos do Marquee */
-om-marquee {
-  padding: 1rem 0;
+/* Título de seção: grande, sólido, sem gradiente */
+.section-title {
+  font-family: var(--font-display);
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  line-height: 1.1;
+  color: var(--fg);
+  font-size: clamp(2.25rem, 5vw, 3.75rem);
 }
 
-/* Força animação do marquee independente de IntersectionObserver */
-.om-marquee.marquee-running {
-  --om-marquee-pause: running;
+.section-lead {
+  color: var(--fg-muted);
+  font-size: 1.0625rem;
+  line-height: 1.7;
+  max-width: 46ch;
 }
+
+/* Numeração/eyebrow monoespaçada — marca de "índice" */
+.eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--fg-faint);
+}
+
+/* ============================================================
+   SUPERFÍCIES
+   ============================================================ */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 0.875rem;
+  transition: border-color 0.25s ease, background-color 0.25s ease;
+}
+.card:hover { border-color: var(--border-hi); }
+
+.pill {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.25rem 0.7rem;
+  font-size: 0.8125rem;
+  border-radius: 0.5rem;
+  background: var(--bg-raised);
+  border: 1px solid var(--border);
+  color: var(--fg-muted);
+  transition: color 0.2s, border-color 0.2s;
+}
+.pill:hover { color: var(--fg); border-color: var(--border-hi); }
+
+/* Botões */
+.btn-primary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.625rem;
+  background: var(--fg);
+  color: var(--bg);
+  font-weight: 500;
+  font-size: 0.9375rem;
+  transition: opacity 0.2s;
+}
+.btn-primary:hover { opacity: 0.88; }
+
+.btn-ghost {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: 0.625rem;
+  border: 1px solid var(--border-hi);
+  color: var(--fg-muted);
+  font-weight: 500;
+  font-size: 0.9375rem;
+  transition: color 0.2s, border-color 0.2s;
+}
+.btn-ghost:hover { color: var(--fg); border-color: var(--fg-muted); }
+
+/* ============================================================
+   MISC
+   ============================================================ */
+::-webkit-scrollbar { width: 8px; }
+::-webkit-scrollbar-track { background: var(--bg); }
+::-webkit-scrollbar-thumb { background: var(--border-hi); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--fg-faint); }
+
+.nav-link { position: relative; color: var(--fg-muted); transition: color 0.2s; }
+.nav-link:hover { color: var(--fg); }
+
+om-marquee { padding: 1rem 0; }
+.om-marquee.marquee-running { --om-marquee-pause: running; }
 .om-marquee .om-marquee-content.outOfView > .om-marquee-item-wrapper {
   animation-play-state: running !important;
 }
 
-.om-glitch {
-    color: white !important;
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
 
-/* Light mode: texto do nome (fuzzy text / glitch) visível */
-html.light .om-glitch { color: #2d2546 !important; }
-
-/* Gradient name */
-.text-gradient-name {
-  background: linear-gradient(90deg, #60a5fa, #22d3ee, #60a5fa);
-  background-size: 300% auto;
-  -webkit-background-clip: text;
-  background-clip: text;
-  -webkit-text-fill-color: transparent;
-  animation: shimmerGrad 5s linear infinite;
-}
-@keyframes shimmerGrad {
-  0% { background-position: 0% center; }
-  100% { background-position: 300% center; }
-}
-
-/* Custom scrollbar */
-::-webkit-scrollbar { width: 4px; }
-::-webkit-scrollbar-track { background: #0f172a; }
-::-webkit-scrollbar-thumb { background: rgba(34,211,238,0.25); border-radius: 2px; }
-::-webkit-scrollbar-thumb:hover { background: rgba(34,211,238,0.5); }
-
-/* Nav link underline animation */
-.nav-link { position: relative; }
-.nav-link::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  left: 0;
-  width: 0;
-  height: 1px;
-  background: #22d3ee;
-  transition: width 0.3s;
-}
-.nav-link:hover::after { width: 100%; }
-
-/* Skill pills */
-.skill-pill {
-  padding: 0.2rem 0.65rem;
-  font-size: 0.75rem;
-  border-radius: 9999px;
-  background: rgba(55,65,81,0.5);
-  color: #d1d5db;
-  transition: all 0.2s;
-  display: inline-flex;
-}
-
-/* Avatar float + glow */
-.avatar-ring {
-  box-shadow: 0 0 24px rgba(34,211,238,0.15), 0 0 48px rgba(34,211,238,0.05);
-  animation: avatarFloat 4s ease-in-out infinite;
-}
-@keyframes avatarFloat {
-  0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
-}
-
-/* ============================================================
-   TEMA CLARO — paleta roxo/violeta
-   Accent:  #7c3aed (violet-600)
-   Deep:    #5b21b6 (violet-800)
-   Soft:    #8b5cf6 (violet-500)
-   ============================================================ */
-html.light {
-  color-scheme: light;
-}
-
-/* Fundo raiz — branco com leve toque de violeta */
-html.light body,
-html.light app-root {
-  background: #faf8ff !important;
-}
-
-/* Esconde o starfield */
-html.light .starfield { display: none; }
-
-html.light .min-h-screen { color: #3b3558 !important; }
-
-/* ---- Navbar ---- */
-html.light nav {
-  background-color: rgba(255, 255, 255, 0.95) !important;
-  border-bottom-color: #ede9fe !important;
-}
-html.light nav a { color: #6b7280 !important; }
-html.light nav a:hover { color: #7c3aed !important; }
-html.light nav a.text-cyan-400,
-html.light nav .text-cyan-400 { color: #7c3aed !important; }
-html.light nav a[class*="border-cyan"] {
-  color: #7c3aed !important;
-  border-color: rgba(124, 58, 237, 0.45) !important;
-}
-html.light nav a[class*="border-cyan"]:hover {
-  background: rgba(124, 58, 237, 0.08) !important;
-}
-
-/* ---- Override Tailwind blue/cyan no tema claro ---- */
-html.light .text-blue-400  { color: #7c3aed !important; }
-html.light .text-cyan-400  { color: #7c3aed !important; }
-html.light .text-cyan-300  { color: #8b5cf6 !important; }
-html.light .text-cyan-200  { color: #a78bfa !important; }
-html.light .text-blue-300  { color: #8b5cf6 !important; }
-html.light .text-purple-400 { color: #7c3aed !important; }
-html.light .text-indigo-400 { color: #6d28d9 !important; }
-
-/* Gradientes de seção */
-html.light .from-blue-400 { --tw-gradient-from: #7c3aed !important; }
-html.light .to-cyan-400   { --tw-gradient-to:   #a855f7 !important; }
-html.light .from-purple-400 { --tw-gradient-from: #7c3aed !important; }
-html.light .to-pink-400   { --tw-gradient-to:   #a855f7 !important; }
-
-/* ---- Texto geral ---- */
-html.light .text-gray-100  { color: #2d2546 !important; }
-html.light .text-gray-200  { color: #3b3558 !important; }
-html.light .text-gray-300  { color: #4b4570 !important; }
-html.light .text-gray-400  { color: #6b7280 !important; }
-html.light .text-white     { color: #2d2546 !important; }
-/* Fundos escuros mantêm texto branco independente do tema */
-html.light .bg-violet-600,
-html.light .bg-violet-500,
-html.light .bg-violet-600:hover { color: #ffffff !important; }
-html.light .bg-violet-600 .text-white,
-html.light .bg-violet-500 .text-white { color: #ffffff !important; }
-html.light nav button.bg-red-600 { color: #ffffff !important; }
-html.light .text-slate-300 { color: #4b4570 !important; }
-html.light .text-slate-400 { color: #6b7280 !important; }
-
-html.light section { background: transparent; }
-
-/* ---- Cards ---- */
-html.light [class*="bg-gray-800"],
-html.light [class*="bg-gray-900"] {
-  background-color: #ffffff !important;
-  border-color: #ede9fe !important;
-  box-shadow: 0 2px 8px rgba(109, 40, 217, 0.06) !important;
-}
-html.light [class*="bg-gray-800"]:hover,
-html.light [class*="bg-gray-900"]:hover {
-  border-color: rgba(124, 58, 237, 0.3) !important;
-}
-
-/* ---- Card do Brulias (Exceção/Destaque no Light Mode) ---- */
-html.light .brulias-card {
-  background-color: #ffffff !important;
-  border-color: #a855f7 !important; /* purple-500 */
-  box-shadow: 0 0 30px rgba(168, 85, 247, 0.25) !important;
-}
-html.light .brulias-card:hover {
-  border-color: #22d3ee !important; /* cyan-400 */
-  box-shadow: 0 0 40px rgba(34, 211, 238, 0.4) !important;
-}
-html.light .brulias-card strong.text-white {
-  color: #a855f7 !important;
-}
-html.light .brulias-feature {
-  background-color: rgba(168, 85, 247, 0.05) !important;
-  border-color: rgba(168, 85, 247, 0.2) !important;
-  color: #2d2546;
-}
-html.light .brulias-feature p.text-white {
-  color: #4c1d95 !important;
-}
-html.light .brulias-feature p.text-gray-500 {
-  color: #6b7280 !important;
-}
-
-/* Filtros Internos do Card Brulias para Remover o aspecto Escurecido */
-html.light .brulias-glow-overlay {
-  background: linear-gradient(to bottom right, rgba(168, 85, 247, 0.03), rgba(34, 211, 238, 0.03), rgba(255, 255, 255, 0.3)) !important;
-}
-html.light .brulias-glow-bulb-1 {
-  background-color: rgba(168, 85, 247, 0.1) !important;
-}
-html.light .brulias-glow-bulb-2 {
-  background-color: rgba(34, 211, 238, 0.1) !important;
-}
-html.light .brulias-card h3.text-transparent {
-  background-image: linear-gradient(to right, #7c3aed, #0891b2) !important; /* purple-600 to cyan-600 */
-}
-html.light .brulias-card p.text-cyan-400 {
-  color: #0891b2 !important; /* cyan-600 */
-}
-html.light .brulias-card p.text-gray-300 {
-  color: #4b5563 !important; /* gray-600 para melhor leitura no fundo claro */
-}
-
-/* Hover borders dos cards de skill */
-html.light [class*="hover:border-blue-500"],
-html.light [class*="hover:border-cyan-500"],
-html.light [class*="hover:border-purple-500"],
-html.light [class*="hover:border-green-500"],
-html.light [class*="hover:border-orange-500"],
-html.light [class*="hover:border-rose-500"] {
-  --hover-accent: rgba(124, 58, 237, 0.35);
-}
-
-/* Ícone de fundo dos cards */
-html.light [class*="bg-blue-500\/10"]   { background-color: rgba(124,58,237,0.08) !important; }
-html.light [class*="bg-cyan-500\/10"]   { background-color: rgba(124,58,237,0.08) !important; }
-html.light [class*="bg-purple-500\/10"] { background-color: rgba(124,58,237,0.08) !important; }
-html.light [class*="bg-green-500\/10"]  { background-color: rgba(109,40,217,0.08) !important; }
-html.light [class*="bg-orange-500\/10"] { background-color: rgba(139,92,246,0.08) !important; }
-html.light [class*="bg-rose-500\/10"]   { background-color: rgba(168,85,247,0.08) !important; }
-
-/* Títulos dos cards de skill */
-html.light h3.text-blue-400,
-html.light h3.text-cyan-400,
-html.light h3.text-purple-400,
-html.light h3.text-green-400,
-html.light h3.text-orange-400,
-html.light h3.text-rose-400 { color: #7c3aed !important; }
-
-/* ---- Timeline de Experiência (light) ---- */
-html.light .timeline-content {
-  background: #ffffff !important;
-  border-color: #ede9fe !important;
-  box-shadow: 0 2px 8px rgba(109,40,217,0.07) !important;
-}
-html.light .timeline-content:hover {
-  background: #faf5ff !important;
-  border-color: rgba(124, 58, 237, 0.35) !important;
-}
-html.light .timeline-content li { color: #4b4570 !important; }
-html.light .timeline-content strong { color: #2d2546 !important; }
-html.light .timeline-content .exp-role { color: #4b4570 !important; }
-html.light .timeline-content .exp-modality { color: #6b7280 !important; }
-html.light .timeline-title .date    { color: #8b5cf6 !important; }
-html.light .timeline-title .company { color: #5b21b6 !important; }
-
-/* ---- Skills pills ---- */
-html.light .skill-pill {
-  background: #f5f3ff !important;
-  color: #4b4570 !important;
-  border-color: #ddd6fe !important;
-}
-html.light .skill-pill:hover { color: #7c3aed !important; border-color: #7c3aed !important; }
-
-/* ---- Tech Marquee ---- */
-html.light .tech-pill {
-  background: #ffffff !important;
-  border-color: #ede9fe !important;
-  box-shadow: 0 1px 3px rgba(109,40,217,0.08);
-}
-html.light .tech-pill span { color: #6b7280 !important; }
-/* Ícones coloridos ficam ok no light, só ajusta o wrapper */
-html.light .marquee-wrapper { background: transparent; }
-
-/* ---- Seção de detalhes pessoais (blob circles) ---- */
-html.light .bg-blue-500   { background-color: #7c3aed !important; }
-html.light .bg-cyan-500   { background-color: #a855f7 !important; }
-html.light .bg-purple-500 { background-color: #7c3aed !important; }
-
-/* Blobs na hero: mais visíveis no light (sem mix-blend, opacidade maior) */
-html.light #detalhes .animate-blob { opacity: 0.45 !important; }
-
-/* Ícones amarelos — péssimo contraste em fundo claro */
-html.light .text-yellow-300 { color: #b45309 !important; }
-html.light .text-yellow-400 { color: #b45309 !important; }
-html.light .text-yellow-500 { color: #92400e !important; }
-
-/* ---- Avatar border ---- */
-html.light .border-cyan-400\/40 { border-color: rgba(124,58,237,0.3) !important; }
-html.light .border-cyan-500\/30 { border-color: rgba(124,58,237,0.25) !important; }
-html.light .bg-cyan-500\/5  { background-color: rgba(124,58,237,0.05) !important; }
-html.light .text-cyan-300   { color: #8b5cf6 !important; }
-
-/* Nav link underline no light */
-html.light .nav-link::after { background: #7c3aed; }
-
-/* ---- Scrollbar ---- */
-html.light ::-webkit-scrollbar-track { background: #f5f3ff; }
-html.light ::-webkit-scrollbar-thumb { background: rgba(124,58,237,0.3); }
-html.light ::-webkit-scrollbar-thumb:hover { background: rgba(124,58,237,0.6); }
-
-/* ---- Footer brand <EG /> (light) ---- */
-html.light .footer-brand {
-  color: #7c3aed !important;
-  opacity: 0.7;
-}
-
-/* ---- Certificações: texto do congresso (light) ---- */
-html.light .cert-year {
-  color: #7c3aed !important;
-}
-
-/* ---- Botão Baixar Currículo (light) ---- */
-html.light .border-cyan-500\/50 { border-color: rgba(124, 58, 237, 0.5) !important; }
-html.light .hover\:border-cyan-400:hover { border-color: rgba(124, 58, 237, 0.7) !important; }
-html.light .hover\:bg-cyan-500\/10:hover { background-color: rgba(124, 58, 237, 0.08) !important; }
-
-/* ---- Botão Entre em Contato (light) ---- */
-html.light .contact-btn {
-  background-image: linear-gradient(to right, #7c3aed, #a855f7) !important;
-  color: #ffffff !important;
-  box-shadow: 0 4px 15px rgba(124,58,237,0.3);
-}
-html.light .contact-btn:hover {
-  box-shadow: 0 6px 20px rgba(124,58,237,0.45) !important;
-}
-
-/* ── Tech Timeline — badges no modo claro ──────────────────────────────── */
-/*
-  No dark mode: bg-*-900/40 (escuro) + text-*-300 (claro) = ótimo contraste.
-  No light mode: o mesmo bg semi-transparente sobre branco vira cinza médio
-  e o texto claro (300) fica ilegível. Solução: bg branco/pastel + texto escuro saturado.
-*/
-html.light #tech-timeline span.rounded-full {
-  background-color: #ffffff !important;
-}
-/* Texto por cor — versões escuras e saturadas das respectivas paletas */
-html.light #tech-timeline .text-indigo-300  { color: #4338ca !important; }
-html.light #tech-timeline .text-orange-300  { color: #c2410c !important; }
-html.light #tech-timeline .text-yellow-300  { color: #b45309 !important; }
-html.light #tech-timeline .text-blue-300    { color: #1d4ed8 !important; }
-html.light #tech-timeline .text-cyan-300    { color: #0e7490 !important; }
-html.light #tech-timeline .text-red-300     { color: #b91c1c !important; }
-html.light #tech-timeline .text-rose-300    { color: #be123c !important; }
-html.light #tech-timeline .text-green-300   { color: #15803d !important; }
-html.light #tech-timeline .text-amber-300   { color: #b45309 !important; }
-html.light #tech-timeline .text-purple-300  { color: #7c3aed !important; }
-html.light #tech-timeline .text-gray-300    { color: #374151 !important; }
-/* Cards da timeline: bordas e fundo adequados */
-html.light #tech-timeline .border-gray-800\/60 { border-color: #e9e5ff !important; }
-html.light #tech-timeline .hover\:border-gray-700:hover { border-color: #c4b5fd !important; }
-html.light #tech-timeline p.text-gray-600  { color: #7c3aed !important; }
-
-/* ── Badges no app.html (habilidades / app.html bg-gray-700/50) ──────── */
-html.light span.rounded-full[class*="bg-gray-700"] {
-  background-color: #f5f3ff !important;
-  color: #4b4570 !important;
-}
-
-/* ── Como Eu Trabalho — light mode ──────────────────────────────────────── */
-/* Ícone box: fundo sólido branco + borda colorida visível */
-html.light #como-trabalho .step-icon-box {
-  background-color: #ffffff !important;
-}
-html.light #como-trabalho .border-purple-500\/50 { border-color: rgba(124,58,237,0.55) !important; }
-html.light #como-trabalho .border-blue-500\/50   { border-color: rgba(59,130,246,0.55) !important; }
-html.light #como-trabalho .border-cyan-500\/50   { border-color: rgba(6,182,212,0.55) !important; }
-html.light #como-trabalho .border-green-500\/50  { border-color: rgba(34,197,94,0.55) !important; }
-html.light #como-trabalho .border-amber-500\/50  { border-color: rgba(245,158,11,0.55) !important; }
-/* Hover: fundo pastel em vez de *-950 */
-html.light #como-trabalho .group:hover .border-purple-500\/50 { background-color: #f5f3ff !important; border-color: #7c3aed !important; }
-html.light #como-trabalho .group:hover .border-blue-500\/50   { background-color: #eff6ff !important; border-color: #2563eb !important; }
-html.light #como-trabalho .group:hover .border-cyan-500\/50   { background-color: #ecfeff !important; border-color: #0891b2 !important; }
-html.light #como-trabalho .group:hover .border-green-500\/50  { background-color: #f0fdf4 !important; border-color: #16a34a !important; }
-html.light #como-trabalho .group:hover .border-amber-500\/50  { background-color: #fffbeb !important; border-color: #d97706 !important; }
-/* Badge numérico */
-html.light #como-trabalho .step-num {
-  background-color: #ffffff !important;
-  border-color: #ddd6fe !important;
-  color: #7c3aed !important;
-}
-/* Tags dentro dos steps */
-html.light #como-trabalho .step-tag {
-  background-color: #f5f3ff !important;
-  color: #4b4570 !important;
-  border-color: #ddd6fe !important;
-}
-/* Cards de descrição no mobile */
-html.light #como-trabalho .step-mobile-card {
-  background-color: #ffffff !important;
-  border-color: #ede9fe !important;
-}
-/* Linha conectora — em tom violeta suave */
-html.light #como-trabalho .bg-linear-to-r.from-purple-500\/30 {
-  opacity: 0.35 !important;
-}
-/* Cards de valores (banner inferior) */
-html.light #como-trabalho .border-gray-800\/60.bg-gray-900\/40 {
-  background-color: #ffffff !important;
-  border-color: #ede9fe !important;
-}
-html.light #como-trabalho .border-gray-800\/60.bg-gray-900\/40:hover {
-  border-color: #c4b5fd !important;
-}
-/* Texto dos steps */
-html.light #como-trabalho h3.text-white,
-html.light #como-trabalho h4.text-white { color: #2d2546 !important; }
-html.light #como-trabalho p.text-gray-500 { color: #6b7280 !important; }
-html.light #como-trabalho p.text-gray-400 { color: #6b7280 !important; }
-/* Ícone da seta entre steps */
-html.light #como-trabalho .text-gray-700 { color: #c4b5fd !important; }
-
-/* ---- Scroll indicator (light) ---- */
-html.light .scroll-indicator { color: #8b5cf6 !important; }
-html.light .scroll-mouse { border-color: #8b5cf6 !important; }
-html.light .scroll-dot { background-color: #7c3aed !important; }
-
-/* ---- Nome gradiente (light) ---- */
-html.light .text-gradient-name {
-  background: linear-gradient(90deg, #7c3aed, #a855f7, #7c3aed) !important;
-  background-size: 300% auto !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-}
-
-/* ---- DevMatch (light) ---- */
-html.light .devmatch-card {
-  background: #ffffff !important;
-  border-color: #ede9fe !important;
-  box-shadow: 0 2px 12px rgba(109,40,217,0.07) !important;
-}
-html.light .devmatch-card-title { color: #2d1b69 !important; }
-html.light .devmatch-title {
-  background: linear-gradient(90deg, #7c3aed, #a855f7) !important;
-  -webkit-background-clip: text !important;
-  background-clip: text !important;
-  -webkit-text-fill-color: transparent !important;
-}
-html.light .devmatch-slider::-webkit-slider-runnable-track { background: #ddd6fe !important; }
-html.light .devmatch-slider::-moz-range-track { background: #ddd6fe !important; }
-html.light .toggle-inactive {
-  background: #f5f3ff !important;
-  border-color: #ddd6fe !important;
-  color: #6b7280 !important;
-}
-html.light .toggle-inactive:hover {
-  border-color: #7c3aed !important;
-  color: #5b21b6 !important;
-  background: #ede9fe !important;
-}
-html.light .toggle-match {
-  background: rgba(34,197,94,0.08) !important;
-  border-color: rgba(34,197,94,0.4) !important;
-  color: #15803d !important;
-}
-html.light .toggle-miss {
-  background: rgba(239,68,68,0.06) !important;
-  border-color: rgba(239,68,68,0.3) !important;
-  color: #b91c1c !important;
-}
-html.light .devmatch-cta {
-  border-color: rgba(124,58,237,0.3) !important;
-  background: rgba(124,58,237,0.05) !important;
-}
-html.light .devmatch-cta p { color: #7c3aed !important; }
-html.light .devmatch-cta-btn {
-  background-image: linear-gradient(to right, #7c3aed, #a855f7) !important;
-  color: #ffffff !important;
-}
-html.light .devmatch-input {
-  background: #f5f3ff !important;
-  border-color: #ddd6fe !important;
-  color: #2d1b69 !important;
-}
-html.light .devmatch-input::placeholder { color: #a78bfa !important; opacity: 0.6; }
-html.light .devmatch-input:focus { border-color: #7c3aed !important; }
-html.light .devmatch-calc-btn {
-  background: linear-gradient(135deg, #7c3aed, #a855f7) !important;
-  box-shadow: 0 4px 20px rgba(124,58,237,0.3) !important;
-  color: #ffffff !important;
-}
-html.light .devmatch-calc-btn:hover {
-  box-shadow: 0 8px 28px rgba(124,58,237,0.45) !important;
-}
-html.light .devmatch-area-name { color: #2d1b69 !important; }
-html.light .devmatch-score-green  { background: rgba(22,163,74,0.18)  !important; color: #15803d !important; }
-html.light .devmatch-score-orange { background: rgba(217,119,6,0.18)  !important; color: #b45309 !important; }
-html.light .devmatch-score-red    { background: rgba(220,38,38,0.18)   !important; color: #b91c1c !important; }
-html.light .devmatch-tech-tag {
-  background: #ede9fe !important;
-  color: #5b21b6 !important;
-  border-color: #c4b5fd !important;
-}
-html.light .devmatch-reset-btn {
-  background: #dc2626 !important;
-  border-color: #b91c1c !important;
-  color: #ffffff !important;
-}
-html.light .devmatch-reset-btn:hover {
-  background: #b91c1c !important;
-  border-color: #991b1b !important;
-}
-html.light .devmatch-surprise {
-  background: linear-gradient(135deg, rgba(180,83,9,0.22), rgba(217,119,6,0.16)) !important;
-  border-color: rgba(180,83,9,0.5) !important;
-}
-html.light .devmatch-surprise-title  { color: #92400e !important; }
-html.light .devmatch-surprise-body   { color: #1c1917 !important; }
-html.light .devmatch-surprise-item   { color: #292524 !important; }
-html.light .devmatch-surprise-quote  { color: #92400e !important; opacity: 1 !important; }
-html.light .ai-match-btn {
-  background: linear-gradient(135deg, #7c3aed, #a855f7) !important;
-  box-shadow: 0 4px 20px rgba(124,58,237,0.3) !important;
-}
-html.light .ai-match-btn:hover:not(:disabled) {
-  box-shadow: 0 8px 28px rgba(124,58,237,0.45) !important;
-}
-html.light .ai-loading-ring {
-  border-color: rgba(124,58,237,0.15) !important;
-  border-top-color: #7c3aed !important;
-}
-
-/* ---- Theme toggle alinhamento ---- */
-om-theme-toggle {
-  display: flex;
-  align-items: center;
-  cursor: pointer;
-}
-
-/* Scroll dot bounce */
-@keyframes scrollBounce {
-  0%, 100% { transform: translateY(0); opacity: 1; }
-  50% { transform: translateY(8px); opacity: 0.3; }
-}
-.scroll-dot { animation: scrollBounce 1.5s ease-in-out infinite; }
-
-/* ---- Admin pages (dark default) ---- */
-.admin-page {
-  background: transparent;
-  color: #e5e7eb;
-}
-.admin-card {
-  background: #111827;
-  border-color: #1f2937;
-}
+/* ---- Admin (mantido: dark, neutro) ---- */
+.admin-page { background: transparent; color: var(--fg); }
+.admin-card { background: var(--surface); border-color: var(--border); }
 .admin-input {
-  background: #1f2937;
-  border-color: #374151;
-  color: #e5e7eb;
+  background: var(--bg-raised);
+  border-color: var(--border-hi);
+  color: var(--fg);
 }
-.admin-input::placeholder { color: #6b7280; }
-.admin-input:focus { border-color: rgba(6,182,212,0.6); }
+.admin-input::placeholder { color: var(--fg-faint); }
+.admin-input:focus { border-color: var(--accent); }
 
-/* ---- Admin pages (light theme) ---- */
-html.light .admin-page {
-  background: transparent !important;
-  color: #3b3558 !important;
-}
-html.light .admin-card {
-  background: #ffffff !important;
-  border-color: #e2d9f3 !important;
-  box-shadow: 0 2px 12px rgba(109,40,217,0.08) !important;
-}
-html.light .admin-input {
-  background: #f5f3ff !important;
-  border-color: #ddd6fe !important;
-  color: #3b3558 !important;
-}
-html.light .admin-input::placeholder { color: #9ca3af !important; }
-html.light .admin-input:focus { border-color: rgba(124,58,237,0.5) !important; }
-
-/* ── Tabs (Analytics / Conversas) ────────────────────────────────────── */
-/* Wrapper das tabs: fundo cinza-violeta suave */
-html.light .admin-page .bg-gray-800\/50 {
-  background-color: #ede9fe !important;
-  border-color: #c4b5fd !important;
-}
-/* Tab inativa */
-html.light .admin-page .text-gray-500 {
-  color: #6b7280 !important;
-}
-/* Tab ativa — precisa de fundo visível */
-html.light .admin-page [class*="bg-gray-700"] {
-  background-color: #ffffff !important;
-  color: #4c1d95 !important;
-  box-shadow: 0 1px 4px rgba(109,40,217,0.15) !important;
-}
-/* Texto ativo (text-white) dentro das tabs */
-html.light .admin-page .text-white {
-  color: #4c1d95 !important;
-}
-
-/* ── Botão Push (inativo) ─────────────────────────────────────────────── */
-html.light .admin-page .border-gray-700 {
-  border-color: #c4b5fd !important;
-}
-html.light .admin-page .bg-gray-800\/50 .text-gray-400,
-html.light .admin-page > * .text-gray-400 {
-  color: #6b7280 !important;
-}
-
-/* ── Lista de conversas ───────────────────────────────────────────────── */
-/* Hover em linhas da lista */
-html.light .admin-page .hover\:bg-gray-800\/40:hover {
-  background-color: rgba(124,58,237,0.06) !important;
-}
-/* Conversa selecionada */
-html.light .admin-page .bg-violet-500\/10 {
-  background-color: rgba(124,58,237,0.1) !important;
-}
-/* Separadores border-gray-800 (qualquer variante de opacidade) */
-html.light .admin-page .border-gray-800,
-html.light .admin-page [class*="border-gray-800"] {
-  border-color: #ede9fe !important;
-}
-/* Divisórias das tabelas via elemento (garante cobertura total) */
-html.light .admin-page table thead tr,
-html.light .admin-page table tbody tr,
-html.light .admin-page table tfoot tr {
-  border-color: #ede9fe !important;
-}
-html.light .admin-page table th,
-html.light .admin-page table td {
-  border-color: #ede9fe !important;
-}
-/* Texto dos nomes na lista */
-html.light .admin-page .text-gray-200 {
-  color: #3b3558 !important;
-}
-/* Bolinha offline da conversa */
-html.light .admin-page .bg-gray-600 {
-  background-color: #9ca3af !important;
-}
-/* Data da conversa */
-html.light .admin-page .text-gray-600 {
-  color: #9ca3af !important;
-}
-
-/* ── Área de mensagens ───────────────────────────────────────────────── */
-/* Balonzinho do visitante: cinza escuro → lilás suave */
-html.light .admin-page [class*="bg-gray-700\/80"] {
-  background-color: #ede9fe !important;
-  color: #3b3558 !important;
-}
-/* Label do nome do visitante no balonzinho */
-html.light .admin-page .text-gray-400 {
-  color: #7c3aed !important;
-}
-/* Fundo da área de mensagens quando vazia */
-html.light .admin-page .text-gray-600 {
-  color: #9ca3af !important;
-}
-
-/* ── Input de resposta ───────────────────────────────────────────────── */
-/* Borda separadora acima do input */
-html.light .admin-page [class*="border-gray-800\/50"] {
-  border-color: #e2d9f3 !important;
-}
-/* Textarea de resposta */
-html.light .admin-page textarea {
-  background-color: #f5f3ff !important;
-  border-color: #ddd6fe !important;
-  color: #3b3558 !important;
-}
-html.light .admin-page textarea::placeholder { color: #a78bfa !important; }
-html.light .admin-page textarea:focus { border-color: #7c3aed !important; }
-/* Botão clipe */
-html.light .admin-page .border-gray-700.bg-gray-800\/50 {
-  background-color: #f5f3ff !important;
-  border-color: #ddd6fe !important;
-  color: #7c3aed !important;
-}
-/* Arquivo selecionado (chip) */
-html.light .admin-page [class*="bg-gray-700\/60"] {
-  background-color: #ede9fe !important;
-  color: #4c1d95 !important;
-}
-
-/* ---- Live Chat — modo claro ----------------------------------------- */
-/* Janela e modal: borda e sombra visíveis */
-html.light .chat-window {
-  border-color: #c4b5fd !important;
-  box-shadow: 0 8px 32px rgba(124,58,237,0.15), 0 2px 8px rgba(0,0,0,0.06) !important;
-}
-html.light .chat-modal {
-  border-color: #c4b5fd !important;
-  box-shadow: 0 8px 32px rgba(124,58,237,0.15) !important;
-}
-/* Balonzinho do owner: lilás claro em vez de cinza escuro */
-html.light .chat-msg-owner {
-  background-color: #ede9fe !important;
-}
-/* Label "Elias" no balonzinho do owner */
-html.light .chat-owner-label { color: #7c3aed !important; }
-/* Timestamp do owner: visível no fundo lilás */
-html.light .chat-msg-owner .text-gray-400 { color: #8b5cf6 !important; }
-/* Balonzinho do visitante: manter texto branco sobre fundo violeta */
-html.light .chat-msg-visitor,
-html.light .chat-msg-visitor p { color: #ffffff !important; }
-/* Fechar: hover subtil violeta */
-html.light .chat-close-btn:hover {
-  background-color: rgba(124,58,237,0.1) !important;
-  color: #7c3aed !important;
-}
-/* Botão enviar: branco */
-html.light .chat-send-btn { color: #ffffff !important; }
-/* Botões primários (bg-violet-600) na modal */
-html.light .chat-modal .bg-violet-600 { color: #ffffff !important; }
-/* Focus em campos */
-html.light .chat-modal input:focus { border-color: #7c3aed !important; }
-html.light .chat-window textarea:focus { border-color: #7c3aed !important; }
-/* Toast: borda violeta + nome legível */
-html.light .chat-toast { border-color: rgba(124,58,237,0.45) !important; }
-html.light .chat-toast .text-violet-400 { color: #7c3aed !important; }
-
-/* Theme toggle icon: white in dark, gray in light */
-.header-theme-icon {
-  width: 1.1rem;
-  height: 1.1rem;
-  color: #ffffff;
-}
-html.light .header-theme-icon {
-  stroke: #6b7280 !important;
-  color: #6b7280 !important;
-}
-
-/* Força cor branca nos ícones padrão da lib (currentColor) */
-.om-theme-toggle { color: #ffffff !important; }
-html.light .om-theme-toggle { color: #6b7280 !important; }
-
-/* Light theme sun icon */
-html.light om-theme-toggle span {
-  color: #6b7280 !important;
-}
-
-/* Dashboard link: cyan in dark, purple in light */
-.admin-dashboard-link { color: #22d3ee !important; }
-.admin-dashboard-link:hover { color: #67e8f9 !important; }
-html.light .admin-dashboard-link { color: #7c3aed !important; }
-html.light .admin-dashboard-link:hover { color: #6d28d9 !important; }
-
-/* ---- Leaflet map ---- */
 .leaflet-map { z-index: 0; }
-html.light .leaflet-map .leaflet-tile-pane { filter: hue-rotate(220deg) saturate(0.7) brightness(1.1); }
-
-/* ---- Cores de texto ausentes nos overrides de light mode ---- */
-html.light .text-yellow-400 { color: #b45309 !important; }
-html.light .text-purple-300 { color: #6d28d9 !important; }
-html.light .text-indigo-300 { color: #4338ca !important; }
-html.light .text-pink-300   { color: #be185d !important; }
-html.light .text-green-500  { color: #15803d !important; }
-
-/* ---- Portfolio: mini-highlights visíveis no modo claro ---- */
-html.light .bg-white\/5      { background-color: rgba(124,58,237,0.05) !important; }
-html.light .border-white\/10 { border-color: rgba(124,58,237,0.18)    !important; }
-
-/* ---- Portfolio / geral: tag badge backgrounds no modo claro ---- */
-html.light .bg-purple-500\/20 { background-color: rgba(124,58,237,0.1) !important; }
-html.light .bg-cyan-500\/20   { background-color: rgba(124,58,237,0.1) !important; }
-html.light .bg-blue-500\/20   { background-color: rgba(79,70,229,0.1)  !important; }
-html.light .bg-indigo-500\/20 { background-color: rgba(67,56,202,0.1)  !important; }
-html.light .bg-pink-500\/20   { background-color: rgba(190,24,93,0.07) !important; }
-
-/* ---- Portfolio card: overlays de gradiente suavizados no modo claro ---- */
-html.light #projetos .from-purple-900\/40 { --tw-gradient-from: rgba(124,58,237,0.05) !important; }
-html.light #projetos .via-indigo-900\/30  { --tw-gradient-via:  rgba(99,102,241,0.03) !important; }
-html.light #projetos .to-cyan-900\/20     { --tw-gradient-to:   rgba(8,145,178,0.02)  !important; }
-html.light #projetos .bg-purple-600\/20   { background-color: rgba(124,58,237,0.05)   !important; }
-html.light #projetos .bg-cyan-600\/10     { background-color: rgba(8,145,178,0.03)    !important; }
-
-/* ---- Portfolio: borda do card principal ---- */
-html.light #projetos .border-purple-500\/30 { border-color: rgba(124,58,237,0.25) !important; }
-html.light #projetos .hover\:border-purple-400\/60:hover { border-color: rgba(109,40,217,0.5) !important; }
-
-/* ════════════════════════════════════════════════════════════════════════
-   ADMIN DASHBOARD — LIGHT MODE COMPREHENSIVE OVERRIDES
-   Cobre: tabela de acessos, gráficos, funil, leads, jornada, testes
-   ════════════════════════════════════════════════════════════════════════ */
-
-/* ── Texto geral escuro ─────────────────────────────────────────────── */
-html.light .admin-page .text-gray-300  { color: #374151 !important; }
-html.light .admin-page .text-gray-100  { color: #1f2937 !important; }
-
-/* ── Badges de percentual (IA/Dev Match) — translúcidos muito claros ── */
-/* Verde */
-html.light .admin-page .bg-green-500\/15 { background-color: #d1fae5 !important; }
-html.light .admin-page .text-green-400   { color: #065f46 !important; }
-html.light .admin-page .text-green-300   { color: #065f46 !important; }
-/* Amarelo/Âmbar — principal culpado de invisibilidade */
-html.light .admin-page .bg-yellow-500\/15 { background-color: #fef3c7 !important; }
-html.light .admin-page .text-yellow-400   { color: #92400e !important; }
-html.light .admin-page .text-amber-400    { color: #92400e !important; }
-html.light .admin-page .text-amber-300    { color: #78350f !important; }
-/* Vermelho */
-html.light .admin-page .bg-red-500\/15  { background-color: #fee2e2 !important; }
-html.light .admin-page .text-red-400    { color: #991b1b !important; }
-html.light .admin-page .text-red-300    { color: #991b1b !important; }
-/* Cyan */
-html.light .admin-page .bg-cyan-500\/10 { background-color: #cffafe !important; }
-html.light .admin-page .text-cyan-400   { color: #0e7490 !important; }
-html.light .admin-page .text-cyan-300   { color: #155e75 !important; }
-/* Purple/Violeta */
-html.light .admin-page .bg-purple-500\/15 { background-color: #ede9fe !important; }
-html.light .admin-page .text-purple-400   { color: #6d28d9 !important; }
-html.light .admin-page .text-purple-300   { color: #6d28d9 !important; }
-/* Azul */
-html.light .admin-page .bg-blue-500\/15  { background-color: #dbeafe !important; }
-html.light .admin-page .text-blue-400    { color: #1e40af !important; }
-html.light .admin-page .text-blue-300    { color: #1e3a8a !important; }
-/* Emerald (chips de jornada — primeira etapa) */
-html.light .admin-page .bg-emerald-500\/15 { background-color: #d1fae5 !important; }
-html.light .admin-page .text-emerald-300   { color: #065f46 !important; }
-/* Amber (chips de jornada — última etapa) */
-html.light .admin-page .bg-amber-500\/15   { background-color: #fef3c7 !important; }
-/* Amber border */
-html.light .admin-page .border-amber-500\/30 { border-color: #fbbf24 !important; }
-html.light .admin-page .border-emerald-500\/30 { border-color: #34d399 !important; }
-html.light .admin-page .border-cyan-500\/15  { border-color: #a5f3fc !important; }
-html.light .admin-page .bg-cyan-500\/5       { background-color: #ecfeff !important; }
-
-/* ── Score badges com border ─────────────────────────────────────────── */
-html.light .admin-page .border-red-500\/30    { border-color: #fca5a5 !important; }
-html.light .admin-page .border-blue-500\/30   { border-color: #93c5fd !important; }
-html.light .admin-page .border-green-500\/30  { border-color: #6ee7b7 !important; }
-
-/* ── Cards de leads (quente/morno/frio) ─────────────────────────────── */
-html.light .admin-page .bg-red-500\/5    { background-color: #fff1f2 !important; }
-html.light .admin-page .border-red-500\/20  { border-color: #fca5a5 !important; }
-html.light .admin-page .border-red-500\/30  { border-color: #f87171 !important; }
-html.light .admin-page .text-red-500    { color: #dc2626 !important; }
-html.light .admin-page .text-red-400    { color: #b91c1c !important; }
-html.light .admin-page .bg-amber-500\/5  { background-color: #fffbeb !important; }
-html.light .admin-page .border-amber-500\/20 { border-color: #fcd34d !important; }
-html.light .admin-page .border-amber-500\/30 { border-color: #f59e0b !important; }
-html.light .admin-page .text-amber-500  { color: #b45309 !important; }
-html.light .admin-page .text-amber-400  { color: #92400e !important; }
-html.light .admin-page .bg-blue-500\/5   { background-color: #eff6ff !important; }
-html.light .admin-page .border-blue-500\/20  { border-color: #93c5fd !important; }
-html.light .admin-page .border-blue-500\/30  { border-color: #60a5fa !important; }
-html.light .admin-page .text-blue-500   { color: #1d4ed8 !important; }
-html.light .admin-page .text-blue-400   { color: #1e40af !important; }
-
-/* ── Chips de jornada (middle steps — bg-gray-700/60 text-gray-400) ─ */
-html.light .admin-page .bg-gray-700\/60 { background-color: #f3f4f6 !important; color: #374151 !important; }
-html.light .admin-page .border-gray-600\/50 { border-color: #d1d5db !important; }
-
-/* ── Barras de progresso (background track) ─────────────────────────── */
-html.light .admin-page .bg-gray-800 { background-color: #e5e7eb !important; }
-html.light .admin-page [class="h-3 bg-gray-800 rounded-full overflow-hidden flex mb-2"],
-html.light .admin-page [class="h-3 bg-gray-800 rounded-full overflow-hidden mb-2"],
-html.light .admin-page [class="h-full rounded-full"],
-html.light .admin-page .h-2.rounded-full.bg-gray-800 { background-color: #e5e7eb !important; }
-html.light .admin-page .w-16.h-1.bg-gray-800 { background-color: #e5e7eb !important; }
-html.light .admin-page .flex-1.h-1.bg-gray-800 { background-color: #e5e7eb !important; }
-
-/* ── Inputs / textareas nas abas de gráficos e Testes ───────────────── */
-html.light .admin-page input[type="date"],
-html.light .admin-page input[type="text"],
-html.light .admin-page select {
-  background-color: #f5f3ff !important;
-  border-color: #ddd6fe !important;
-  color: #3b3558 !important;
-}
-html.light .admin-page input[type="date"]:focus,
-html.light .admin-page input[type="text"]:focus,
-html.light .admin-page select:focus { border-color: #7c3aed !important; }
-html.light .admin-page input::placeholder { color: #a78bfa !important; }
-
-/* ── Botões de preset de período e comparar ─────────────────────────── */
-html.light .admin-page .border-gray-700.text-gray-500 {
-  border-color: #c4b5fd !important;
-  color: #6b7280 !important;
-}
-html.light .admin-page .border-gray-700.text-gray-500:hover {
-  border-color: #7c3aed !important;
-  color: #4c1d95 !important;
-}
-
-/* ── Botões de paginação e Export ────────────────────────────────────── */
-html.light .admin-page .rounded-md.border.border-gray-700 {
-  border-color: #c4b5fd !important;
-  color: #6b7280 !important;
-  background-color: #f5f3ff !important;
-}
-html.light .admin-page .rounded-md.border.border-gray-700:hover:not(:disabled) {
-  border-color: #7c3aed !important;
-  color: #4c1d95 !important;
-}
-
-/* ── Card de testes: títulos h3 (text-white) ─────────────────────────── */
-html.light .admin-page h3.text-white { color: #1f2937 !important; }
-
-/* ── Status badge push (bg-gray-800/60) ─────────────────────────────── */
-html.light .admin-page [class*="bg-gray-800\/60"] {
-  background-color: #f3f4f6 !important;
-}
-html.light .admin-page [class*="bg-gray-800\/70"] {
-  background-color: #f5f3ff !important;
-  border-color: #ddd6fe !important;
-  color: #3b3558 !important;
-}
-
-/* ── Área de ícone dos cards de teste (bg-violet-500/15, bg-cyan-500/15) */
-html.light .admin-page .bg-violet-500\/15 { background-color: #ede9fe !important; }
-html.light .admin-page .bg-cyan-500\/15   { background-color: #cffafe !important; }
-html.light .admin-page .bg-violet-500\/20 { background-color: #ede9fe !important; }
-
-/* ── Botão conceder permissão (bg-violet-500/20 border-violet-500/40) ── */
-html.light .admin-page .bg-violet-500\/20.border-violet-500\/40 {
-  background-color: #ede9fe !important;
-  border-color: #a78bfa !important;
-  color: #4c1d95 !important;
-}
-
-/* ── Dropdown flutuante de mensagem (fixed, fora do admin-page) ───────  */
-html.light .fixed.bg-gray-900.border.border-gray-700 {
-  background-color: #ffffff !important;
-  border-color: #e2d9f3 !important;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.12) !important;
-}
-html.light .fixed.bg-gray-900.border.border-gray-700 .text-gray-200 { color: #1f2937 !important; }
-html.light .fixed.bg-gray-900.border.border-gray-700 .hover\:bg-gray-800:hover { background-color: #f3f4f6 !important; }
-
-/* ── Toast de nova mensagem (fixed, fora do admin-page) ─────────────── */
-html.light .admin-page ~ * .bg-gray-900,
-html.light .fixed.bg-gray-900.border.border-violet-500\/50 {
-  background-color: #ffffff !important;
-  border-color: #c4b5fd !important;
-}
-html.light .fixed.bg-gray-900.border.border-violet-500\/50 .text-violet-400 { color: #7c3aed !important; }
-html.light .fixed.bg-gray-900.border.border-violet-500\/50 .text-gray-200  { color: #1f2937 !important; }
-html.light .fixed.bg-gray-900.border.border-violet-500\/50 .text-gray-500  { color: #6b7280 !important; }
-
-/* ── Funil SVG — texto label (fill hardcoded) ───────────────────────── */
-html.light .admin-page svg text[fill="#d1d5db"] { fill: #374151 !important; }
-html.light .admin-page svg text[fill="#9ca3af"] { fill: #6b7280 !important; }
-html.light .admin-page svg text[fill="#6b7280"] { fill: #6b7280 !important; }
-
-/* ── Donut SVG — texto central branco ───────────────────────────────── */
-html.light .admin-page svg text[fill="white"] { fill: #1f2937 !important; }
-
-/* ── Balonzinho deletado: bg-gray-700/40 ───────────────────────────── */
-html.light .admin-page [class*="bg-gray-700\/40"] {
-  background-color: #f3f4f6 !important;
-  color: #9ca3af !important;
-}
-
-/* ── Journey: hover row ─────────────────────────────────────────────── */
-html.light .admin-page .hover\:bg-gray-800\/40:hover { background-color: rgba(124,58,237,0.05) !important; }
-
-/* ── AI Insight box: texto ───────────────────────────────────────────── */
-html.light .admin-page .text-green-300  { color: #065f46 !important; }
-html.light .admin-page .text-amber-300  { color: #78350f !important; }
-
-/* ── FCM token / mono text ───────────────────────────────────────────── */
-html.light .admin-page .font-mono.text-gray-500 { color: #6b7280 !important; }
-
-/* ── Período comparar badge ativo ────────────────────────────────────── */
-html.light .admin-page .bg-purple-500\/20.border-purple-500\/50.text-purple-300 {
-  background-color: #ede9fe !important;
-  border-color: #a78bfa !important;
-  color: #5b21b6 !important;
-}
-
-/* ── Chart preset ativo (bg-cyan-500/20) ─────────────────────────────── */
-html.light .admin-page .bg-cyan-500\/20.border-cyan-500\/50.text-cyan-300 {
-  background-color: #cffafe !important;
-  border-color: #22d3ee !important;
-  color: #0e7490 !important;
-}
-
-/* ── Usingfallback badge (amber) ─────────────────────────────────────── */
-html.light .admin-page .border-amber-500\/30.text-amber-400.bg-amber-500\/5 {
-  background-color: #fffbeb !important;
-  border-color: #fcd34d !important;
-  color: #92400e !important;
-}
-
-/* ── Barra de progresso do lead segmentada ───────────────────────────── */
-html.light .admin-page .h-3.bg-gray-800 { background-color: #e5e7eb !important; }
-
-/* ── Violeta badges (bg-violet-500/10) já coberto acima mas reforço ─── */
-html.light .admin-page .bg-violet-500\/10 { background-color: #ede9fe !important; }
-
-/* ── Push ativo badge (border-green-500/50 bg-green-500/10 text-green-400) */
-html.light .admin-page .border-green-500\/50.bg-green-500\/10.text-green-400 {
-  background-color: #d1fae5 !important;
-  border-color: #6ee7b7 !important;
-  color: #065f46 !important;
-}
-html.light .admin-page .bg-green-400 { background-color: #34d399 !important; }
-
-/* ── Resultado de teste (success/warn/error borders) ─────────────────── */
-html.light .admin-page .bg-green-500\/10 { background-color: #d1fae5 !important; }
-html.light .admin-page .border-green-500\/20 { border-color: #6ee7b7 !important; }
-html.light .admin-page .bg-yellow-500\/10 { background-color: #fef3c7 !important; }
-html.light .admin-page .border-yellow-500\/20 { border-color: #fcd34d !important; }
-html.light .admin-page .bg-red-500\/10  { background-color: #fee2e2 !important; }
-html.light .admin-page .border-red-500\/20  { border-color: #fca5a5 !important; }
-
-/* ── Donut: fundo do círculo exterior (rgba(31,41,55)) ───────────────── */
-html.light .admin-page svg circle[stroke="rgba(31,41,55,0.9)"] { stroke: #e5e7eb !important; }
-

@@ -11,91 +11,31 @@ interface Stat {
   selector: 'app-stats',
   standalone: true,
   template: `
-    <div class="stats-strip relative overflow-hidden">
-      <!-- linha decorativa superior -->
-      <div class="absolute top-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-cyan-500/30 to-transparent"></div>
-      <!-- linha decorativa inferior -->
-      <div class="absolute bottom-0 left-0 right-0 h-px bg-linear-to-r from-transparent via-cyan-500/30 to-transparent"></div>
-
-      <div #trigger class="max-w-4xl mx-auto px-4 sm:px-8 py-10 flex flex-wrap justify-center items-center gap-0">
-        @for (stat of stats; track stat.label; let last = $last) {
-          <div class="stat-item flex flex-col items-center text-center px-4 sm:px-8 py-4 sm:py-2 stat-fade w-1/2 sm:w-auto"
-               [class.stat-visible]="started">
-            <span class="stat-number font-bold font-mono text-4xl md:text-5xl leading-none">
-              {{ stat.current }}<span class="stat-suffix">{{ stat.suffix }}</span>
-            </span>
-            <span class="stat-label text-xs tracking-widest uppercase font-medium mt-2">{{ stat.label }}</span>
+    <div class="border-b border-zinc-900">
+      <div #trigger class="max-w-6xl mx-auto px-8 py-16 grid grid-cols-2 md:grid-cols-4 gap-y-10 gap-x-8">
+        @for (stat of stats; track stat.label) {
+          <div class="stat-fade" [class.stat-visible]="started">
+            <div class="stat-number display text-5xl md:text-6xl text-zinc-50">
+              {{ stat.current }}<span class="text-zinc-600">{{ stat.suffix }}</span>
+            </div>
+            <div class="eyebrow mt-3">{{ stat.label }}</div>
           </div>
-          @if (!last) {
-            <div class="stat-divider hidden md:block w-px h-10 bg-cyan-500/20 mx-2"></div>
-          }
         }
       </div>
     </div>
   `,
   styles: [`
-    .stats-strip {
-      background: linear-gradient(180deg, transparent 0%, rgba(8,145,178,0.04) 50%, transparent 100%);
-    }
-
-    .stat-number {
-      background: linear-gradient(135deg, #60a5fa, #22d3ee);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    .stat-suffix {
-      font-size: 0.7em;
-    }
-
-    .stat-label {
-      color: #94a3b8;
-      letter-spacing: 0.12em;
-    }
+    .stat-number { font-weight: 600; letter-spacing: -0.04em; }
 
     .stat-fade {
       opacity: 0;
       transform: translateY(16px);
       transition: opacity 0.6s ease, transform 0.6s ease;
     }
-
-    .stat-fade.stat-visible {
-      opacity: 1;
-      transform: translateY(0);
-    }
-
-    .stat-fade:nth-child(1)  { transition-delay: 0s; }
-    .stat-fade:nth-child(3)  { transition-delay: 0.1s; }
-    .stat-fade:nth-child(5)  { transition-delay: 0.2s; }
-    .stat-fade:nth-child(7)  { transition-delay: 0.3s; }
-
-    :host-context(html.light) .stat-number {
-      background: linear-gradient(135deg, #7c3aed, #a855f7);
-      -webkit-background-clip: text;
-      background-clip: text;
-      -webkit-text-fill-color: transparent;
-    }
-
-    :host-context(html.light) .stat-label {
-      color: #6b7280;
-    }
-
-    :host-context(html.light) .stats-strip {
-      background: linear-gradient(180deg, transparent 0%, rgba(124,58,237,0.04) 50%, transparent 100%);
-    }
-
-    :host-context(html.light) .stat-divider {
-      background-color: rgba(124, 58, 237, 0.2);
-    }
-
-    :host-context(html.light) .absolute.top-0 {
-      background: linear-gradient(to right, transparent, rgba(124,58,237,0.25), transparent);
-    }
-
-    :host-context(html.light) .absolute.bottom-0 {
-      background: linear-gradient(to right, transparent, rgba(124,58,237,0.25), transparent);
-    }
+    .stat-fade.stat-visible { opacity: 1; transform: translateY(0); }
+    .stat-fade:nth-child(2) { transition-delay: 0.08s; }
+    .stat-fade:nth-child(3) { transition-delay: 0.16s; }
+    .stat-fade:nth-child(4) { transition-delay: 0.24s; }
   `]
 })
 export class StatsComponent implements AfterViewInit, OnDestroy {
@@ -106,9 +46,9 @@ export class StatsComponent implements AfterViewInit, OnDestroy {
   started = false;
 
   stats: Stat[] = [
-    { target: 6,  suffix: '+', label: 'Anos de Experiência', current: 0 },
+    { target: 7,  suffix: '+', label: 'Anos em produção',    current: 0 },
     { target: 6,  suffix: '',  label: 'Empresas',            current: 0 },
-    { target: 5,  suffix: '',  label: 'Linguagens Principais', current: 0 },
+    { target: 4,  suffix: '',  label: 'Bancos de dados',     current: 0 },
     { target: 20, suffix: '+', label: 'Tecnologias',         current: 0 },
   ];
 

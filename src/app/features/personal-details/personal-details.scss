@@ -4,17 +4,12 @@
 
 .typewriter-cursor {
   display: inline-block;
-  color: #22d3ee;
   animation: tw-blink 0.8s step-end infinite;
-  font-weight: 100;
+  font-weight: 300;
   margin-left: 1px;
 }
 
 @keyframes tw-blink {
   0%, 100% { opacity: 1; }
   50% { opacity: 0; }
-}
-
-:host-context(html.light) .typewriter-cursor {
-  color: #7c3aed;
 }

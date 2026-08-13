@@ -1,6 +1,4 @@
 ﻿import { Component, inject, signal, OnInit, OnDestroy, NgZone } from '@angular/core';
-import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
-import { faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { FormsModule } from '@angular/forms';
 import { AnalyticsService } from '../../core/services/analytics.service';
 import { FirebaseService, ChatMessage, isChatMessageWithinEditWindow } from '../../core/services/firebase.service';
@@ -9,66 +7,56 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
 @Component({
   selector: 'app-contact',
   standalone: true,
-  imports: [FontAwesomeModule, FormsModule, ConfirmDialogComponent],
+  imports: [FormsModule, ConfirmDialogComponent],
   template: `
-    <section id="contato" class="py-24 px-8">
-      <div class="max-w-4xl mx-auto text-center">
-        <div class="mb-16">
-          <h2 class="text-4xl font-bold bg-linear-to-r from-blue-400 to-cyan-400 text-transparent bg-clip-text inline-block">
-            Vamos Conversar?
-          </h2>
-          <div class="mt-3 mx-auto w-16 h-px bg-linear-to-r from-blue-400 to-cyan-400 rounded-full"></div>
-          <p class="text-gray-400 mt-4">Aberto a novos projetos e oportunidades — escolha o canal que preferir</p>
+    <section id="contato" class="py-28 px-8">
+      <div class="max-w-6xl mx-auto">
+        <div class="mb-16 max-w-2xl">
+          <div class="eyebrow mb-5">05 — Contato</div>
+          <h2 class="section-title mb-6">Disponível para<br>novas oportunidades</h2>
+          <p class="section-lead">
+            Aberto a posições full stack, backend ou de dados — presencial em Goiânia ou remoto.
+            Respondo em até 24h.
+          </p>
         </div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
 
-          <!-- Email -->
-          <a href="mailto:egds.dev@gmail.com"
-             (click)="onEmailClick($event)"
-             class="group p-6 bg-gray-800/50 rounded-2xl hover:bg-gray-800/70 transition-all duration-300
-                    backdrop-blur-sm border border-gray-700/50 hover:border-cyan-500/30 hover:-translate-y-1">
-            <div class="w-14 h-14 rounded-xl bg-cyan-500/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-cyan-500/20 transition-colors">
-              <span class="text-2xl">✉️</span>
-            </div>
-            <h3 class="text-base font-semibold text-gray-200 mb-1">Email</h3>
-            <p class="text-gray-400 text-sm">egds.dev&#64;gmail.com</p>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-16">
+          <a href="mailto:egds.dev@gmail.com" (click)="onEmailClick($event)" class="contact-row">
+            <span class="eyebrow">Email</span>
+            <span class="contact-value">egds.dev&#64;gmail.com</span>
           </a>
 
-          <!-- WhatsApp -->
-          <a href="https://wa.me/5564981476096"
-             target="_blank"
-             rel="noopener noreferrer"
-             (click)="onWhatsappClick($event)"
-             class="group p-6 bg-gray-800/50 rounded-2xl hover:bg-gray-800/70 transition-all duration-300
-                    backdrop-blur-sm border border-gray-700/50 hover:border-green-500/30 hover:-translate-y-1">
-            <div class="w-14 h-14 rounded-xl bg-green-500/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-green-500/20 transition-colors">
-              <fa-icon [icon]="whatsappIcon" class="text-2xl text-green-500"></fa-icon>
-            </div>
-            <h3 class="text-base font-semibold text-gray-200 mb-1">WhatsApp</h3>
-            <p class="text-gray-400 text-sm">Fale por WhatsApp</p>
+          <a href="https://wa.me/5564981476096" target="_blank" rel="noopener noreferrer"
+             (click)="onWhatsappClick($event)" class="contact-row">
+            <span class="eyebrow">WhatsApp</span>
+            <span class="contact-value">+55 64 98147-6096</span>
           </a>
 
-          <!-- Chat ao Vivo -->
-          <button (click)="openEntryModal()"
-                  class="group p-6 bg-gray-800/50 rounded-2xl hover:bg-gray-800/70 transition-all duration-300
-                         backdrop-blur-sm border border-gray-700/50 hover:border-violet-500/30 hover:-translate-y-1
-                         cursor-pointer text-center w-full">
-            <div class="w-14 h-14 rounded-xl bg-violet-500/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-violet-500/20 transition-colors">
-              <span class="text-2xl">💬</span>
-            </div>
-            <h3 class="text-base font-semibold text-gray-200 mb-1">Chat ao Vivo</h3>
-            <p class="text-gray-400 text-sm">Fale diretamente aqui</p>
+          <a href="https://www.linkedin.com/in/egdsdev/" target="_blank" rel="noopener noreferrer" class="contact-row">
+            <span class="eyebrow">LinkedIn</span>
+            <span class="contact-value">/in/egdsdev</span>
+          </a>
+
+          <a href="https://github.com/egdsdev" target="_blank" rel="noopener noreferrer" class="contact-row">
+            <span class="eyebrow">GitHub</span>
+            <span class="contact-value">&#64;egdsdev</span>
+          </a>
+
+          <button (click)="openEntryModal()" class="contact-row text-left">
+            <span class="eyebrow">Chat ao vivo</span>
+            <span class="contact-value">Falar agora nesta página</span>
           </button>
 
-          <!-- Localização -->
-          <div class="group p-6 bg-gray-800/50 rounded-2xl hover:bg-gray-800/70 transition-all duration-300
-                      backdrop-blur-sm border border-gray-700/50 hover:border-blue-500/30 hover:-translate-y-1 cursor-default">
-            <div class="w-14 h-14 rounded-xl bg-blue-500/10 flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-500/20 transition-colors">
-              <span class="text-2xl">📍</span>
-            </div>
-            <h3 class="text-base font-semibold text-gray-200 mb-1">Localização</h3>
-            <p class="text-gray-400 text-sm">Goiânia, GO</p>
+          <div class="contact-row cursor-default">
+            <span class="eyebrow">Localização</span>
+            <span class="contact-value text-zinc-400">Goiânia, GO · Brasil</span>
           </div>
+        </div>
+
+        <div class="mt-16 flex flex-wrap gap-3">
+          <a href="curriculo-elias-gomes.pdf" download="Curriculo-Elias-Gomes-da-Silva.pdf" class="btn-primary">
+            Baixar currículo (PDF)
+          </a>
         </div>
       </div>
     </section>
@@ -412,14 +400,33 @@ import { ConfirmDialogComponent } from '../../shared/components/confirm-dialog/c
         </button>
       </div>
     }
-  `
+  `,
+  styles: [`
+    .contact-row {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+      padding: 1.5rem 0;
+      border-top: 1px solid var(--border);
+      transition: border-color 0.2s;
+      width: 100%;
+    }
+    a.contact-row, button.contact-row { cursor: pointer; }
+    a.contact-row:hover, button.contact-row:hover { border-color: var(--fg-muted); }
+
+    .contact-value {
+      color: var(--fg);
+      font-size: 1.0625rem;
+      transition: color 0.2s;
+    }
+    a.contact-row:hover .contact-value,
+    button.contact-row:hover .contact-value { color: #fff; }
+  `]
 })
 export class ContactComponent implements OnInit, OnDestroy {
   private analytics = inject(AnalyticsService);
   private firebase = inject(FirebaseService);
   private zone = inject(NgZone);
-
-  whatsappIcon = faWhatsapp;
 
   // â”€â”€ Chat state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   chatState = signal<'closed' | 'entry' | 'open'>('closed');
