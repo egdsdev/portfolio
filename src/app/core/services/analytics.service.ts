@@ -30,20 +30,15 @@ export class AnalyticsService {
   private readonly IGNORED_IPS = ['45.179.22.183', '138.255.215.188'];
   private readonly TRACKED_SECTIONS = [
     'detalhes',
-    'escolaridade',
     'experiencia',
     'habilidades',
-    'projetos',
-    'dev-match',
-    'certificacoes',
+    'escolaridade',
     'contato',
   ];
 
   private contextPromise?: Promise<AnalyticsContext | null>;
   private sectionObserver?: IntersectionObserver;
   private trackedSections = new Set<string>();
-  private startedFeatures = new Set<string>();
-  private completedFeatures = new Set<string>();
   private visitTracked = false;
 
   async trackVisit(): Promise<void> {
@@ -130,6 +125,16 @@ export class AnalyticsService {
     await this.trackCtaClick('resume_download', 'detalhes', 'resume');
   }
 
+  /** Recrutador abriu "mais entregas" de uma empresa — leitura profunda. */
+  async trackExperienceExpand(company: string): Promise<void> {
+    await this.recordEvent({
+      eventType: 'experience_expand',
+      eventName: 'experience_expand',
+      section: 'experiencia',
+      target: company,
+    });
+  }
+
   async getVisitorIp(): Promise<string> {
     try {
       const ctx = await this.ensureContext();
@@ -150,57 +155,10 @@ export class AnalyticsService {
     } catch { /* silencioso */ }
   }
 
-  async trackBruliasClick(): Promise<void> {
-    try {
-      const ctx = await this.ensureContext();
-      if (!ctx) return;
 
-      await Promise.all([
-        ctx.geo.ip ? this.firebase.trackBruliasClick(ctx.geo.ip) : Promise.resolve(),
-        this.trackCtaClick('project_brulias', 'projetos', 'project', { label: 'Brulias' }),
-      ]);
-    } catch (err) {
-      console.error('[Analytics] trackBruliasClick error:', err);
-    }
-  }
 
-  async trackFeatureStart(feature: 'dev_match' | 'ai_match', metadata: AnalyticsMetadata = {}): Promise<void> {
-    if (this.startedFeatures.has(feature)) return;
-    this.startedFeatures.add(feature);
-    await this.recordEvent({
-      eventType: 'feature_start',
-      eventName: feature,
-      target: feature,
-      section: 'dev-match',
-      metadata,
-    });
-  }
 
-  async trackFeatureComplete(
-    feature: 'dev_match' | 'ai_match',
-    value?: number,
-    metadata: AnalyticsMetadata = {},
-  ): Promise<void> {
-    this.completedFeatures.add(feature);
-    await this.recordEvent({
-      eventType: 'feature_complete',
-      eventName: feature,
-      target: feature,
-      section: 'dev-match',
-      value,
-      metadata,
-    });
-  }
 
-  isFeatureStarted(feature: 'dev_match' | 'ai_match'): boolean {
-    return this.startedFeatures.has(feature);
-  }
-
-  isFeatureCompleted(feature: 'dev_match' | 'ai_match'): boolean {
-    return this.completedFeatures.has(feature);
-  }
-
-  updateMatchScore(_score: number, _areas: string[]): void {}
 
   private async ensureContext(): Promise<AnalyticsContext | null> {
     if (!this.contextPromise) {
@@ -230,7 +188,7 @@ export class AnalyticsService {
   }
 
   private async recordEvent(payload: {
-    eventType: 'page_visit' | 'section_view' | 'cta_click' | 'feature_start' | 'feature_complete';
+    eventType: 'page_visit' | 'section_view' | 'cta_click' | 'experience_expand';
     eventName: string;
     section?: string;
     target?: string;

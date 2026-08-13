@@ -1,4 +1,5 @@
-import { Component } from '@angular/core';
+import { Component, inject } from '@angular/core';
+import { AnalyticsService } from '../../core/services/analytics.service';
 
 interface ExperienceEntry {
   date: string;
@@ -18,6 +19,17 @@ interface ExperienceEntry {
   styleUrls: ['./experience.component.scss']
 })
 export class ExperienceComponent {
+  private analytics = inject(AnalyticsService);
+  private expandTracked = new Set<string>();
+
+  /** Só a abertura interessa, e uma vez por empresa. */
+  onExpand(event: Event, company: string): void {
+    const el = event.target as HTMLDetailsElement;
+    if (!el.open || this.expandTracked.has(company)) return;
+    this.expandTracked.add(company);
+    void this.analytics.trackExperienceExpand(company);
+  }
+
   // Os 2 primeiros bullets de cada entrada aparecem sem clique — por isso são
   // sempre os de maior impacto para quem está avaliando o currículo.
   entries: ExperienceEntry[] = [

@@ -57,14 +57,20 @@ interface SectionReachRow {
   reachRate: number;
 }
 
-interface FeatureUsageRow {
-  key: string;
-  label: string;
-  started: number;
-  completed: number;
-  abandoned: number;
-  completionRate: number;
-  avgResult: number | null;
+interface SourceQualityRow {
+  source: string;
+  sessions: number;
+  readExperience: number;
+  conversions: number;
+  /** % das sessões da origem que chegaram na experiência. */
+  qualityRate: number;
+}
+
+interface VisitorSignals {
+  readExperience: boolean;
+  deepRead: boolean;
+  resumeDownload: boolean;
+  directContact: boolean;
 }
 
 interface TimeToActionRow {
@@ -90,44 +96,32 @@ interface TimeToActionRow {
         <!-- Tabs de navegação -->
         <div class="flex items-center justify-between gap-2 flex-wrap">
           <div class="flex gap-1 bg-gray-800/50 border border-gray-700/50 rounded-xl p-1">
-          <button (click)="activeTab = 'analytics'"
-                  [class.bg-gray-700]="activeTab === 'analytics'"
-                  [class.text-white]="activeTab === 'analytics'"
-                  [class.text-gray-500]="activeTab !== 'analytics'"
-                  class="px-5 py-2 rounded-lg text-sm font-medium transition-all duration-150">
-            Analytics
-          </button>
-          <button (click)="activeTab = 'chat'"
-                  [class.bg-gray-700]="activeTab === 'chat'"
-                  [class.text-white]="activeTab === 'chat'"
-                  [class.text-gray-500]="activeTab !== 'chat'"
-                  class="px-5 py-2 rounded-lg text-sm font-medium transition-all duration-150 flex items-center gap-2">
-            Conversas
-            @if (totalUnread > 0) {
-              <span class="inline-flex items-center justify-center w-4 h-4 rounded-full bg-violet-500 text-white text-[9px] font-bold">
-                {{ totalUnread > 9 ? '9+' : totalUnread }}
-              </span>
-            }
-          </button>
-          <button (click)="activeTab = 'leads'"
-                  [class.bg-gray-700]="activeTab === 'leads'"
-                  [class.text-white]="activeTab === 'leads'"
-                  [class.text-gray-500]="activeTab !== 'leads'"
-                  class="px-5 py-2 rounded-lg text-sm font-medium transition-all duration-150 flex items-center gap-2">
-            Leads
-            @if (hotLeads.length > 0) {
-              <span class="inline-flex items-center justify-center px-1.5 h-4 rounded-full bg-red-500 text-white text-[9px] font-bold">
-                {{ hotLeads.length }}🔥
-              </span>
-            }
-          </button>
-          <button (click)="activeTab = 'tests'"
-                  [class.bg-gray-700]="activeTab === 'tests'"
-                  [class.text-white]="activeTab === 'tests'"
-                  [class.text-gray-500]="activeTab !== 'tests'"
-                  class="px-5 py-2 rounded-lg text-sm font-medium transition-all duration-150">
-            🛠️ Testes
-          </button>
+            <button (click)="activeTab = 'analytics'"
+                    [class.bg-gray-700]="activeTab === 'analytics'"
+                    [class.text-white]="activeTab === 'analytics'"
+                    [class.text-gray-500]="activeTab !== 'analytics'"
+                    class="px-5 py-2 rounded-lg text-sm font-medium transition-all duration-150">
+              Visão geral
+            </button>
+            <button (click)="activeTab = 'leads'"
+                    [class.bg-gray-700]="activeTab === 'leads'"
+                    [class.text-white]="activeTab === 'leads'"
+                    [class.text-gray-500]="activeTab !== 'leads'"
+                    class="px-5 py-2 rounded-lg text-sm font-medium transition-all duration-150 flex items-center gap-2">
+              Visitantes
+              @if (hotLeads.length > 0) {
+                <span class="inline-flex items-center justify-center px-1.5 h-4 rounded-full bg-amber-500 text-gray-900 text-[9px] font-bold">
+                  {{ hotLeads.length }}
+                </span>
+              }
+            </button>
+            <button (click)="activeTab = 'tests'"
+                    [class.bg-gray-700]="activeTab === 'tests'"
+                    [class.text-white]="activeTab === 'tests'"
+                    [class.text-gray-500]="activeTab !== 'tests'"
+                    class="px-5 py-2 rounded-lg text-sm font-medium transition-all duration-150">
+              Testes
+            </button>
           </div>
 
           <!-- Botão de notificações push -->
@@ -145,34 +139,32 @@ interface TimeToActionRow {
         <!-- ── Aba: Analytics ─────────────────────────────────────────────── -->
         <div [class.hidden]="activeTab !== 'analytics'" class="space-y-8">
 
-        <!-- 5 Cards resumo -->
-        <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+        <!-- KPIs: o que importa para saber se o portfolio esta cumprindo o papel -->
+        <div class="grid grid-cols-2 lg:grid-cols-5 gap-3">
           <div class="admin-card rounded-xl p-4 border">
-            <p class="text-xs text-gray-500 mb-1">Visitantes Únicos</p>
-            <p class="text-3xl font-bold text-cyan-400">{{ visitors.length }}</p>
-          </div>
-          <div class="admin-card rounded-xl p-4 border flex flex-col gap-1">
-            <p class="text-xs text-gray-500">Ativos agora</p>
-            <div class="flex items-center gap-2">
-              <span class="w-2 h-2 rounded-full shrink-0" [class]="activeNowCount > 0 ? 'bg-green-400 animate-pulse' : 'bg-gray-600'"></span>
-              <p class="text-3xl font-bold" [class]="activeNowCount > 0 ? 'text-green-400' : 'text-gray-500'">{{ activeNowCount }}</p>
-            </div>
+            <p class="text-xs text-gray-500 mb-1">Visitantes únicos</p>
+            <p class="text-3xl font-bold text-gray-100">{{ visitors.length }}</p>
+            <p class="text-xs text-gray-600 mt-1">{{ activeNowCount }} online agora</p>
           </div>
           <div class="admin-card rounded-xl p-4 border">
-            <p class="text-xs text-gray-500 mb-1">Países</p>
-            <p class="text-3xl font-bold">{{ uniqueCountries }}</p>
+            <p class="text-xs text-gray-500 mb-1">Leram a experiência</p>
+            <p class="text-3xl font-bold text-gray-100">{{ experienceReachRate }}%</p>
+            <p class="text-xs text-gray-600 mt-1">{{ experienceSessions }} de {{ totalSessions }} sessões</p>
           </div>
           <div class="admin-card rounded-xl p-4 border">
-            <p class="text-xs text-gray-500 mb-1">Análises IA</p>
-            <p class="text-3xl font-bold">{{ aiMatches.length }}</p>
+            <p class="text-xs text-gray-500 mb-1">Leitura profunda</p>
+            <p class="text-3xl font-bold text-gray-100">{{ deepReadSessions }}</p>
+            <p class="text-xs text-gray-600 mt-1">abriram "mais entregas"</p>
           </div>
           <div class="admin-card rounded-xl p-4 border">
-            <p class="text-xs text-gray-500 mb-1">Dev Matches</p>
-            <p class="text-3xl font-bold">{{ devMatches.length }}</p>
+            <p class="text-xs text-gray-500 mb-1">Currículos baixados</p>
+            <p class="text-3xl font-bold text-gray-100">{{ resumeDownloads }}</p>
+            <p class="text-xs text-gray-600 mt-1">sinal mais forte de interesse</p>
           </div>
           <div class="admin-card rounded-xl p-4 border">
-            <p class="text-xs text-gray-500 mb-1">🌌 Brulias <span class="text-gray-500 text-xs">(excl. seu IP)</span></p>
-            <p class="text-3xl font-bold text-purple-400">{{ bruliasClicks }}</p>
+            <p class="text-xs text-gray-500 mb-1">Contatos diretos</p>
+            <p class="text-3xl font-bold" [class]="directContacts > 0 ? 'text-green-400' : 'text-gray-100'">{{ directContacts }}</p>
+            <p class="text-xs text-gray-600 mt-1">email, WhatsApp ou LinkedIn</p>
           </div>
         </div>
 
@@ -712,56 +704,35 @@ interface TimeToActionRow {
         <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
           <div class="admin-card border rounded-xl p-5">
-            <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Funil de Contato</p>
-            <p class="text-xs text-gray-500 mb-4">
-              {{ usingFallback ? 'Estimativa de adoção de features — eventos de navegação ainda insuficientes.' : 'Sessões, projetos, contato, CTA e contato direto.' }}
-            </p>
-            @if (!loading && contactFunnelSteps.length > 0) {
-              <svg [attr.viewBox]="'0 0 500 ' + funnelSvgHeight" class="w-full h-auto">
-                <defs>
-                  @for (s of funnelShapes; track s.label; let i = $index) {
-                    <linearGradient [attr.id]="'fg' + i" x1="0" y1="0" x2="0" y2="1">
-                      <stop offset="0%" [attr.stop-color]="s.color" stop-opacity="0.42"/>
-                      <stop offset="100%" [attr.stop-color]="s.color" stop-opacity="0.14"/>
-                    </linearGradient>
-                  }
-                </defs>
-                @for (s of funnelShapes; track s.label; let i = $index) {
-                  <!-- Trapézio com gradiente -->
-                  <polygon [attr.points]="s.points"
-                           [attr.fill]="'url(#fg' + i + ')'"
-                           [attr.stroke]="s.color" stroke-width="2" stroke-opacity="0.85"
-                           stroke-linejoin="round"/>
-                  <!-- Número + label (esquerda — zona x=0..130, funil começa em x=150) -->
-                  <text x="4" [attr.y]="s.centerY"
-                        fill="#6b7280" font-size="11" font-weight="600" dominant-baseline="middle">
-                    {{ i + 1 }}.
-                  </text>
-                  <text x="20" [attr.y]="s.centerY"
-                        fill="#d1d5db" font-size="12" dominant-baseline="middle">
-                    {{ s.label }}
-                  </text>
-                  <!-- Valor + % (direita — zona x=360..500, funil termina em x=350) -->
-                  <text x="496" [attr.y]="s.centerY - 7"
-                        text-anchor="end" [attr.fill]="s.color"
-                        font-size="16" font-weight="700" dominant-baseline="middle">
-                    {{ s.value }}
-                  </text>
-                  <text x="496" [attr.y]="s.centerY + 10"
-                        text-anchor="end" fill="#9ca3af"
-                        font-size="11" dominant-baseline="middle">
-                    {{ s.pct }}%
-                  </text>
-                  <!-- Queda entre etapas -->
-                  @if (s.dropPct !== null) {
-                    <text x="250" [attr.y]="s.dropY"
-                          text-anchor="middle" fill="#f87171"
-                          font-size="11" font-weight="600" opacity="0.9" dominant-baseline="middle">
-                      ▼ -{{ s.dropPct }}%
-                    </text>
-                  }
+            <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Funil de recrutamento</p>
+            <p class="text-xs text-gray-500 mb-5">Da visita ao contato — cada etapa mostra quanto sobrou da anterior.</p>
+            @if (!loading && funnelBars.length > 0) {
+              <div class="space-y-4">
+                @for (step of funnelBars; track step.label; let i = $index) {
+                  <div>
+                    <div class="flex items-baseline justify-between gap-3 mb-1.5">
+                      <div class="flex items-baseline gap-2 min-w-0">
+                        <span class="text-xs text-gray-600 font-mono shrink-0">{{ i + 1 }}</span>
+                        <span class="text-sm text-gray-200 truncate">{{ step.label }}</span>
+                      </div>
+                      <div class="flex items-baseline gap-2 shrink-0">
+                        <span class="text-lg font-bold" [style.color]="step.color">{{ step.value }}</span>
+                        <span class="text-xs text-gray-500 w-10 text-right">{{ step.pct }}%</span>
+                      </div>
+                    </div>
+                    <div class="h-2.5 bg-gray-800 rounded-full overflow-hidden">
+                      <div class="h-full rounded-full transition-all duration-700"
+                           [style.width.%]="step.pct"
+                           [style.background-color]="step.color"></div>
+                    </div>
+                    @if (step.dropPct !== null && step.dropPct > 0) {
+                      <p class="text-xs text-gray-600 mt-1">
+                        −{{ step.dropPct }}% em relação à etapa anterior
+                      </p>
+                    }
+                  </div>
                 }
-              </svg>
+              </div>
             } @else if (!loading) {
               <div class="py-8 text-center text-gray-600 text-sm">Sem eventos suficientes ainda</div>
             } @else {
@@ -802,69 +773,42 @@ interface TimeToActionRow {
           </div>
 
           <div class="admin-card border rounded-xl p-5">
-            <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Uso das Features</p>
+            <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Origem × Qualidade</p>
             <p class="text-xs text-gray-500 mb-4">
-              {{ usingFallback ? 'Totais de uso das features (baseado nos matches registrados).' : 'Início, conclusão e abandono implícito por sessão.' }}
+              Não é só quem traz mais visita — é quem traz visita que lê a experiência e entra em contato.
             </p>
-            @if (!loading && featureUsageRows.length > 0) {
-              <div class="space-y-4">
-                @for (row of featureUsageRows; track row.key) {
-                  <div class="admin-card border rounded-lg p-4">
-                    <div class="flex items-start justify-between gap-4 mb-3">
-                      <div>
-                        <p class="text-sm text-gray-200 font-semibold">{{ row.label }}</p>
-                        <p class="text-xs text-gray-500">
-                          {{ usingFallback ? row.completed + ' usos registrados' : row.started + ' iniciaram · ' + row.completed + ' concluíram · ' + row.abandoned + ' abandonaram' }}
-                        </p>
-                      </div>
-                      <div class="text-right">
-                        <p class="text-lg font-bold" [style.color]="row.completionRate >= 60 ? '#4ade80' : row.completionRate >= 30 ? '#fbbf24' : '#f87171'">{{ row.completionRate }}%</p>
-                        <p class="text-xs text-gray-500">taxa de conclusão</p>
-                      </div>
+            @if (!loading && sourceQuality.length > 0) {
+              <div class="space-y-3">
+                @for (row of sourceQuality; track row.source) {
+                  <div class="admin-card border rounded-lg p-3">
+                    <div class="flex items-center justify-between gap-3 mb-2">
+                      <p class="text-sm text-gray-200 font-semibold">{{ row.source }}</p>
+                      <span class="text-xs px-2 py-0.5 rounded-full"
+                            [class]="row.qualityRate >= 30 ? 'bg-green-500/15 text-green-400'
+                                   : row.qualityRate >= 10 ? 'bg-amber-500/15 text-amber-400'
+                                   : 'bg-gray-700/60 text-gray-400'">
+                        {{ row.qualityRate }}% qualificadas
+                      </span>
                     </div>
-                    @if (!usingFallback && row.started > 0) {
-                      <!-- Barra segmentada: concluídos / abandonados / (gap) -->
-                      <div class="h-3 bg-gray-800 rounded-full overflow-hidden flex mb-2" [title]="row.completed + ' concluídos, ' + row.abandoned + ' abandonaram'">
-                        <div class="h-full transition-all duration-700"
-                             [style.width.%]="(row.completed / row.started) * 100"
-                             [style.background-color]="row.key === 'dev_match' ? '#22d3ee' : '#a855f7'">
-                        </div>
-                        @if (row.abandoned > 0) {
-                          <div class="h-full transition-all duration-700 opacity-30"
-                               [style.width.%]="(row.abandoned / row.started) * 100"
-                               [style.background-color]="row.key === 'dev_match' ? '#22d3ee' : '#a855f7'">
-                          </div>
-                        }
-                      </div>
-                      <div class="flex items-center gap-3 text-xs text-gray-500">
-                        <span class="flex items-center gap-1">
-                          <span class="inline-block w-2 h-2 rounded-sm" [style.background-color]="row.key === 'dev_match' ? '#22d3ee' : '#a855f7'"></span>
-                          {{ row.completed }} concluíram
-                        </span>
-                        @if (row.abandoned > 0) {
-                          <span class="flex items-center gap-1 opacity-50">
-                            <span class="inline-block w-2 h-2 rounded-sm" [style.background-color]="row.key === 'dev_match' ? '#22d3ee' : '#a855f7'"></span>
-                            {{ row.abandoned }} abandonaram
-                          </span>
-                        }
-                      </div>
-                    } @else {
-                      <div class="h-3 bg-gray-800 rounded-full overflow-hidden mb-2">
-                        <div class="h-full rounded-full transition-all duration-700"
-                             [style.width.%]="row.completionRate"
-                             [style.background-color]="row.key === 'dev_match' ? '#22d3ee' : '#a855f7'">
-                        </div>
-                      </div>
-                    }
-                    <p class="text-xs text-gray-500 mt-2">
-                      Resultado médio:
-                      <span class="font-semibold text-gray-300">{{ row.avgResult != null ? row.avgResult + '%' : 'sem conclusão ainda' }}</span>
-                    </p>
+                    <!-- Barra: sessões que chegaram na experiência vs total -->
+                    <div class="h-2 bg-gray-800 rounded-full overflow-hidden mb-2">
+                      <div class="h-full rounded-full transition-all duration-700 bg-gray-300"
+                           [style.width.%]="row.qualityRate"></div>
+                    </div>
+                    <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
+                      <span>{{ row.sessions }} sessões</span>
+                      <span>{{ row.readExperience }} leram experiência</span>
+                      <span [class.text-green-400]="row.conversions > 0">{{ row.conversions }} converteram</span>
+                    </div>
                   </div>
                 }
               </div>
+              <p class="text-xs text-gray-600 mt-3">
+                "Qualificada" = a sessão chegou até a seção de experiência.
+                "Converteu" = baixou o currículo ou clicou em um canal de contato.
+              </p>
             } @else if (!loading) {
-              <div class="py-8 text-center text-gray-600 text-sm">Sem uso registrado ainda</div>
+              <div class="py-8 text-center text-gray-600 text-sm">Sem tráfego suficiente ainda</div>
             } @else {
               <div class="py-8 text-center text-gray-500 text-sm animate-pulse">Carregando...</div>
             }
@@ -873,227 +817,6 @@ interface TimeToActionRow {
 
         </div>
         <!-- fim: Aba Analytics -->
-
-        <!-- ── Aba: Conversas ───────────────────────────────────────────── -->
-        <div [class.hidden]="activeTab !== 'chat'">
-
-        <!-- ── Conversas do Chat ──────────────────────────────────────────── -->
-        <div>
-          <p class="text-xs text-gray-500 uppercase tracking-widest font-semibold mb-4">Conversas do Chat</p>
-          <div class="grid md:grid-cols-5 gap-4">
-
-            <!-- Lista de conversas -->
-            <div class="admin-card border rounded-xl overflow-hidden md:col-span-2">
-              <div class="px-4 py-3 border-b border-gray-800 flex items-center justify-between">
-                <p class="text-xs text-gray-500 font-semibold">{{ conversations.length }} conversa(s)</p>
-                @if (totalUnread > 0) {
-                  <span class="inline-flex items-center justify-center px-2 py-0.5 rounded-full bg-violet-500 text-white text-[10px] font-bold">
-                    {{ totalUnread }} não lida(s)
-                  </span>
-                }
-              </div>
-              @if (conversations.length === 0) {
-                <div class="p-8 text-center text-gray-600 text-sm">Nenhuma conversa iniciada ainda.</div>
-              }
-              @for (conv of conversations; track conv.id) {
-                <button (click)="selectConversation(conv)"
-                        class="group w-full text-left px-4 py-3 hover:bg-gray-800/40 transition-colors border-b border-gray-800/30"
-                        [class.bg-violet-500/10]="selectedConv?.id === conv.id">
-                  <div class="flex items-start justify-between gap-2">
-                    <div class="min-w-0 flex items-start gap-2">
-                      <span class="mt-1.5 shrink-0 inline-block w-2 h-2 rounded-full"
-                            [class]="conv.visitorOnline ? 'bg-green-400' : 'bg-gray-600'"></span>
-                      <div class="min-w-0">
-                        <p class="text-sm font-medium text-gray-200 truncate">{{ conv.company ? conv.username + ' · ' + conv.company : conv.username }}</p>
-                        <p class="text-xs text-gray-500 mt-0.5">{{ conv.lastMessageAt | date:'dd/MM HH:mm' }}</p>
-                      </div>
-                    </div>
-                  <div class="flex items-center gap-2 shrink-0">
-                    @if (conv.unreadByOwner > 0) {
-                      <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-violet-500 text-white text-[10px] font-bold">
-                        {{ conv.unreadByOwner > 9 ? '9+' : conv.unreadByOwner }}
-                      </span>
-                    }
-                    <button (click)="$event.stopPropagation(); askDeleteConv(conv)"
-                            class="opacity-0 group-hover:opacity-100 p-1 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
-                            title="Excluir conversa">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
-                    </button>
-                  </div>
-                  </div>
-                </button>
-              }
-            </div>
-
-            <!-- Painel de mensagens -->
-            <div class="admin-card border rounded-xl flex flex-col overflow-hidden md:col-span-3" style="height:500px">
-              @if (!selectedConv) {
-                <div class="flex-1 flex flex-col items-center justify-center text-gray-600 text-sm">
-                  <span class="text-3xl mb-2">💬</span>
-                  Selecione uma conversa para ler as mensagens.
-                </div>
-              } @else {
-                <!-- Header da conversa -->
-                <div class="px-4 py-3 border-b border-gray-800 flex items-center gap-3 shrink-0">
-                  <div class="w-8 h-8 rounded-full bg-violet-500/20 flex items-center justify-center shrink-0">
-                    <span class="text-sm">💬</span>
-                  </div>
-                  <div class="flex-1 min-w-0">
-                    <p class="text-sm font-medium text-gray-200">{{ selectedConv.company ? selectedConv.username + ' · ' + selectedConv.company : selectedConv.username }}</p>
-                    <p class="text-xs flex items-center gap-1" [class]="selectedConv.visitorOnline ? 'text-green-400' : 'text-gray-500'">
-                      <span class="inline-block w-1.5 h-1.5 rounded-full" [class]="selectedConv.visitorOnline ? 'bg-green-400' : 'bg-gray-500'"></span>
-                      {{ selectedConv.visitorOnline ? 'Online' : 'Offline' }}
-                    </p>
-                  </div>
-                  <p class="text-xs text-gray-500">{{ selectedConv.startedAt | date:'dd/MM/yy HH:mm' }}</p>
-                  <button (click)="askDeleteConv(selectedConv)"
-                          class="ml-1 p-1.5 rounded-lg text-gray-600 hover:text-red-400 hover:bg-red-500/10 transition-all cursor-pointer"
-                          title="Excluir conversa">
-                    <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                      <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
-
-                <!-- Mensagens -->
-                <div #convMsgContainer data-conv-msgs class="flex-1 overflow-y-auto px-4 py-3 space-y-2"
-                     (click)="closeConvMessageMenu()"
-                     (scroll)="closeConvMessageMenu()">
-                  @if (convMessagesList.length === 0) {
-                    <div class="flex items-center justify-center h-full text-gray-600 text-sm">Sem mensagens ainda.</div>
-                  }
-                  @for (msg of convMessagesList; track msg.id) {
-                    <div [class]="msg.sender === 'visitor' ? 'group flex justify-start items-start gap-1.5' : 'group flex justify-end items-start gap-1.5'">
-                      <div [class]="msg.deletedAt
-                          ? 'max-w-[78%] bg-gray-700/40 text-gray-500 rounded-2xl px-3.5 py-2 text-sm italic'
-                          : msg.sender === 'visitor'
-                            ? 'max-w-[78%] bg-gray-700/80 text-gray-100 rounded-2xl rounded-bl-sm px-3.5 py-2 text-sm'
-                            : 'max-w-[78%] bg-violet-600 text-white rounded-2xl rounded-br-sm px-3.5 py-2 text-sm'">
-                        @if (msg.deletedAt) {
-                          <p class="flex items-center gap-1.5">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                              <path stroke-linecap="round" stroke-linejoin="round" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/>
-                            </svg>
-                            Mensagem excluída
-                          </p>
-                        } @else {
-                          @if (msg.sender === 'visitor') {
-                            <p class="text-xs text-gray-400 font-semibold mb-1">{{ selectedConv.username }}</p>
-                          }
-                          @if (editingConvMessageId === msg.id) {
-                            <div class="space-y-2 min-w-[220px]" (click)="$event.stopPropagation()">
-                              <textarea [(ngModel)]="editConvMessageText"
-                                        (keydown)="onConvEditKeydown($event, msg)"
-                                        rows="3"
-                                        class="w-full bg-black/10 border border-white/15 rounded-xl px-3 py-2 text-sm text-white
-                                               placeholder-white/50 focus:outline-none focus:border-white/30 resize-none"
-                                        placeholder="Edite a mensagem..."></textarea>
-                              <div class="flex items-center justify-end gap-2">
-                                <button (click)="cancelEditConvMessage()"
-                                        class="px-2.5 py-1 rounded-lg text-xs bg-black/15 hover:bg-black/25 transition-colors cursor-pointer">
-                                  Cancelar
-                                </button>
-                                <button (click)="saveEditedConvMessage(msg)"
-                                        [disabled]="!editConvMessageText.trim() || savingConvEdit"
-                                        class="px-2.5 py-1 rounded-lg text-xs bg-white/15 hover:bg-white/25 disabled:opacity-50 disabled:cursor-not-allowed transition-colors cursor-pointer">
-                                  {{ savingConvEdit ? 'Salvando...' : 'Salvar' }}
-                                </button>
-                              </div>
-                            </div>
-                          } @else {
-                            @if (msg.text) {
-                              <p class="wrap-break-word whitespace-pre-wrap">{{ msg.text }}</p>
-                            }
-                            @if (msg.fileUrl) {
-                              <a [href]="msg.fileUrl" target="_blank" rel="noopener noreferrer"
-                                 class="flex items-center gap-1.5 mt-1 text-xs underline opacity-80 break-all">
-                                <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                                </svg>
-                                {{ msg.fileName }}
-                              </a>
-                            }
-                            <p class="text-xs mt-1 opacity-60 text-right">
-                              {{ msg.sentAt | date:'HH:mm' }}@if (msg.editedAt) { · editada }
-                            </p>
-                          }
-                        }
-                      </div>
-                      @if (msg.sender === 'owner' && !msg.deletedAt && editingConvMessageId !== msg.id) {
-                        <div class="self-start mt-1 shrink-0" (click)="$event.stopPropagation()">
-                          <button (click)="toggleConvMessageMenu(msg, $event)"
-                                  class="text-gray-500 hover:text-white transition-colors cursor-pointer p-1 rounded-lg hover:bg-gray-700/40"
-                                  title="Mais ações">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-                              <path stroke-linecap="round" stroke-linejoin="round" d="M12 5h.01M12 12h.01M12 19h.01" />
-                            </svg>
-                          </button>
-                        </div>
-                      }
-                    </div>
-                  }
-                </div>
-
-                <!-- Input de resposta -->
-                <div class="px-3 py-3 border-t border-gray-800/50 flex flex-col gap-2 shrink-0">
-                  <!-- Arquivo selecionado -->
-                  @if (pendingConvFile) {
-                    <div class="flex items-center gap-2 px-2 py-1 bg-gray-700/60 rounded-lg text-xs text-gray-300">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5 shrink-0 text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                      </svg>
-                      <span class="flex-1 truncate">{{ pendingConvFile.name }}</span>
-                      <button (click)="pendingConvFile = null" class="text-gray-500 hover:text-white cursor-pointer">✕</button>
-                    </div>
-                  }
-                  <div class="flex items-end gap-2">
-                    <input #convFileInput type="file" accept=".pdf,.jpg,.jpeg,.png" class="hidden"
-                           (change)="onConvFileSelected($event)" />
-                    <button (click)="convFileInput.click()"
-                            [disabled]="sendingConvReply"
-                            class="shrink-0 self-stretch min-w-8 px-2 rounded-xl border border-gray-700 bg-gray-800/50
-                                   text-gray-400 hover:text-violet-400 hover:border-violet-500/50 transition-colors
-                                   flex items-center justify-center disabled:opacity-40 disabled:cursor-not-allowed cursor-pointer">
-                      <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                      </svg>
-                    </button>
-                    <textarea [(ngModel)]="convReplyText"
-                              name="convReply"
-                              (keydown)="onConvKeydown($event)"
-                              rows="1"
-                              class="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-3.5 py-2.5 text-white text-sm
-                                     placeholder-gray-500 focus:outline-none focus:border-violet-500 transition-colors
-                                     resize-none max-h-24 overflow-y-auto"
-                              placeholder="Responder como Elias..."></textarea>
-                    <button (click)="sendConvReply()"
-                            [disabled]="(!convReplyText.trim() && !pendingConvFile) || sendingConvReply"
-                            class="shrink-0 self-stretch min-w-9 px-3 rounded-xl bg-violet-600 hover:bg-violet-500
-                                   disabled:opacity-40 disabled:cursor-not-allowed transition-colors
-                                   flex items-center justify-center">
-                      @if (sendingConvReply) {
-                        <svg class="w-4 h-4 text-white animate-spin" fill="none" viewBox="0 0 24 24">
-                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
-                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v8z"/>
-                        </svg>
-                      } @else {
-                        <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8" />
-                        </svg>
-                      }
-                    </button>
-                  </div>
-                </div>
-              }
-            </div>
-
-          </div>
-        </div>
-
-        </div>
-        <!-- fim: Aba Conversas -->
 
         <!-- ── Aba: Leads ────────────────────────────────────────────── -->
         <div [class.hidden]="activeTab !== 'leads'" class="space-y-6">
@@ -1598,7 +1321,17 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   sourceConversions: SourceConversionRow[] = [];
   ctaPerformance: CtaPerformanceRow[] = [];
   sectionReachRows: SectionReachRow[] = [];
-  featureUsageRows: FeatureUsageRow[] = [];
+
+  // ── Métricas de recrutamento ─────────────────────────────────────────────
+  totalSessions = 0;
+  experienceSessions = 0;
+  experienceReachRate = 0;
+  deepReadSessions = 0;
+  resumeDownloads = 0;
+  directContacts = 0;
+  sourceQuality: SourceQualityRow[] = [];
+  /** Sinais por visitante, usados pelo score. */
+  visitorSignals = new Map<string, VisitorSignals>();
   contactFunnelSteps: { label: string; value: number; color: string }[] = [];
   firstActionAvgSeconds = 0;
   firstActionMedianSeconds = 0;
@@ -1647,34 +1380,57 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   // ── Score de visitante ───────────────────────────────────────────────
   visitorScores = new Map<string, number>();
 
+  /**
+   * Score de interesse (0-100) a partir do que o visitante realmente fez.
+   * Ponderado do sinal mais fraco (voltar ao site) ao mais forte (contato direto).
+   */
   computeVisitorScore(v: VisitorRecord): number {
     let score = 0;
-    if (v.visitCount >= 3) score += 30;
+
+    // Recorrência: voltar ao portfolio costuma indicar processo em andamento.
+    if (v.visitCount >= 4) score += 25;
     else if (v.visitCount >= 2) score += 15;
-    const aiM = this.aiMatches.find(m => m.visitorId === v.id);
-    const devM = this.devMatches.find(m => m.visitorId === v.id);
-    if (aiM) score += 25 + (aiM.matchPercentage >= 70 ? 15 : 0);
-    if (devM) score += 20 + (devM.matchPercentage >= 70 ? 10 : 0);
-    const conv = this.conversations.find(c => c.ip === v.ip);
-    if (conv) score += 30;
+
+    const signals = v.id ? this.visitorSignals.get(v.id) : undefined;
+    if (signals) {
+      if (signals.readExperience) score += 15;   // chegou na experiência
+      if (signals.deepRead) score += 20;         // abriu "mais entregas"
+      if (signals.resumeDownload) score += 20;   // baixou o currículo
+      if (signals.directContact) score += 30;    // email/WhatsApp/LinkedIn
+    }
+
     return Math.min(100, score);
   }
 
   scoreLabel(score: number): { label: string; color: string; bg: string } {
-    if (score >= 70) return { label: '🔥 Lead quente', color: 'text-red-400', bg: 'bg-red-500/15 border-red-500/30' };
-    if (score >= 40) return { label: '🌡 Lead morno', color: 'text-amber-400', bg: 'bg-amber-500/15 border-amber-500/30' };
-    return { label: '❄️ Lead frio', color: 'text-blue-400', bg: 'bg-blue-500/15 border-blue-500/30' };
+    if (score >= 60) return { label: 'Alto interesse', color: 'text-green-400', bg: 'bg-green-500/15 border-green-500/30' };
+    if (score >= 30) return { label: 'Interesse moderado', color: 'text-amber-400', bg: 'bg-amber-500/15 border-amber-500/30' };
+    return { label: 'Visita superficial', color: 'text-gray-400', bg: 'bg-gray-700/40 border-gray-600/40' };
+  }
+
+  /** Explica de onde veio o score — o painel precisa ser auditável. */
+  scoreReasons(v: VisitorRecord): string[] {
+    const out: string[] = [];
+    if (v.visitCount >= 4) out.push(`${v.visitCount} visitas`);
+    else if (v.visitCount >= 2) out.push(`${v.visitCount} visitas`);
+
+    const signals = v.id ? this.visitorSignals.get(v.id) : undefined;
+    if (signals?.readExperience) out.push('leu experiência');
+    if (signals?.deepRead) out.push('leitura profunda');
+    if (signals?.resumeDownload) out.push('baixou CV');
+    if (signals?.directContact) out.push('contato direto');
+    return out;
   }
 
   get hotLeads(): VisitorRecord[] {
-    return this.visitors.filter(v => this.computeVisitorScore(v) >= 70)
+    return this.visitors.filter(v => this.computeVisitorScore(v) >= 60)
       .sort((a, b) => this.computeVisitorScore(b) - this.computeVisitorScore(a));
   }
 
   get warmLeads(): VisitorRecord[] {
     return this.visitors.filter(v => {
       const s = this.computeVisitorScore(v);
-      return s >= 40 && s < 70;
+      return s >= 30 && s < 60;
     }).sort((a, b) => this.computeVisitorScore(b) - this.computeVisitorScore(a));
   }
 
@@ -2312,18 +2068,14 @@ Resposta em português brasileiro, tom direto e profissional.`;
     this.cdr.detectChanges();
   }
 
-  private isLightTheme(): boolean {
-    return document.documentElement.classList.contains('light');
-  }
 
   private chartColors() {
-    const light = this.isLightTheme();
     return {
-      accent:     light ? '#7c3aed' : '#22d3ee',
-      areaStart:  light ? 'rgba(124,58,237,0.18)' : 'rgba(34,211,238,0.18)',
-      areaEnd:    light ? 'rgba(124,58,237,0)' : 'rgba(34,211,238,0)',
-      grid:       light ? '#e9d5ff' : '#1f2937',
-      tickColor:  light ? '#374151' : '#6b7280',
+      accent:     '#e4e4e7',
+      areaStart:  'rgba(228,228,231,0.16)',
+      areaEnd:    'rgba(228,228,231,0)',
+      grid:       '#27272a',
+      tickColor:  '#71717a',
     };
   }
 
@@ -2378,7 +2130,7 @@ Resposta em português brasileiro, tom direto e profissional.`;
       datasets.push({
         label: 'Período anterior',
         data: prevCounts,
-        borderColor: 'rgba(139,92,246,0.7)',
+        borderColor: 'rgba(161,161,170,0.7)',
         backgroundColor: 'transparent',
         borderWidth: 2,
         borderDash: [5, 4],
@@ -2456,7 +2208,6 @@ Resposta em português brasileiro, tom direto e profissional.`;
     const shadowUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png';
     L.Marker.prototype.options.icon = L.icon({ iconUrl, iconRetinaUrl: iconRetina, shadowUrl, iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34] });
 
-    const light = this.isLightTheme();
     this.leafletMap = L.map(this.mapEl.nativeElement, { zoomControl: true, scrollWheelZoom: true });
 
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
@@ -2718,9 +2469,11 @@ Resposta em português brasileiro, tom direto e profissional.`;
     const sourceDirectContacts = new Map<string, Set<string>>();
     const sourceResumeDownloads = new Map<string, Set<string>>();
     const ctaRows = new Map<string, { label: string; category: string; section: string; clicks: number; sessions: Set<string> }>();
-    const featureStarts = new Map<string, Set<string>>();
-    const featureCompletes = new Map<string, { sessions: Set<string>; values: number[] }>();
     const firstActionsBySession = new Map<string, number>();
+    const deepReadSessionSet = new Set<string>();
+    const resumeSessionSet = new Set<string>();
+    const directContactSessionSet = new Set<string>();
+    this.visitorSignals.clear();
 
     const sortedEvents = [...this.analyticsEvents].sort((a, b) => a.createdAt.getTime() - b.createdAt.getTime());
 
@@ -2742,6 +2495,9 @@ Resposta em português brasileiro, tom direto e profissional.`;
 
       if (event.eventType === 'section_view' && event.section) {
         this.addSessionToMap(sectionSessions, event.section, sessionId);
+        if (event.section === 'experiencia' && event.visitorId) {
+          this.markSignal(event.visitorId, 'readExperience');
+        }
       }
 
       if (event.eventType === 'cta_click') {
@@ -2767,24 +2523,21 @@ Resposta em português brasileiro, tom direto e profissional.`;
 
         if (category === 'project') this.addSessionToMap(sourceProjectClicks, source, sessionId);
         if (category === 'contact' || category === 'direct_contact') this.addSessionToMap(sourceContactIntents, source, sessionId);
-        if (category === 'direct_contact') this.addSessionToMap(sourceDirectContacts, source, sessionId);
-        if (category === 'resume') this.addSessionToMap(sourceResumeDownloads, source, sessionId);
-      }
-
-      if (event.eventType === 'feature_start') {
-        this.addSessionToMap(featureStarts, event.eventName, sessionId);
-        if (!firstActionsBySession.has(sessionId)) {
-          firstActionsBySession.set(sessionId, event.createdAt.getTime());
+        if (category === 'direct_contact') {
+          this.addSessionToMap(sourceDirectContacts, source, sessionId);
+          directContactSessionSet.add(sessionId);
+          if (event.visitorId) this.markSignal(event.visitorId, 'directContact');
+        }
+        if (category === 'resume') {
+          this.addSessionToMap(sourceResumeDownloads, source, sessionId);
+          resumeSessionSet.add(sessionId);
+          if (event.visitorId) this.markSignal(event.visitorId, 'resumeDownload');
         }
       }
 
-      if (event.eventType === 'feature_complete') {
-        const feature = featureCompletes.get(event.eventName) ?? { sessions: new Set<string>(), values: [] };
-        feature.sessions.add(sessionId);
-        if (typeof event.value === 'number') {
-          feature.values.push(event.value);
-        }
-        featureCompletes.set(event.eventName, feature);
+      if (event.eventType === 'experience_expand') {
+        deepReadSessionSet.add(sessionId);
+        if (event.visitorId) this.markSignal(event.visitorId, 'deepRead');
         if (!firstActionsBySession.has(sessionId)) {
           firstActionsBySession.set(sessionId, event.createdAt.getTime());
         }
@@ -2837,12 +2590,9 @@ Resposta em português brasileiro, tom direto e profissional.`;
 
     const orderedSections = [
       'detalhes',
-      'escolaridade',
       'experiencia',
       'habilidades',
-      'projetos',
-      'dev-match',
-      'certificacoes',
+      'escolaridade',
       'contato',
     ];
     this.sectionReachRows = orderedSections.map(section => {
@@ -2855,21 +2605,54 @@ Resposta em português brasileiro, tom direto e profissional.`;
       };
     });
 
-    const projectSessions = sectionSessions.get('projetos')?.size ?? 0;
+    // ── Funil de recrutamento: da visita ao contato ────────────────────────
+    const experienceSessionCount = sectionSessions.get('experiencia')?.size ?? 0;
     const contactSectionSessions = sectionSessions.get('contato')?.size ?? 0;
-    const contactIntentSessions = new Set<string>([
-      ...(this.collectSessionsByCategory(ctaRows, 'contact')),
-      ...(this.collectSessionsByCategory(ctaRows, 'direct_contact')),
-    ]).size;
-    const directContactSessions = this.collectSessionsByCategory(ctaRows, 'direct_contact').length;
+
+    this.totalSessions = totalVisitSessions;
+    this.experienceSessions = experienceSessionCount;
+    this.experienceReachRate = totalVisitSessions > 0
+      ? Math.round((experienceSessionCount / totalVisitSessions) * 100)
+      : 0;
+    this.deepReadSessions = deepReadSessionSet.size;
+    this.resumeDownloads = resumeSessionSet.size;
+    this.directContacts = directContactSessionSet.size;
 
     this.contactFunnelSteps = [
-      { label: 'Sessões', value: totalVisitSessions, color: '#7c3aed' },
-      { label: 'Viram Projetos', value: projectSessions, color: '#8b5cf6' },
-      { label: 'Viram Contato', value: contactSectionSessions, color: '#a855f7' },
-      { label: 'Clicaram CTA', value: contactIntentSessions, color: '#c084fc' },
-      { label: 'Contato Direto', value: directContactSessions, color: '#22d3ee' },
+      { label: 'Sessões', value: totalVisitSessions, color: '#e4e4e7' },
+      { label: 'Leram a experiência', value: experienceSessionCount, color: '#c4c4c8' },
+      { label: 'Leitura profunda', value: deepReadSessionSet.size, color: '#a1a1aa' },
+      { label: 'Chegaram no contato', value: contactSectionSessions, color: '#818188' },
+      { label: 'Baixaram CV ou contataram', value: new Set([...resumeSessionSet, ...directContactSessionSet]).size, color: '#4ade80' },
     ];
+
+    // ── Origem × qualidade ────────────────────────────────────────────────
+    // Qualidade = a origem traz gente que realmente lê e converte,
+    // não apenas volume de acessos.
+    const sourceExperience = new Map<string, Set<string>>();
+    const sourceConverted = new Map<string, Set<string>>();
+    for (const [sessionId, source] of sessionSource.entries()) {
+      if (sectionSessions.get('experiencia')?.has(sessionId)) {
+        this.addSessionToMap(sourceExperience, source, sessionId);
+      }
+      if (resumeSessionSet.has(sessionId) || directContactSessionSet.has(sessionId)) {
+        this.addSessionToMap(sourceConverted, source, sessionId);
+      }
+    }
+
+    this.sourceQuality = [...sourceVisits.entries()]
+      .map(([source, sessions]) => {
+        const total = sessions.size;
+        const readExperience = sourceExperience.get(source)?.size ?? 0;
+        return {
+          source,
+          sessions: total,
+          readExperience,
+          conversions: sourceConverted.get(source)?.size ?? 0,
+          qualityRate: total > 0 ? Math.round((readExperience / total) * 100) : 0,
+        } satisfies SourceQualityRow;
+      })
+      .sort((a, b) => b.conversions - a.conversions || b.qualityRate - a.qualityRate || b.sessions - a.sessions);
 
     const durations: number[] = [];
     const durationsBySource = new Map<string, number[]>();
@@ -2901,30 +2684,13 @@ Resposta em português brasileiro, tom direto e profissional.`;
       .sort((a, b) => a.avgSeconds - b.avgSeconds)
       .slice(0, 5);
 
-    const featureLabels: Record<string, string> = {
-      dev_match: 'Monte seu Dev',
-      ai_match: 'Match por IA',
-    };
-    this.featureUsageRows = Object.entries(featureLabels).map(([key, label]) => {
-      const started = featureStarts.get(key)?.size ?? 0;
-      const completionInfo = featureCompletes.get(key) ?? { sessions: new Set<string>(), values: [] };
-      const completed = completionInfo.sessions.size;
-      return {
-        key,
-        label,
-        started,
-        completed,
-        abandoned: Math.max(0, started - completed),
-        completionRate: started > 0 ? Math.round((completed / started) * 100) : 0,
-        avgResult: completionInfo.values.length > 0
-          ? Math.round(completionInfo.values.reduce((sum, value) => sum + value, 0) / completionInfo.values.length)
-          : null,
-      };
-    });
   }
 
+  /**
+   * Sem eventos de navegação gravados só dá para contar visitantes e origem
+   * pelo referrer. Nada de funil ou taxas — seria número inventado.
+   */
   private computeInsightsFallback(): void {
-    // Origem: derivada do campo referrer dos visitantes
     const sourceCounts = new Map<string, number>();
     for (const visitor of this.visitors) {
       const source = this.resolveSourceFromReferrer(visitor.referrer);
@@ -2942,32 +2708,28 @@ Resposta em português brasileiro, tom direto e profissional.`;
       }))
       .sort((a, b) => b.visits - a.visits);
 
-    // Funil: usa visitantes + uso de features
-    const aiUniq = new Set(this.aiMatches.map(m => m.visitorId).filter(Boolean)).size;
-    const devUniq = new Set(this.devMatches.map(m => m.visitorId).filter(Boolean)).size;
-    this.contactFunnelSteps = [
-      { label: 'Visitantes Únicos', value: this.visitors.length, color: '#7c3aed' },
-      { label: 'Usaram IA Match',  value: aiUniq,               color: '#a855f7' },
-      { label: 'Usaram Dev Match', value: devUniq,              color: '#22d3ee' },
-    ];
-
-    // Feature usage: baseada nos matches registrados
-    const aiAvg = this.aiMatches.length > 0
-      ? Math.round(this.aiMatches.reduce((s, m) => s + m.matchPercentage, 0) / this.aiMatches.length) : null;
-    const devAvg = this.devMatches.length > 0
-      ? Math.round(this.devMatches.reduce((s, m) => s + m.matchPercentage, 0) / this.devMatches.length) : null;
-
-    this.featureUsageRows = [
-      { key: 'ai_match',  label: 'Match por IA',  started: aiUniq,  completed: aiUniq,  abandoned: 0, completionRate: aiUniq  > 0 ? 100 : 0, avgResult: aiAvg },
-      { key: 'dev_match', label: 'Monte seu Dev', started: devUniq, completed: devUniq, abandoned: 0, completionRate: devUniq > 0 ? 100 : 0, avgResult: devAvg },
-    ];
-
-    // Sem dados de eventos: CTR e seções não podem ser estimados
+    this.sourceQuality = [];
+    this.contactFunnelSteps = [];
     this.ctaPerformance = [];
     this.sectionReachRows = [];
+    this.totalSessions = 0;
+    this.experienceSessions = 0;
+    this.experienceReachRate = 0;
+    this.deepReadSessions = 0;
+    this.resumeDownloads = 0;
+    this.directContacts = 0;
     this.firstActionAvgSeconds = 0;
     this.firstActionMedianSeconds = 0;
     this.firstActionBySource = [];
+    this.visitorSignals.clear();
+  }
+
+  /** Registra um sinal de interesse do visitante (usado pelo score). */
+  private markSignal(visitorId: string, signal: keyof VisitorSignals): void {
+    const current = this.visitorSignals.get(visitorId)
+      ?? { readExperience: false, deepRead: false, resumeDownload: false, directContact: false };
+    current[signal] = true;
+    this.visitorSignals.set(visitorId, current);
   }
 
   private resolveSourceFromReferrer(referrer?: string): string {
@@ -3098,7 +2860,7 @@ Resposta em português brasileiro, tom direto e profissional.`;
       case 'isp':
         return '#38bdf8';
       case 'hosting':
-        return '#c084fc';
+        return '#a1a1aa';
       case 'education':
         return '#fbbf24';
       default:
@@ -3134,11 +2896,11 @@ Resposta em português brasileiro, tom direto e profissional.`;
   }
 
   get accentColor(): string {
-    return this.isLightTheme() ? '#7c3aed' : '#22d3ee';
+    return '#e4e4e7';
   }
 
   heatLegendColor(t: number): string {
-    return this.heatColorByIntensity(t, this.isLightTheme());
+    return this.heatColorByIntensity(t);
   }
 
   pct(ratio: number): number {
@@ -3146,38 +2908,20 @@ Resposta em português brasileiro, tom direto e profissional.`;
   }
 
   // ── Funil SVG ─────────────────────────────────────────────────────────
-  get funnelShapes() {
+  /** Funil em barras: cada etapa como % do topo, com a queda em relação à anterior. */
+  get funnelBars() {
     const steps = this.contactFunnelSteps;
     if (!steps.length) return [];
-    // cx=250, maxW=200 → funil de x=150 a x=350 na largura máxima
-    // Zona esquerda (texto): x=0..130 | Funil: x=150..350 | Zona direita: x=360..500
-    const maxW = 200, cx = 250, stepH = 62, gapH = 30;
     const topValue = steps[0].value || 1;
-    return steps.map((step, i) => {
-      const topPct = step.value / topValue;
-      const botPct = i < steps.length - 1 ? steps[i + 1].value / topValue : topPct;
-      const topW = Math.max(32, topPct * maxW);
-      const botW = Math.max(32, botPct * maxW);
-      const y = i * (stepH + gapH);
-      const dropPct = i > 0 ? Math.round((1 - step.value / (steps[i - 1].value || 1)) * 100) : null;
-      const x1t = cx - topW / 2, x2t = cx + topW / 2;
-      const x1b = cx - botW / 2, x2b = cx + botW / 2;
-      return {
-        label: step.label,
-        value: step.value,
-        color: step.color,
-        pct: Math.round(topPct * 100),
-        dropPct,
-        points: `${x1t},${y} ${x2t},${y} ${x2b},${y + stepH} ${x1b},${y + stepH}`,
-        centerY: y + stepH / 2,
-        dropY: y + stepH + gapH / 2,
-      };
-    });
-  }
-
-  get funnelSvgHeight(): number {
-    const n = this.contactFunnelSteps.length;
-    return n * 62 + Math.max(0, n - 1) * 30;
+    return steps.map((step, i) => ({
+      label: step.label,
+      value: step.value,
+      color: step.color,
+      pct: Math.round((step.value / topValue) * 100),
+      dropPct: i > 0
+        ? Math.round((1 - step.value / (steps[i - 1].value || 1)) * 100)
+        : null,
+    }));
   }
 
   // ── Charts horizontais de barra ────────────────────────────────────────
@@ -3190,12 +2934,12 @@ Resposta em português brasileiro, tom direto e profissional.`;
     const gridColor  = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)';
     const tickColor  = isDark ? '#9ca3af' : '#374151';
     const categoryColors: Record<string, string> = {
-      project: '#a855f7', direct_contact: '#22c55e', resume: '#f59e0b',
-      navigation: '#94a3b8', contact: '#22d3ee',
+      project: '#a1a1aa', direct_contact: '#4ade80', resume: '#fbbf24',
+      navigation: '#71717a', contact: '#e4e4e7',
     };
     const rows = this.ctaPerformance.slice(0, 12);
     const labels = rows.map(r => r.label.length > 22 ? r.label.slice(0, 20) + '…' : r.label);
-    const colors = rows.map(r => categoryColors[r.category] ?? '#22d3ee');
+    const colors = rows.map(r => categoryColors[r.category] ?? '#a1a1aa');
 
     const ctaDatalabels = {
       id: 'ctaBarDatalabels',
@@ -3391,8 +3135,8 @@ Resposta em português brasileiro, tom direto e profissional.`;
   }
 
   private buildMapMarkerStyle(visitor: VisitorRecord, isSelected: boolean): L.CircleMarkerOptions {
-    const defaultColor = this.isLightTheme() ? '#7c3aed' : '#22d3ee';
-    const selectedColor = this.isLightTheme() ? '#ea580c' : '#fbbf24';
+    const defaultColor = '#a1a1aa';
+    const selectedColor = '#4ade80';
     const color = isSelected ? selectedColor : defaultColor;
 
     return {
@@ -3480,32 +3224,24 @@ Resposta em português brasileiro, tom direto e profissional.`;
       .replaceAll("'", '&#39;');
   }
 
-  private heatColorByIntensity(t: number, isLight = false): string {
-    if (t <= 0) return isLight ? 'rgb(237,233,254)' : 'rgb(39,52,68)';
-    if (isLight) {
-      // purple gradient: light lavender → deep purple
-      const r = Math.round(196 - t * 72);
-      const g = Math.round(181 - t * 123);
-      const b = Math.round(253 - t * 30);
-      return `rgba(${r},${g},${b},${+(0.4 + t * 0.6).toFixed(2)})`;
-    }
-    const r = Math.round(14 + t * 20);
-    const g = Math.round(74 + t * 137);
-    const b = Math.round(82 + t * 156);
-    return `rgba(${r},${g},${b},${+(0.3 + t * 0.7).toFixed(2)})`;
+  /** Escala monocromática: quanto mais acessos, mais claro o bloco. */
+  private heatColorByIntensity(t: number): string {
+    if (t <= 0) return 'rgb(24,24,27)';
+    const v = Math.round(63 + t * 165);
+    return `rgba(${v},${v},${v + 3},${+(0.35 + t * 0.65).toFixed(2)})`;
   }
 
   private computeExtraStats(): void {
-    const isLight = this.isLightTheme();
     const dayLabels = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'];
 
     // ── Heatmap ────────────────────────────────────────────────────────────
     const grid: number[][] = Array.from({ length: 7 }, () => new Array(24).fill(0));
-    const times: Date[] = [
-      ...this.visitors.map(v => new Date(v.lastSeen)),
-      ...this.aiMatches.map(m => new Date(m.createdAt)),
-      ...this.devMatches.map(m => new Date(m.createdAt)),
-    ];
+    // Só acessos reais — usa o evento de visita quando houver, senão lastSeen.
+    const times: Date[] = this.analyticsEvents.length > 0
+      ? this.analyticsEvents
+          .filter(e => e.eventType === 'page_visit')
+          .map(e => new Date(e.createdAt))
+      : this.visitors.map(v => new Date(v.lastSeen));
     for (const t of times) grid[t.getDay()][t.getHours()]++;
     const maxVal = Math.max(1, ...grid.flat());
 
@@ -3526,7 +3262,7 @@ Resposta em português brasileiro, tom direto e profissional.`;
       cells: Array.from({ length: 24 }, (_, h) => {
         const count = grid[dayIdx][h];
         return {
-          color: this.heatColorByIntensity(count / maxVal, isLight),
+          color: this.heatColorByIntensity(count / maxVal),
           title: `${count} ${count === 1 ? 'acesso' : 'acessos'} — ${label} às ${h}h`,
         };
       }),
@@ -3541,17 +3277,11 @@ Resposta em português brasileiro, tom direto e profissional.`;
     }
     const total = this.visitors.length || 1;
     const C = 2 * Math.PI * 50;
-    const deviceItems = isLight
-      ? [
-          { label: 'Desktop', value: desktop, color: '#7c3aed' },
-          { label: 'Mobile',  value: mobile,  color: '#a855f7' },
-          { label: 'Tablet',  value: tablet,  color: '#c084fc' },
-        ]
-      : [
-          { label: 'Desktop', value: desktop, color: '#60a5fa' },
-          { label: 'Mobile',  value: mobile,  color: '#22d3ee' },
-          { label: 'Tablet',  value: tablet,  color: '#a78bfa' },
-        ];
+    const deviceItems = [
+      { label: 'Desktop', value: desktop, color: '#e4e4e7' },
+      { label: 'Mobile',  value: mobile,  color: '#a1a1aa' },
+      { label: 'Tablet',  value: tablet,  color: '#52525b' },
+    ];
     let offset = 0;
     this.donutSegs = deviceItems.map(item => {
       const arc = (item.value / total) * C;

@@ -171,15 +171,53 @@ om-marquee { padding: 1rem 0; }
   }
 }
 
-/* ---- Admin (mantido: dark, neutro) ---- */
+/* ============================================================
+   ADMIN — mesma linguagem do site (zinc), aplicada por cima das
+   classes gray-* do Tailwind para não reescrever cada template.
+   ============================================================ */
 .admin-page { background: transparent; color: var(--fg); }
-.admin-card { background: var(--surface); border-color: var(--border); }
+
+.admin-card {
+  background: var(--surface);
+  border-color: var(--border);
+  transition: border-color 0.2s;
+}
+.admin-card:hover { border-color: var(--border-hi); }
+
 .admin-input {
   background: var(--bg-raised);
   border-color: var(--border-hi);
   color: var(--fg);
 }
 .admin-input::placeholder { color: var(--fg-faint); }
-.admin-input:focus { border-color: var(--accent); }
+.admin-input:focus { border-color: var(--accent); outline: none; }
+
+/* Superfícies e bordas herdadas do tema antigo */
+.admin-page [class*="bg-gray-800"] { background-color: var(--surface); }
+.admin-page [class*="bg-gray-900"] { background-color: var(--bg-raised); }
+.admin-page [class*="border-gray-700"] { border-color: var(--border-hi); }
+.admin-page [class*="border-gray-800"] { border-color: var(--border); }
+
+/* Hierarquia de texto legível */
+.admin-page .text-gray-500 { color: var(--fg-faint); }
+.admin-page .text-gray-400 { color: var(--fg-muted); }
+.admin-page .text-gray-300,
+.admin-page .text-gray-200,
+.admin-page .text-gray-100 { color: var(--fg); }
+
+/* Tabelas: cabeçalho fixo e linhas com hover discreto */
+.admin-page table thead th {
+  position: sticky;
+  top: 0;
+  background: var(--bg-raised);
+  z-index: 1;
+}
+.admin-page table tbody tr:hover { background: rgba(255, 255, 255, 0.02); }
+
+/* Números grandes dos KPIs no mesmo tipo do site */
+.admin-page .admin-card p.text-3xl {
+  font-family: var(--font-display);
+  letter-spacing: -0.03em;
+}
 
 .leaflet-map { z-index: 0; }

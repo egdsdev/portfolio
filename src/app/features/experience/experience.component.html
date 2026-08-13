@@ -33,7 +33,7 @@
             </ul>
 
             @if (entry.bullets.length > 2) {
-              <details class="experience-details">
+              <details class="experience-details" (toggle)="onExpand($event, entry.company)">
                 <summary class="experience-summary">
                   Mais {{ entry.bullets.length - 2 }} entregas
                 </summary>

@@ -20,43 +20,46 @@ import { AnalyticsService } from '../../core/services/analytics.service';
           Disponível para novos projetos
         </div>
 
-        <!-- Nome: o elemento dominante da página -->
-        <h1 class="display text-zinc-50 mb-6 sm:mb-8"
-            style="font-size: clamp(2.75rem, 11vw, 8.5rem); font-weight: 700;">
-          Elias Gomes<br>da Silva
-        </h1>
+        <!-- Retrato grande à esquerda; nome e cargo ocupam o resto da linha -->
+        <div class="hero-row mb-4">
+          <div class="hero-photo rounded-2xl overflow-hidden border border-zinc-800">
+            <img src="profile.jpg" alt="Elias Gomes da Silva" class="w-full h-full object-cover">
+          </div>
 
-        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 lg:gap-10 mb-10 sm:mb-14">
-          <!-- min-h evita o layout "pular" enquanto o typewriter troca de frase -->
-          <p class="text-lg sm:text-xl md:text-2xl text-zinc-400 font-normal max-w-xl leading-snug min-h-[3.5rem] sm:min-h-0">
-            {{ displayTitle() }}<span class="typewriter-cursor text-zinc-600">|</span>
-          </p>
+          <div class="hero-info">
+            <h1 class="display text-zinc-50 mb-4 sm:mb-5 hero-name">
+              Elias Gomes da Silva
+            </h1>
 
-          <div class="flex items-center gap-4 sm:gap-6 shrink-0">
-            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden border border-zinc-800 shrink-0">
-              <img src="profile.jpg" alt="Elias Gomes" class="w-full h-full object-cover object-top">
+            <!-- min-h evita o layout "pular" enquanto o typewriter troca de frase -->
+            <p class="text-lg sm:text-xl md:text-2xl text-zinc-400 font-normal leading-snug
+                      min-h-[3.5rem] sm:min-h-[2.5rem]">
+              {{ displayTitle() }}<span class="typewriter-cursor text-zinc-600">|</span>
+            </p>
+
+            <div class="eyebrow leading-relaxed mt-5">
+              <span class="text-zinc-300">7+ anos de experiência</span>
+              <span class="text-zinc-700 mx-2">·</span>
+              <span class="text-zinc-500">Goiânia, GO</span>
             </div>
-            <div class="eyebrow leading-relaxed">
-              <div>7+ anos</div>
-              <div class="text-zinc-500">Goiânia, GO</div>
+
+            <div class="flex flex-wrap items-center gap-3 mt-8">
+              <a href="#contato" (click)="onHeroContactClick()" class="btn-primary">
+                Entre em contato
+              </a>
+              <a href="curriculo-elias-gomes.pdf"
+                 download="Curriculo-Elias-Gomes-da-Silva.pdf"
+                 (click)="onResumeDownload($event)"
+                 class="btn-ghost">
+                <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                  <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                </svg>
+                Currículo
+              </a>
             </div>
           </div>
         </div>
 
-        <div class="flex flex-wrap items-center gap-3">
-          <a href="#contato" (click)="onHeroContactClick()" class="btn-primary">
-            Entre em contato
-          </a>
-          <a href="curriculo-elias-gomes.pdf"
-             download="Curriculo-Elias-Gomes-da-Silva.pdf"
-             (click)="onResumeDownload($event)"
-             class="btn-ghost">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
-              <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-            </svg>
-            Currículo
-          </a>
-        </div>
       </div>
 
       <!-- Marquee em faixa própria na base da dobra -->

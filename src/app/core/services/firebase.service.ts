@@ -94,7 +94,7 @@ export interface AnalyticsEventRecord {
   ip?: string;
   source: string;
   sourceDetail?: string;
-  eventType: 'page_visit' | 'section_view' | 'cta_click' | 'feature_start' | 'feature_complete';
+  eventType: 'page_visit' | 'section_view' | 'cta_click' | 'experience_expand';
   eventName: string;
   section?: string;
   target?: string;

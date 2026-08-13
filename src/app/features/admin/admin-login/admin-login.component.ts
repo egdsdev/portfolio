@@ -8,33 +8,46 @@ import { FirebaseService } from '../../../core/services/firebase.service';
   standalone: true,
   imports: [FormsModule],
   template: `
-    <div class="admin-page min-h-screen flex items-center justify-center p-4 pt-20">
-      <div class="w-full max-w-sm admin-card border rounded-2xl p-8 shadow-xl">
-        <h1 class="text-xl font-bold text-center mb-6">🔐 Admin</h1>
+    <div class="admin-page min-h-screen flex items-center justify-center px-6 py-20">
+      <div class="w-full max-w-sm">
+        <div class="mb-8">
+          <div class="eyebrow mb-3">Área restrita</div>
+          <h1 class="display text-3xl text-zinc-50 mb-2" style="font-weight: 600;">Dashboard</h1>
+          <p class="text-sm text-zinc-500">Entre para ver as métricas do portfólio.</p>
+        </div>
 
         @if (error) {
-          <div class="bg-red-500/10 border border-red-500/30 text-red-400 text-xs rounded-lg p-3 mb-4 text-center">
+          <div class="border border-red-500/30 bg-red-500/5 text-red-400 text-sm rounded-lg px-4 py-3 mb-5">
             {{ error }}
           </div>
         }
 
-        <div class="space-y-4">
-          <input type="email"
-                 [(ngModel)]="email"
-                 placeholder="Email"
-                 class="w-full admin-input border rounded-xl px-4 py-3 text-sm outline-none transition-colors">
-          <input type="password"
-                 [(ngModel)]="password"
-                 placeholder="Senha"
-                 (keydown.enter)="login()"
-                 class="w-full admin-input border rounded-xl px-4 py-3 text-sm outline-none transition-colors">
-          <button (click)="login()"
-                  [disabled]="loading"
-                  class="w-full py-3 rounded-xl text-white text-sm font-bold transition-all"
-                  [class]="loading ? 'bg-gray-700 cursor-not-allowed' : 'bg-gradient-to-r from-blue-500 to-cyan-500 hover:scale-[1.02]'">
+        <form class="space-y-4" (ngSubmit)="login()">
+          <div>
+            <label for="email" class="eyebrow block mb-2">Email</label>
+            <input id="email" type="email" name="email" autocomplete="email"
+                   [(ngModel)]="email"
+                   class="w-full admin-input border rounded-lg px-4 py-3 text-sm transition-colors">
+          </div>
+          <div>
+            <label for="password" class="eyebrow block mb-2">Senha</label>
+            <input id="password" type="password" name="password" autocomplete="current-password"
+                   [(ngModel)]="password"
+                   class="w-full admin-input border rounded-lg px-4 py-3 text-sm transition-colors">
+          </div>
+          <button type="submit"
+                  [disabled]="loading || !email || !password"
+                  class="btn-primary w-full disabled:opacity-40 disabled:cursor-not-allowed">
             {{ loading ? 'Entrando...' : 'Entrar' }}
           </button>
-        </div>
+        </form>
+
+        <a href="/" class="inline-flex items-center gap-1.5 mt-8 text-sm text-zinc-500 hover:text-zinc-300 transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 19l-7-7 7-7"/>
+          </svg>
+          Voltar ao portfólio
+        </a>
       </div>
     </div>
   `,
