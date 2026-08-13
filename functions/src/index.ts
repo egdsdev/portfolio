@@ -1,6 +1,8 @@
 import * as admin from 'firebase-admin';
 import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 import { defineSecret } from 'firebase-functions/params';
+import { onCall, HttpsError } from 'firebase-functions/v2/https';
+import { GoogleGenAI } from '@google/genai';
 import * as nodemailer from 'nodemailer';
 
 admin.initializeApp();
@@ -183,5 +185,37 @@ export const onNewChatMessage = onDocumentCreated(
       console.error('[Email] Erro ao enviar:', err);
     }
     } // fim shouldSendEmail
+  }
+);
+
+// ── Análise de jornadas com Gemini ───────────────────────────────────────────
+// A chave vive só no servidor (Secret Manager). O client chama esta função
+// autenticado; a chave nunca vai para o bundle.
+const geminiKey = defineSecret('GEMINI_API_KEY');
+
+export const analyzeJourneys = onCall(
+  { secrets: [geminiKey], region: 'us-central1' },
+  async (request) => {
+    // Só o admin autenticado pode gastar cota da API.
+    if (!request.auth) {
+      throw new HttpsError('unauthenticated', 'Login necessário.');
+    }
+
+    const prompt = request.data?.prompt;
+    if (typeof prompt !== 'string' || !prompt.trim()) {
+      throw new HttpsError('invalid-argument', 'Prompt ausente.');
+    }
+    if (prompt.length > 20000) {
+      throw new HttpsError('invalid-argument', 'Prompt muito longo.');
+    }
+
+    const ai = new GoogleGenAI({ apiKey: geminiKey.value() });
+    const response = await ai.models.generateContent({
+      model: 'gemini-2.5-flash-lite',
+      contents: prompt,
+      config: { temperature: 0.5, responseMimeType: 'application/json' },
+    });
+
+    return { text: response.text ?? '{}' };
   }
 );

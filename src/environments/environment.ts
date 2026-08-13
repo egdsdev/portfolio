@@ -1,6 +1,5 @@
 export const environment = {
   production: false,
-  geminiApiKey: 'AIzaSyBHRREqpRzYKG1U2TZh3dnAj3APPDzRtQQ',
   firebase: {
     apiKey: 'AIzaSyDG-3F47eWeHdYTbtOT4Ead9E24ijV_to8',
     authDomain: 'portfolio-74e9c.firebaseapp.com',

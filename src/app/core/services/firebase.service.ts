@@ -13,6 +13,7 @@ import {
 import {
   getStorage, FirebaseStorage, ref as storageRef, uploadBytes, getDownloadURL,
 } from 'firebase/storage';
+import { getFunctions, httpsCallable } from 'firebase/functions';
 import { environment } from '../../../environments/environment';
 
 export interface AiMatchRecord {
@@ -118,6 +119,18 @@ export class FirebaseService {
     isSupported().then(supported => {
       if (supported) this.messaging = getMessaging(this.app);
     });
+  }
+
+  /**
+   * Chama a Cloud Function que fala com o Gemini. A chave da API fica no
+   * servidor (Secret Manager) — nunca no bundle do client.
+   */
+  async analyzeJourneys(prompt: string): Promise<string> {
+    const callable = httpsCallable<{ prompt: string }, { text: string }>(
+      getFunctions(this.app), 'analyzeJourneys'
+    );
+    const result = await callable({ prompt });
+    return result.data.text;
   }
 
   // ── FCM Push Notifications ────────────────────────────────────────────

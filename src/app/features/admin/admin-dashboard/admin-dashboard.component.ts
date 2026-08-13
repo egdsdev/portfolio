@@ -4,8 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { FirebaseService, AiMatchRecord, VisitorRecord, DevMatchRecord, AnalyticsEventRecord, ChatConversation, ChatMessage, isChatMessageWithinEditWindow } from '../../../core/services/firebase.service';
 import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
 import * as L from 'leaflet';
-import { GoogleGenAI } from '@google/genai';
-import { environment } from '../../../../environments/environment';
 import {
   Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip, Legend,
   BarController, BarElement,
@@ -1751,13 +1749,8 @@ Responda em JSON com esta estrutura exata (sem markdown):
 Resposta em português brasileiro, tom direto e profissional.`;
 
     try {
-      const ai = new GoogleGenAI({ apiKey: environment.geminiApiKey });
-      const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash-lite',
-        contents: prompt,
-        config: { temperature: 0.5, responseMimeType: 'application/json' },
-      });
-      const parsed = JSON.parse(response.text ?? '{}') as {
+      const text = await this.firebase.analyzeJourneys(prompt);
+      const parsed = JSON.parse(text || '{}') as {
         assessment: string; summary: string; insight: string; action: string;
       };
       this.journeyAiInsight = JSON.stringify(parsed);
