@@ -13,7 +13,7 @@ interface Stat {
   standalone: true,
   template: `
     <div class="border-b border-zinc-900">
-      <div #trigger class="max-w-6xl mx-auto px-8 py-20 grid grid-cols-1 md:grid-cols-3">
+      <div #trigger class="max-w-6xl mx-auto px-6 sm:px-8 py-14 sm:py-20 grid grid-cols-1 md:grid-cols-3">
         @for (stat of stats; track stat.label) {
           <div class="stat-cell stat-fade" [class.stat-visible]="started">
             <div class="flex items-baseline gap-1.5">
@@ -62,17 +62,17 @@ export class StatsComponent implements AfterViewInit, OnDestroy {
     {
       target: 7, suffix: '+', current: 0,
       label: 'Anos em produção',
-      detail: 'Sistemas usados diariamente por empresas de varejo automotivo, seguros e indústria.',
+      detail: 'Full stack de ponta a ponta: modelagem de banco, APIs, infraestrutura e interface.',
     },
     {
       target: 12, suffix: '', current: 0,
-      label: 'Serviços na plataforma',
-      detail: 'ERP, SSO, Data Warehouse, relatórios e integrações que superviso hoje.',
+      label: 'Serviços que superviso',
+      detail: 'Projetei o Data Warehouse e o processo de release que todos os times seguem.',
     },
     {
       target: 6, suffix: '', current: 0,
       label: 'Times por onde passei',
-      detail: 'De agência e startup a software house — hoje liderando a equipe de backend.',
+      detail: 'De desenvolvedor a supervisor — conduzindo code review, mentoria e arquitetura.',
     },
   ];
 

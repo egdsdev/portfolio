@@ -14,9 +14,9 @@ interface SkillGroup {
   selector: 'app-skills',
   standalone: true,
   template: `
-    <section id="habilidades" class="py-28 px-8 border-b border-zinc-900">
+    <section id="habilidades" class="py-20 sm:py-28 px-6 sm:px-8 border-b border-zinc-900">
       <div class="max-w-6xl mx-auto">
-        <div class="mb-20 max-w-2xl">
+        <div class="mb-12 sm:mb-20 max-w-4xl">
           <div class="eyebrow mb-5">02 — Stack</div>
           <h2 class="section-title mb-6">O que eu uso<br>no dia a dia</h2>
           <p class="section-lead">

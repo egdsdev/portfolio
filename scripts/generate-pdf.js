@@ -2,30 +2,36 @@ const puppeteer = require('puppeteer-core');
 const path = require('path');
 const fs = require('fs');
 
+// Primeiro navegador Chromium disponível na máquina.
+const CANDIDATES = [
+  'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+  'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+  'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
+  'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe',
+];
+
 (async () => {
-  const edgePath = 'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe';
+  const executablePath = CANDIDATES.find(p => fs.existsSync(p));
+  if (!executablePath) {
+    console.error('Nenhum Chrome/Edge encontrado. Caminhos testados:\n' + CANDIDATES.join('\n'));
+    process.exit(1);
+  }
+
   const htmlFile = path.resolve(__dirname, 'resume.html');
   const outputPdf = path.resolve(__dirname, '..', 'public', 'curriculo-elias-gomes.pdf');
-  const photoPath = path.resolve(__dirname, '..', 'public', 'profile.jpg');
+  const html = fs.readFileSync(htmlFile, 'utf-8');
 
-  const photoBase64 = fs.readFileSync(photoPath).toString('base64');
-  const photoDataUri = `data:image/jpeg;base64,${photoBase64}`;
-
-  let html = fs.readFileSync(htmlFile, 'utf-8');
-  html = html.replace('__PHOTO_SRC__', photoDataUri);
-
-  console.log('Iniciando Edge via puppeteer-core...');
+  console.log(`Gerando PDF via ${path.basename(executablePath)}...`);
   const browser = await puppeteer.launch({
-    executablePath: edgePath,
+    executablePath,
     headless: true,
     args: ['--no-sandbox', '--disable-setuid-sandbox'],
   });
 
   const page = await browser.newPage();
   await page.setContent(html, { waitUntil: 'networkidle0', timeout: 30000 });
-
-  // Aguarda fonte carregar (Google Fonts)
-  await new Promise(r => setTimeout(r, 2000));
+  // Garante que a webfont terminou de carregar antes de paginar.
+  await page.evaluateHandle('document.fonts.ready');
 
   await page.pdf({
     path: outputPdf,
@@ -35,5 +41,6 @@ const fs = require('fs');
   });
 
   await browser.close();
-  console.log(`PDF gerado: ${outputPdf}`);
+  const kb = (fs.statSync(outputPdf).size / 1024).toFixed(0);
+  console.log(`PDF gerado: ${outputPdf} (${kb} KB)`);
 })();

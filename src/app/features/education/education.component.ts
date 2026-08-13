@@ -4,15 +4,15 @@ import { Component } from '@angular/core';
   selector: 'app-education',
   standalone: true,
   template: `
-    <section id="escolaridade" class="py-28 px-8 border-b border-zinc-900">
+    <section id="escolaridade" class="py-20 sm:py-28 px-6 sm:px-8 border-b border-zinc-900">
       <div class="max-w-6xl mx-auto">
-        <div class="mb-20 max-w-2xl">
-          <div class="eyebrow mb-5">04 — Formação</div>
+        <div class="mb-12 sm:mb-20 max-w-4xl">
+          <div class="eyebrow mb-5">03 — Formação</div>
           <h2 class="section-title">Formação<br>acadêmica</h2>
         </div>
 
         <div>
-          <article class="grid grid-cols-1 md:grid-cols-[10rem_1fr] gap-x-12 gap-y-3 py-8 border-t border-zinc-900">
+          <article class="grid grid-cols-1 md:grid-cols-[10rem_1fr] gap-x-12 gap-y-2 py-7 sm:py-8 border-t border-zinc-900">
             <div class="eyebrow pt-1">2020 — 2022</div>
             <div class="max-w-2xl">
               <h3 class="text-zinc-50 text-lg font-medium mb-1">
@@ -25,7 +25,7 @@ import { Component } from '@angular/core';
             </div>
           </article>
 
-          <article class="grid grid-cols-1 md:grid-cols-[10rem_1fr] gap-x-12 gap-y-3 py-8 border-t border-b border-zinc-900">
+          <article class="grid grid-cols-1 md:grid-cols-[10rem_1fr] gap-x-12 gap-y-2 py-7 sm:py-8 border-t border-b border-zinc-900">
             <div class="eyebrow pt-1">2015 — 2019</div>
             <div class="max-w-2xl">
               <h3 class="text-zinc-50 text-lg font-medium mb-1">

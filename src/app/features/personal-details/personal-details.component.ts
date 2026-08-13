@@ -10,9 +10,9 @@ import { AnalyticsService } from '../../core/services/analytics.service';
   styleUrls: ['./personal-details.scss'],
   template: `
     <section id="detalhes" class="min-h-screen flex flex-col justify-center relative">
-      <div class="relative z-10 w-full max-w-6xl mx-auto px-8 pt-32 pb-16 flex-1 flex flex-col justify-center">
+      <div class="relative z-10 w-full max-w-6xl mx-auto px-6 sm:px-8 pt-28 sm:pt-32 pb-12 sm:pb-16 flex-1 flex flex-col justify-center">
         <!-- Status -->
-        <div class="inline-flex items-center gap-2.5 mb-10 eyebrow">
+        <div class="inline-flex items-center gap-2.5 mb-7 sm:mb-10 eyebrow">
           <span class="relative flex h-1.5 w-1.5">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400"></span>
@@ -21,18 +21,19 @@ import { AnalyticsService } from '../../core/services/analytics.service';
         </div>
 
         <!-- Nome: o elemento dominante da página -->
-        <h1 class="display text-zinc-50 mb-8"
-            style="font-size: clamp(3rem, 11vw, 8.5rem); font-weight: 700;">
+        <h1 class="display text-zinc-50 mb-6 sm:mb-8"
+            style="font-size: clamp(2.75rem, 11vw, 8.5rem); font-weight: 700;">
           Elias Gomes<br>da Silva
         </h1>
 
-        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-10 mb-14">
-          <p class="text-xl md:text-2xl text-zinc-400 font-normal max-w-xl leading-snug">
+        <div class="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8 lg:gap-10 mb-10 sm:mb-14">
+          <!-- min-h evita o layout "pular" enquanto o typewriter troca de frase -->
+          <p class="text-lg sm:text-xl md:text-2xl text-zinc-400 font-normal max-w-xl leading-snug min-h-[3.5rem] sm:min-h-0">
             {{ displayTitle() }}<span class="typewriter-cursor text-zinc-600">|</span>
           </p>
 
-          <div class="flex items-center gap-6 shrink-0">
-            <div class="w-16 h-16 rounded-full overflow-hidden border border-zinc-800 shrink-0">
+          <div class="flex items-center gap-4 sm:gap-6 shrink-0">
+            <div class="w-14 h-14 sm:w-16 sm:h-16 rounded-full overflow-hidden border border-zinc-800 shrink-0">
               <img src="profile.jpg" alt="Elias Gomes" class="w-full h-full object-cover object-top">
             </div>
             <div class="eyebrow leading-relaxed">
@@ -42,7 +43,7 @@ import { AnalyticsService } from '../../core/services/analytics.service';
           </div>
         </div>
 
-        <div class="flex flex-wrap gap-3">
+        <div class="flex flex-wrap items-center gap-3">
           <a href="#contato" (click)="onHeroContactClick()" class="btn-primary">
             Entre em contato
           </a>
@@ -70,8 +71,9 @@ export class PersonalDetailsComponent implements OnInit, OnDestroy {
 
   readonly titles = [
     'Engenheiro de Computação',
+    'Desenvolvedor Full Stack Sênior',
+    'Arquitetura, infraestrutura e banco de dados',
     'Supervisor de Backend · PHP, Laravel, Python',
-    'Arquitetura distribuída, filas e Data Warehouse',
   ];
 
   displayTitle = signal(this.titles[0]);

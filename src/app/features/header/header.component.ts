@@ -16,12 +16,11 @@ import { AnalyticsService } from '../../core/services/analytics.service';
 
     <!-- Header Desktop: oculto no mobile -->
     <nav class="nav-desktop fixed top-0 left-0 right-0 bg-zinc-950/80 backdrop-blur-xl z-50 border-b border-zinc-900">
-      <div class="max-w-6xl mx-auto px-8 py-4 flex items-center justify-between">
+      <div class="max-w-6xl mx-auto px-6 sm:px-8 py-4 flex items-center justify-between">
         <a href="#detalhes" class="text-zinc-100 font-medium text-sm tracking-tight hover:text-white transition-colors">Elias Gomes</a>
         <ul class="flex items-center space-x-7">
           <li><a href="#experiencia" class="nav-link text-sm">Experiência</a></li>
           <li><a href="#habilidades" class="nav-link text-sm">Skills</a></li>
-          <li><a href="#projetos" (click)="trackNavClick('projetos', 'desktop')" class="nav-link text-sm">Projetos</a></li>
           <li><a href="#escolaridade" class="nav-link text-sm">Formação</a></li>
           <li><a href="#contato" (click)="trackNavClick('contato', 'desktop')" class="px-4 py-1.5 rounded-lg bg-zinc-100 text-zinc-900 hover:bg-white transition-colors text-sm font-medium">Contato</a></li>
           @if (loggedIn()) {
@@ -78,7 +77,6 @@ import { AnalyticsService } from '../../core/services/analytics.service';
       <nav class="flex flex-col p-6 gap-5">
         <a href="#experiencia" class="nav-link text-sm py-1" (click)="closeMenu()">Experiência</a>
         <a href="#habilidades" class="nav-link text-sm py-1" (click)="closeMenu()">Skills</a>
-        <a href="#projetos" class="nav-link text-sm py-1" (click)="trackNavClick('projetos', 'mobile'); closeMenu()">Projetos</a>
         <a href="#escolaridade" class="nav-link text-sm py-1" (click)="closeMenu()">Formação</a>
         <a href="#contato" class="mt-2 px-4 py-2 rounded-lg bg-zinc-100 text-zinc-900 hover:bg-white transition-colors text-sm font-medium text-center" (click)="trackNavClick('contato', 'mobile'); closeMenu()">Contato</a>
         @if (loggedIn()) {
@@ -159,7 +157,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.isOpen.set(false);
   }
 
-  trackNavClick(targetSection: 'projetos' | 'contato', surface: 'desktop' | 'mobile'): void {
+  trackNavClick(targetSection: 'contato', surface: 'desktop' | 'mobile'): void {
     void this.analytics.trackCtaClick(`nav_${targetSection}`, targetSection, 'navigation', { surface });
   }
 }

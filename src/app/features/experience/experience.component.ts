@@ -23,9 +23,9 @@ export class ExperienceComponent {
   entries: ExperienceEntry[] = [
     {
       date: '2026 — Atual',
-      company: 'Dadus',
+      company: 'Dadus Fábrica de Software',
       context: 'Software house do setor automotivo — ERP, BI e integrações para distribuidores e varejo de autopeças',
-      role: 'Supervisor da Equipe de Backend',
+      role: 'Desenvolvedor Full Stack Sênior · Supervisor de Backend',
       modality: 'Goiânia, GO',
       stack: ['PHP', 'Laravel', 'Python', 'Vue.js', 'PostgreSQL', 'Redis', 'AWS SQS', 'S3', 'Docker', 'GitLab CI'],
       bullets: [
@@ -89,8 +89,8 @@ export class ExperienceComponent {
     },
     {
       date: '2020 — 2023',
-      company: 'Dadus (ex-Mattos & Cia)',
-      context: 'Mesma empresa onde atuo hoje, antes do rebranding — na época com operação industrial e sistemas internos',
+      company: 'Dadus Fábrica de Software',
+      context: 'Mesma empresa onde atuo hoje, em uma passagem anterior — na época com operação industrial e sistemas internos',
       role: 'Desenvolvedor Full Stack Pleno',
       modality: 'Remoto',
       stack: ['Power BI', 'Pentaho ETL', 'SQL Server', 'MySQL', 'PHP', 'Vue.js', 'Electron'],

@@ -20,13 +20,19 @@
   --font-mono:    ui-monospace, 'SF Mono', Menlo, Consolas, monospace;
 }
 
-html { color-scheme: dark; scroll-behavior: smooth; }
+html {
+  color-scheme: dark;
+  scroll-behavior: smooth;
+  /* Âncoras não passam por baixo do header fixo. */
+  scroll-padding-top: 5rem;
+}
 
 body {
   background: var(--bg);
   color: var(--fg);
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
 
 button:not(:disabled),
@@ -51,14 +57,30 @@ a[role="button"]:not(:disabled) { cursor: pointer; }
   letter-spacing: -0.03em;
   line-height: 1.1;
   color: var(--fg);
-  font-size: clamp(2.25rem, 5vw, 3.75rem);
+  font-size: clamp(2rem, 5vw, 3.75rem);
+}
+
+/* No mobile o texto quebra sozinho; o <br> do desktop atrapalha.
+   Substituir o <br> por um espaço real (em vez de display:none) evita
+   que as palavras vizinhas fiquem coladas. */
+@media (max-width: 640px) {
+  .section-title br {
+    content: " ";
+    display: inline;
+    white-space: pre;
+  }
 }
 
 .section-lead {
   color: var(--fg-muted);
-  font-size: 1.0625rem;
+  font-size: 1rem;
   line-height: 1.7;
-  max-width: 46ch;
+  /* ~72ch mantém a linha confortável de ler sem deixar um vazio à direita. */
+  max-width: 72ch;
+}
+
+@media (min-width: 640px) {
+  .section-lead { font-size: 1.0625rem; }
 }
 
 /* Numeração/eyebrow monoespaçada — marca de "índice" */
@@ -95,30 +117,30 @@ a[role="button"]:not(:disabled) { cursor: pointer; }
 .pill:hover { color: var(--fg); border-color: var(--border-hi); }
 
 /* Botões */
-.btn-primary {
+.btn-primary,
+.btn-ghost {
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
+  padding: 0.8rem 1.5rem;
   border-radius: 0.625rem;
-  background: var(--fg);
-  color: var(--bg);
   font-weight: 500;
   font-size: 0.9375rem;
+  /* Alvo de toque confortável no mobile (mínimo ~44px). */
+  min-height: 2.75rem;
+}
+
+.btn-primary {
+  background: var(--fg);
+  color: var(--bg);
   transition: opacity 0.2s;
 }
 .btn-primary:hover { opacity: 0.88; }
 
 .btn-ghost {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem 1.5rem;
-  border-radius: 0.625rem;
   border: 1px solid var(--border-hi);
   color: var(--fg-muted);
-  font-weight: 500;
-  font-size: 0.9375rem;
   transition: color 0.2s, border-color 0.2s;
 }
 .btn-ghost:hover { color: var(--fg); border-color: var(--fg-muted); }
