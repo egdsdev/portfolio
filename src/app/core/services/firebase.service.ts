@@ -255,31 +255,38 @@ export class FirebaseService {
   async getVisitors(): Promise<VisitorRecord[]> {
     const q = query(collection(this.db, 'visitors'), orderBy('lastSeen', 'desc'));
     const snap = await getDocs(q);
-    return snap.docs.map(d => {
-      const data = d.data();
-      return {
-        id: d.id,
-        ip: data['ip'] ?? '',
-        city: data['city'],
-        country: data['country'],
-        region: data['region'],
-        networkOrg: data['networkOrg'],
-        networkAsn: data['networkAsn'],
-        networkType: data['networkType'],
-        language: data['language'],
-        timezone: data['timezone'],
-        lat: data['lat'],
-        lng: data['lng'],
-        referrer: data['referrer'],
-        userAgent: data['userAgent'],
-        screenWidth: data['screenWidth'],
-        screenHeight: data['screenHeight'],
-        preciseLocation: data['preciseLocation'],
-        visitCount: data['visitCount'] ?? 1,
-        firstSeen: data['firstSeen']?.toDate() ?? new Date(),
-        lastSeen: data['lastSeen']?.toDate() ?? new Date(),
-      };
-    });
+    return snap.docs.map(d => this.toVisitor(d.id, d.data()));
+  }
+
+  /** Visitantes em tempo real (admin). */
+  listenVisitors(callback: (visitors: VisitorRecord[]) => void, onError?: (err: unknown) => void): () => void {
+    const q = query(collection(this.db, 'visitors'), orderBy('lastSeen', 'desc'));
+    return onSnapshot(q, snap => callback(snap.docs.map(d => this.toVisitor(d.id, d.data()))), onError);
+  }
+
+  private toVisitor(id: string, data: Record<string, any>): VisitorRecord {
+    return {
+      id,
+      ip: data['ip'] ?? '',
+      city: data['city'],
+      country: data['country'],
+      region: data['region'],
+      networkOrg: data['networkOrg'],
+      networkAsn: data['networkAsn'],
+      networkType: data['networkType'],
+      language: data['language'],
+      timezone: data['timezone'],
+      lat: data['lat'],
+      lng: data['lng'],
+      referrer: data['referrer'],
+      userAgent: data['userAgent'],
+      screenWidth: data['screenWidth'],
+      screenHeight: data['screenHeight'],
+      preciseLocation: data['preciseLocation'],
+      visitCount: data['visitCount'] ?? 1,
+      firstSeen: data['firstSeen']?.toDate() ?? new Date(),
+      lastSeen: data['lastSeen']?.toDate() ?? new Date(),
+    };
   }
 
   async touchVisitor(visitorId: string): Promise<void> {
@@ -334,24 +341,31 @@ export class FirebaseService {
   async getAnalyticsEvents(): Promise<AnalyticsEventRecord[]> {
     const q = query(collection(this.db, 'analytics_events'), orderBy('createdAt', 'desc'));
     const snap = await getDocs(q);
-    return snap.docs.map(d => {
-      const data = d.data();
-      return {
-        id: d.id,
-        visitorId: data['visitorId'],
-        sessionId: data['sessionId'] ?? '',
-        ip: data['ip'],
-        source: data['source'] ?? 'Direto',
-        sourceDetail: data['sourceDetail'],
-        eventType: data['eventType'] ?? 'page_visit',
-        eventName: data['eventName'] ?? 'unknown',
-        section: data['section'],
-        target: data['target'],
-        value: typeof data['value'] === 'number' ? data['value'] : undefined,
-        metadata: (data['metadata'] ?? {}) as AnalyticsMetadata,
-        createdAt: data['createdAt']?.toDate() ?? new Date(),
-      } as AnalyticsEventRecord;
-    });
+    return snap.docs.map(d => this.toAnalyticsEvent(d.id, d.data()));
+  }
+
+  /** Eventos de analytics em tempo real (admin). */
+  listenAnalyticsEvents(callback: (events: AnalyticsEventRecord[]) => void, onError?: (err: unknown) => void): () => void {
+    const q = query(collection(this.db, 'analytics_events'), orderBy('createdAt', 'desc'));
+    return onSnapshot(q, snap => callback(snap.docs.map(d => this.toAnalyticsEvent(d.id, d.data()))), onError);
+  }
+
+  private toAnalyticsEvent(id: string, data: Record<string, any>): AnalyticsEventRecord {
+    return {
+      id,
+      visitorId: data['visitorId'],
+      sessionId: data['sessionId'] ?? '',
+      ip: data['ip'],
+      source: data['source'] ?? 'Direto',
+      sourceDetail: data['sourceDetail'],
+      eventType: data['eventType'] ?? 'page_visit',
+      eventName: data['eventName'] ?? 'unknown',
+      section: data['section'],
+      target: data['target'],
+      value: typeof data['value'] === 'number' ? data['value'] : undefined,
+      metadata: (data['metadata'] ?? {}) as AnalyticsMetadata,
+      createdAt: data['createdAt']?.toDate() ?? new Date(),
+    } as AnalyticsEventRecord;
   }
 
   // ---- Chat ----

@@ -29,7 +29,9 @@ import { RevealDirective } from './shared/directives/reveal.directive';
   ],
   template: `
     @if (routerResolved()) {
-      <app-header></app-header>
+      @if (!isAdminArea()) {
+        <app-header></app-header>
+      }
       @if (isAdminRoute()) {
         <router-outlet></router-outlet>
       } @else {
@@ -62,6 +64,7 @@ export class App implements OnInit, OnDestroy {
 
   routerResolved = signal(false);
   isAdmin = signal(false);
+  isAdminArea = signal(false);
 
 
   isAdminRoute(): boolean {
@@ -76,6 +79,7 @@ export class App implements OnInit, OnDestroy {
       const admin = url.startsWith('/admin');
       const recruiter = url.startsWith('/recruiter');
       this.isAdmin.set(admin || recruiter);
+      this.isAdminArea.set(admin);
       if (!this.routerResolved()) {
         this.routerResolved.set(true);
         if (!admin) {

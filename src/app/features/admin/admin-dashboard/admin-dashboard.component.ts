@@ -1,34 +1,19 @@
 ﻿import { Component, inject, OnInit, AfterViewInit, OnDestroy, ChangeDetectorRef, ElementRef, ViewChild, NgZone } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
+import { DomSanitizer, SafeHtml } from '@angular/platform-browser';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
-import { FirebaseService, AiMatchRecord, VisitorRecord, DevMatchRecord, AnalyticsEventRecord, ChatConversation, ChatMessage, isChatMessageWithinEditWindow } from '../../../core/services/firebase.service';
-import { ConfirmDialogComponent } from '../../../shared/components/confirm-dialog/confirm-dialog.component';
-import * as L from 'leaflet';
+import { FirebaseService, VisitorRecord, AnalyticsEventRecord } from '../../../core/services/firebase.service';
+import { AdminLiveComponent } from '../admin-live/admin-live.component';
+import {
+  ScoreInfo, ctaLabel, hasNetworkInfo, isMobile, isTablet, networkKindMeta, networkSummary, scoreTier,
+  sectionLabel, sourceFromReferrer,
+} from '../admin-utils';
 import {
   Chart, LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip, Legend,
-  BarController, BarElement,
 } from 'chart.js';
 
-Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip, Legend, BarController, BarElement);
-
-interface AccessRecord {
-  date: Date;
-  visitor?: VisitorRecord;
-  aiMatch?: AiMatchRecord;
-  devMatch?: DevMatchRecord;
-}
-
-interface AccessTableRow {
-  key: string;
-  date: Date;
-  ip?: string;
-  resolution: string;
-  accessCount: number;
-  visitorIds: string[];
-  visitor?: VisitorRecord;
-  aiMatch?: AiMatchRecord;
-  devMatch?: DevMatchRecord;
-}
+Chart.register(LineController, LineElement, PointElement, LinearScale, CategoryScale, Filler, Tooltip, Legend);
 
 interface SourceConversionRow {
   source: string;
@@ -79,62 +64,71 @@ interface TimeToActionRow {
   avgSeconds: number;
 }
 
+type AdminTab = 'live' | 'leads' | 'analytics' | 'tests';
+
 @Component({
   selector: 'app-admin-dashboard',
   standalone: true,
-  imports: [DatePipe, FormsModule, ConfirmDialogComponent],
+  imports: [DatePipe, FormsModule, RouterLink, AdminLiveComponent],
   template: `
-    <div class="admin-page min-h-screen pt-20">
-      <main class="max-w-screen-2xl mx-auto px-6 pb-12 space-y-6">
-
-        <!-- Título -->
-        <div class="pt-6">
-          <h1 class="text-2xl font-bold tracking-tight">Dashboard</h1>
-          <p class="text-xs text-gray-500 mt-1">{{ today | date:'dd/MM/yyyy' }}</p>
-        </div>
-
-        <!-- Tabs de navegação -->
-        <div class="flex items-center justify-between gap-2 flex-wrap">
-          <div class="flex gap-1 bg-gray-800/50 border border-gray-700/50 rounded-xl p-1">
-            <button (click)="activeTab = 'analytics'"
-                    [class.bg-gray-700]="activeTab === 'analytics'"
-                    [class.text-white]="activeTab === 'analytics'"
-                    [class.text-gray-500]="activeTab !== 'analytics'"
-                    class="px-5 py-2 rounded-lg text-sm font-medium transition-all duration-150">
-              Visão geral
+    <div class="adm">
+      <!-- Sidebar (desktop) -->
+      <aside class="adm-side">
+        <a routerLink="/" class="adm-brand">
+          <span class="adm-brand-mark">EG</span>
+          <span>Painel</span>
+        </a>
+        <nav class="adm-nav" aria-label="Seções do painel">
+          @for (t of tabs; track t.key) {
+            <button type="button" class="adm-nav-item" [class.is-active]="activeTab === t.key" (click)="setTab(t.key)">
+              <span class="adm-nav-icon" [innerHTML]="t.icon"></span>
+              <span class="flex-1 text-left">{{ t.label }}</span>
+              @if (t.key === 'live' && activeNowCount > 0) { <span class="adm-badge is-live">{{ activeNowCount }}</span> }
+              @if (t.key === 'leads' && hotLeads.length > 0) { <span class="adm-badge">{{ hotLeads.length }}</span> }
             </button>
-            <button (click)="activeTab = 'leads'"
-                    [class.bg-gray-700]="activeTab === 'leads'"
-                    [class.text-white]="activeTab === 'leads'"
-                    [class.text-gray-500]="activeTab !== 'leads'"
-                    class="px-5 py-2 rounded-lg text-sm font-medium transition-all duration-150 flex items-center gap-2">
-              Visitantes
-              @if (hotLeads.length > 0) {
-                <span class="inline-flex items-center justify-center px-1.5 h-4 rounded-full bg-amber-500 text-gray-900 text-[9px] font-bold">
-                  {{ hotLeads.length }}
-                </span>
-              }
-            </button>
-            <button (click)="activeTab = 'tests'"
-                    [class.bg-gray-700]="activeTab === 'tests'"
-                    [class.text-white]="activeTab === 'tests'"
-                    [class.text-gray-500]="activeTab !== 'tests'"
-                    class="px-5 py-2 rounded-lg text-sm font-medium transition-all duration-150">
-              Testes
-            </button>
-          </div>
-
-          <!-- Botão de notificações push -->
-          <button (click)="togglePushNotifications()"
-                  [disabled]="pushLoading"
-                  class="flex items-center gap-2 px-3 py-2 rounded-xl border text-sm transition-colors cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                  [class]="pushEnabled ? 'border-green-500/50 bg-green-500/10 text-green-400 hover:bg-green-500/20' : 'border-gray-700 bg-gray-800/50 text-gray-400 hover:text-white hover:border-gray-600'">
-            <span class="inline-block w-2 h-2 rounded-full" [class]="pushEnabled ? 'bg-green-400' : 'bg-gray-500'"></span>
-            @if (pushLoading) { A ativar... }
-            @else if (pushEnabled) { Push ativo }
-            @else { Ativar Push }
+          }
+        </nav>
+        <div class="adm-side-foot">
+          <button type="button" (click)="togglePushNotifications()" [disabled]="pushLoading" class="adm-side-btn">
+            <span class="adm-status-dot" [class.is-on]="pushEnabled"></span>
+            {{ pushLoading ? 'Ativando…' : pushEnabled ? 'Push ativo' : 'Ativar push' }}
           </button>
+          <a routerLink="/" class="adm-side-btn">↗ Ver site</a>
+          <button type="button" (click)="logout()" class="adm-side-btn">Sair</button>
         </div>
+      </aside>
+
+      <!-- Topbar (mobile) -->
+      <header class="adm-topbar">
+        <a routerLink="/" class="adm-brand"><span class="adm-brand-mark">EG</span><span>Painel</span></a>
+        <div class="flex items-center gap-2">
+          <span class="adm-live-pill"><span class="adm-status-dot is-on is-pulse"></span>{{ activeNowCount }} online</span>
+          <button type="button" (click)="logout()" class="adm-side-btn !w-auto">Sair</button>
+        </div>
+      </header>
+
+      <main class="adm-main admin-page">
+        <div class="adm-page-head">
+          <div>
+            <h1>{{ currentTab.label }}</h1>
+            <p>{{ currentTab.hint }}</p>
+          </div>
+          <div class="adm-sync" [class.is-error]="syncError">
+            <span class="adm-status-dot" [class.is-on]="!syncError && !loading" [class.is-pulse]="!syncError && !loading"></span>
+            @if (syncError) { Sem conexão em tempo real }
+            @else if (loading) { Conectando… }
+            @else { Tempo real · atualizado {{ lastSyncAt | date:'HH:mm:ss' }} }
+          </div>
+        </div>
+
+        @if (activeTab === 'live') {
+          <app-admin-live
+            [visitors]="visitors"
+            [events]="analyticsEvents"
+            [loading]="loading"
+            [scoreOf]="scoreInfoFn"
+            [(selectedId)]="selectedVisitorId" />
+        }
 
         <!-- ── Aba: Analytics ─────────────────────────────────────────────── -->
         <div [class.hidden]="activeTab !== 'analytics'" class="space-y-8">
@@ -168,224 +162,8 @@ interface TimeToActionRow {
           </div>
         </div>
 
-        <!-- Tabela unificada de acessos -->
-        <div class="admin-card border rounded-xl overflow-hidden">
-          @if (loading) {
-            <div class="p-10 text-center text-gray-500 text-sm animate-pulse">Carregando...</div>
-          } @else if (accessRows.length === 0) {
-            <div class="p-10 text-center text-gray-600 text-sm">Nenhum acesso registrado ainda.</div>
-          } @else {
-            <div class="overflow-x-auto">
-              <table class="w-full text-sm">
-                <thead>
-                  <tr class="text-xs text-gray-500 uppercase tracking-wider border-b border-gray-800">
-                    <th class="text-left px-4 py-3 whitespace-nowrap">Data</th>
-                    <th class="text-left px-4 py-3">Localizacao</th>
-                    <th class="text-left px-4 py-3">Dispositivo</th>
-                    <th class="text-left px-4 py-3">IP / Rede</th>
-                    <th class="text-left px-4 py-3 whitespace-nowrap">Acessos</th>
-                    <th class="text-left px-4 py-3 whitespace-nowrap">Score</th>
-                    <th class="text-left px-4 py-3 border-l border-gray-800/60">Match IA</th>
-                    <th class="text-left px-4 py-3">Resposta IA</th>
-                    <th class="text-left px-4 py-3 border-l border-gray-800/60">Match Dev</th>
-                    <th class="text-left px-4 py-3">Areas Dev</th>
-                    <th class="text-left px-4 py-3 border-l border-gray-800/60 whitespace-nowrap">🌌 Brulias</th>
-                    <th class="px-4 py-3"></th>
-                  </tr>
-                </thead>
-                <tbody>
-                  @for (r of paginatedAccessRows; track r.key) {
-                    <tr
-                      class="access-row border-b border-gray-800/40 transition-colors"
-                      [class.access-row-clickable]="hasMapTarget(r)"
-                      [class.access-row-selected]="selectedAccessRowKey === r.key"
-                      [attr.tabindex]="hasMapTarget(r) ? 0 : null"
-                      [attr.title]="rowMapHint(r)"
-                      (click)="focusRowOnMap(r)"
-                      (keydown.enter)="focusRowOnMap(r)"
-                      (keydown.space)="focusRowOnMap(r); $event.preventDefault()">
-                      <td class="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">{{ r.date | date:'dd/MM/yy HH:mm' }}</td>
-                      <td class="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
-                        @if (r.visitor) {
-                          {{ r.visitor.city }}{{ r.visitor.city && r.visitor.country ? ', ' : '' }}{{ r.visitor.country }}
-                        } @else { <span class="text-gray-600">-</span> }
-                      </td>
-                      <td class="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
-                        @if (r.visitor) {
-                          {{ isMobile(r.visitor.userAgent) ? '&#x1F4F1;' : '&#x1F5A5;' }}
-                          <span class="text-gray-600"> {{ r.visitor.screenWidth }}x{{ r.visitor.screenHeight }}</span>
-                        } @else { <span class="text-gray-600">-</span> }
-                      </td>
-                      <td class="px-4 py-3 text-xs align-top">
-                        <div class="text-gray-600 font-mono whitespace-nowrap">{{ r.ip ?? '-' }}</div>
-                        @if (r.visitor && hasNetworkInfo(r.visitor)) {
-                          <div class="mt-1 space-y-1">
-                            <div class="text-xs text-gray-400 max-w-44 truncate" [title]="networkSummary(r.visitor)">
-                              {{ networkSummary(r.visitor) }}
-                            </div>
-                            <span class="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-semibold"
-                                  [style.background-color]="networkKindBackground(r.visitor)"
-                                  [style.color]="networkKindForeground(r.visitor)"
-                                  [attr.title]="networkKindTitle(r.visitor)">
-                              {{ networkKindLabel(r.visitor) }}
-                            </span>
-                          </div>
-                        }
-                      </td>
-                      <td class="px-4 py-3 text-xs text-gray-400 whitespace-nowrap">
-                        @if (r.visitorIds.length > 0) {
-                          <span class="inline-flex items-center gap-1 rounded-full px-2 py-1 bg-cyan-500/10 text-cyan-400 font-semibold">
-                            {{ r.accessCount }}x
-                          </span>
-                        } @else {
-                          <span class="text-gray-700">-</span>
-                        }
-                      </td>
-                      <td class="px-4 py-3 whitespace-nowrap">
-                        @if (r.visitor) {
-                          @let s = computeVisitorScore(r.visitor);
-                          @let sl = scoreLabel(s);
-                          <span class="inline-flex items-center gap-1 text-xs font-semibold px-2 py-1 rounded-full border"
-                                [class]="sl.bg + ' ' + sl.color"
-                                [title]="sl.label">
-                            {{ s }}
-                          </span>
-                        } @else {
-                          <span class="text-gray-700">-</span>
-                        }
-                      </td>
-                      <td class="px-4 py-3 whitespace-nowrap border-l border-gray-800/40">
-                        @if (r.aiMatch) {
-                          <span class="text-xs font-bold px-2 py-1 rounded-full"
-                                [class.bg-green-500/15]="r.aiMatch.matchPercentage >= 70"
-                                [class.text-green-400]="r.aiMatch.matchPercentage >= 70"
-                                [class.bg-yellow-500/15]="r.aiMatch.matchPercentage >= 50 && r.aiMatch.matchPercentage < 70"
-                                [class.text-yellow-400]="r.aiMatch.matchPercentage >= 50 && r.aiMatch.matchPercentage < 70"
-                                [class.bg-red-500/15]="r.aiMatch.matchPercentage < 50"
-                                [class.text-red-400]="r.aiMatch.matchPercentage < 50">
-                            {{ r.aiMatch.matchPercentage }}%
-                          </span>
-                        } @else { <span class="text-gray-700">-</span> }
-                      </td>
-                      <td class="px-4 py-3 text-xs text-gray-400 max-w-40">
-                        @if (r.aiMatch) {
-                          <div class="line-clamp-2" [title]="r.aiMatch.aiResponse">{{ r.aiMatch.aiResponse }}</div>
-                        } @else { <span class="text-gray-700">-</span> }
-                      </td>
-                      <td class="px-4 py-3 whitespace-nowrap border-l border-gray-800/40">
-                        @if (r.devMatch) {
-                          <span class="text-xs font-bold px-2 py-1 rounded-full"
-                                [class.bg-green-500/15]="r.devMatch.matchPercentage >= 70"
-                                [class.text-green-400]="r.devMatch.matchPercentage >= 70"
-                                [class.bg-yellow-500/15]="r.devMatch.matchPercentage >= 50 && r.devMatch.matchPercentage < 70"
-                                [class.text-yellow-400]="r.devMatch.matchPercentage >= 50 && r.devMatch.matchPercentage < 70"
-                                [class.bg-red-500/15]="r.devMatch.matchPercentage < 50"
-                                [class.text-red-400]="r.devMatch.matchPercentage < 50">
-                            {{ r.devMatch.matchPercentage }}%
-                          </span>
-                        } @else { <span class="text-gray-700">-</span> }
-                      </td>
-                      <td class="px-4 py-3 text-xs text-gray-400 max-w-40">
-                        @if (r.devMatch) {
-                          <div class="flex flex-wrap gap-1">
-                            @for (a of r.devMatch.areas; track a) {
-                              <span class="px-1.5 py-0.5 rounded bg-blue-500/10 text-blue-300 text-xs">{{ a }}</span>
-                            }
-                          </div>
-                        } @else { <span class="text-gray-700">-</span> }
-                      </td>
-                      <td class="px-4 py-3 border-l border-gray-800/40 text-center">
-                        @if (r.ip && bruliasClicksByIp.get(r.ip)) {
-                          <span class="inline-flex items-center gap-1 text-xs font-bold px-2 py-1 rounded-full bg-purple-500/15 text-purple-400">
-                            {{ bruliasClicksByIp.get(r.ip) }}x
-                          </span>
-                        } @else {
-                          <span class="text-gray-700">-</span>
-                        }
-                      </td>
-                      <td class="px-4 py-3 text-center">
-                        @if (r.ip && r.visitorIds.length > 0) {
-                          <button
-                            (click)="$event.stopPropagation(); confirmDelete(r)"
-                            class="text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors rounded p-1.5"
-                            title="Excluir grupo de IP e resolução">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                              <polyline points="3 6 5 6 21 6"/>
-                              <path d="M19 6l-1 14H6L5 6"/>
-                              <path d="M10 11v6"/><path d="M14 11v6"/>
-                              <path d="M9 6V4h6v2"/>
-                            </svg>
-                          </button>
-                        }
-                      </td>
-                    </tr>
-                  }
-                </tbody>
-              </table>
-            </div>
-            <div class="flex flex-col gap-3 border-t border-gray-800/40 px-4 py-3 text-xs text-gray-500 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                Exibindo {{ pageStart }}-{{ pageEnd }} de {{ accessRows.length }} grupos
-              </div>
-              <div class="flex items-center gap-2 self-end sm:self-auto">
-                <button
-                  type="button"
-                  (click)="previousPage()"
-                  [disabled]="currentPage === 1"
-                  class="rounded-md border border-gray-700 px-3 py-1.5 transition-colors hover:border-gray-500 hover:text-gray-300 disabled:cursor-not-allowed disabled:opacity-40">
-                  Anterior
-                </button>
-                <span class="min-w-24 text-center">Página {{ currentPage }} de {{ totalPages }}</span>
-                <button
-                  type="button"
-                  (click)="nextPage()"
-                  [disabled]="currentPage >= totalPages"
-                  class="rounded-md border border-gray-700 px-3 py-1.5 transition-colors hover:border-gray-500 hover:text-gray-300 disabled:cursor-not-allowed disabled:opacity-40">
-                  Próxima
-                </button>
-              </div>
-            </div>
-          }
-        </div>
-
-        <!-- Modal de confirmação de exclusão -->
-        @if (deleteTarget) {
-          <div class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm" (click)="cancelDelete()">
-            <div class="admin-card border rounded-xl p-6 w-full max-w-sm mx-4 shadow-2xl" (click)="$event.stopPropagation()">
-              <div class="flex items-center gap-3 mb-4">
-                <div class="w-10 h-10 rounded-full bg-red-500/15 flex items-center justify-center shrink-0">
-                  <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5 text-red-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
-                    <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
-                  </svg>
-                </div>
-                <div>
-                  <p class="text-sm font-semibold text-gray-100">Excluir grupo de acesso</p>
-                  <p class="text-xs text-gray-500 mt-0.5">Esta ação não pode ser desfeita</p>
-                </div>
-              </div>
-              <p class="text-xs text-gray-400 mb-5">
-                Deseja excluir os registros do grupo
-                <span class="font-semibold text-gray-200">{{ deleteTarget.ip }}</span>
-                <span class="font-semibold text-gray-200"> · {{ deleteTarget.resolution }}</span>
-                @if (deleteTarget.visitor?.city || deleteTarget.visitor?.country) {
-                  ({{ deleteTarget.visitor?.city }}{{ deleteTarget.visitor?.city && deleteTarget.visitor?.country ? ', ' : '' }}{{ deleteTarget.visitor?.country }})
-                }?
-                Isso removerá {{ deleteTarget.accessCount }} acessos consolidados e os matches associados.
-              </p>
-              <div class="flex gap-3 justify-end">
-                <button (click)="cancelDelete()" class="px-4 py-2 text-xs text-gray-400 hover:text-gray-200 border border-gray-700 hover:border-gray-500 rounded-lg transition-colors">Cancelar</button>
-                <button (click)="executeDelete()" [disabled]="deleting" class="px-4 py-2 text-xs font-semibold bg-red-600 hover:bg-red-500 disabled:opacity-50 text-white rounded-lg transition-colors flex items-center gap-2">
-                  @if (deleting) { <span class="animate-spin w-3 h-3 border border-white border-t-transparent rounded-full"></span> }
-                  Excluir
-                </button>
-              </div>
-            </div>
-          </div>
-        }
-
         <!-- Gráficos -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div class="grid grid-cols-1 gap-6">
 
           <!-- Gráfico de linha (Chart.js) -->
           <div class="admin-card border rounded-xl p-5 space-y-3">
@@ -416,19 +194,6 @@ interface TimeToActionRow {
               </div>
             </div>
             <canvas #chartCanvas style="width:100%;max-height:220px"></canvas>
-          </div>
-
-          <!-- Mapa Leaflet -->
-          <div class="admin-card border rounded-xl p-5">
-            <p class="text-xs text-gray-500 uppercase tracking-widest mb-4 font-semibold">Localização dos Acessos</p>
-            <p class="text-xs text-gray-500 mb-4">Clique em uma linha da tabela para aproximar o mapa nesse acesso.</p>
-            @if (loading) {
-              <div class="h-64 flex items-center justify-center text-gray-600 text-sm animate-pulse">Carregando mapa...</div>
-            } @else if (!hasMapCoords) {
-              <div class="h-64 flex items-center justify-center text-gray-600 text-sm">Sem dados de localização</div>
-            } @else {
-              <div #mapEl class="leaflet-map w-full rounded-lg" style="height:260px"></div>
-            }
           </div>
 
         </div>
@@ -498,15 +263,15 @@ interface TimeToActionRow {
                 <!-- Top 5 horas -->
                 <div>
                   <p class="text-xs text-gray-500 uppercase tracking-wider mb-3">Top 5 horas mais ativas</p>
-                  <div class="space-y-2">
+                  <div class="bars">
                     @for (h of heatTopHours; track h.label) {
-                      <div class="flex items-center gap-2">
-                        <span class="text-xs text-gray-400 w-6 shrink-0 text-right">{{ h.label }}</span>
-                        <div class="flex-1 h-2 rounded-full bg-gray-800 overflow-hidden">
-                          <div class="h-full rounded-full transition-all" [style.width.%]="h.pct" [style.background-color]="accentColor"></div>
-                        </div>
-                        <span class="text-xs font-bold tabular-nums w-6 text-right" [style.color]="accentColor">{{ h.count }}</span>
-                      </div>
+                  <div class="bar-row">
+                    <div class="bar-head">
+                      <span class="bar-label">{{ h.label }}</span>
+                      <span class="bar-value">{{ h.count }}<small>eventos</small></span>
+                    </div>
+                    <div class="bar-track"><div class="bar-fill" [style.width.%]="h.pct"></div></div>
+                  </div>
                     }
                   </div>
                 </div>
@@ -582,20 +347,15 @@ interface TimeToActionRow {
               </div>
               @if (topReturnList.length > 0) {
                 <p class="text-xs text-gray-500 uppercase tracking-wider mb-2">Top recorrentes</p>
-                <div class="space-y-2">
-                  @for (v of topReturnList; track v.ip) {
-                    <div class="flex items-center justify-between">
-                      <span class="text-xs text-gray-400 font-mono truncate max-w-[120px]">{{ v.city || v.ip }}</span>
-                      <div class="flex items-center gap-2">
-                        <div class="w-16 h-1 bg-gray-800 rounded-full overflow-hidden">
-                          <div class="h-full rounded-full"
-                               [style.background-color]="accentColor"
-                               [style.width.%]="topReturnList[0].visitCount > 0 ? (v.visitCount / topReturnList[0].visitCount) * 100 : 0">
-                          </div>
-                        </div>
-                        <span class="text-xs font-bold w-5 text-right" [style.color]="accentColor">{{ v.visitCount }}×</span>
-                      </div>
+                <div class="bars">
+                  @for (v of topReturnList; track $index) {
+                  <div class="bar-row">
+                    <div class="bar-head">
+                      <span class="bar-label">{{ v.city || v.ip }}</span>
+                      <span class="bar-value">{{ v.visitCount }}<small>visitas</small></span>
                     </div>
+                    <div class="bar-track"><div class="bar-fill" [style.width.%]="topReturnList[0].visitCount > 0 ? (v.visitCount / topReturnList[0].visitCount) * 100 : 0"></div></div>
+                  </div>
                   }
                 </div>
               }
@@ -707,28 +467,16 @@ interface TimeToActionRow {
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Funil de recrutamento</p>
             <p class="text-xs text-gray-500 mb-5">Da visita ao contato — cada etapa mostra quanto sobrou da anterior.</p>
             @if (!loading && funnelBars.length > 0) {
-              <div class="space-y-4">
+              <div class="bars">
                 @for (step of funnelBars; track step.label; let i = $index) {
-                  <div>
-                    <div class="flex items-baseline justify-between gap-3 mb-1.5">
-                      <div class="flex items-baseline gap-2 min-w-0">
-                        <span class="text-xs text-gray-600 font-mono shrink-0">{{ i + 1 }}</span>
-                        <span class="text-sm text-gray-200 truncate">{{ step.label }}</span>
-                      </div>
-                      <div class="flex items-baseline gap-2 shrink-0">
-                        <span class="text-lg font-bold" [style.color]="step.color">{{ step.value }}</span>
-                        <span class="text-xs text-gray-500 w-10 text-right">{{ step.pct }}%</span>
-                      </div>
+                  <div class="bar-row">
+                    <div class="bar-head">
+                      <span class="bar-label"><span class="bar-index">{{ i + 1 }}</span>{{ step.label }}</span>
+                      <span class="bar-value">{{ step.value }}<small>{{ step.pct }}%</small></span>
                     </div>
-                    <div class="h-2.5 bg-gray-800 rounded-full overflow-hidden">
-                      <div class="h-full rounded-full transition-all duration-700"
-                           [style.width.%]="step.pct"
-                           [style.background-color]="step.color"></div>
-                    </div>
+                    <div class="bar-track"><div class="bar-fill" [style.width.%]="step.pct"></div></div>
                     @if (step.dropPct !== null && step.dropPct > 0) {
-                      <p class="text-xs text-gray-600 mt-1">
-                        −{{ step.dropPct }}% em relação à etapa anterior
-                      </p>
+                      <p class="bar-note">−{{ step.dropPct }}% em relação à etapa anterior</p>
                     }
                   </div>
                 }
@@ -744,8 +492,16 @@ interface TimeToActionRow {
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">CTR por CTA</p>
             <p class="text-xs text-gray-500 mb-4">CTA = botão ou link de ação. Ex.: contato, currículo, WhatsApp, projetos e atalhos do header.</p>
             @if (!loading && ctaPerformance.length > 0) {
-              <div [style.height.px]="Math.max(200, Math.min(ctaPerformance.length, 12) * 44)">
-                <canvas #ctaChartCanvas style="width:100%;height:100%"></canvas>
+              <div class="bars">
+                @for (row of ctaPerformance.slice(0, 12); track row.key) {
+                  <div class="bar-row">
+                    <div class="bar-head">
+                      <span class="bar-label">{{ row.label }}</span>
+                      <span class="bar-value">{{ row.ctr }}%<small>{{ row.clicks }} cliques · {{ row.uniqueSessions }} sessões</small></span>
+                    </div>
+                    <div class="bar-track"><div class="bar-fill" [style.width.%]="row.ctr"></div></div>
+                  </div>
+                }
               </div>
             } @else if (!loading) {
               <div class="py-8 text-center text-gray-600 text-sm">Sem CTAs suficientes ainda</div>
@@ -762,8 +518,16 @@ interface TimeToActionRow {
             <p class="text-xs text-gray-500 uppercase tracking-widest mb-1 font-semibold">Alcance por Seção</p>
             <p class="text-xs text-gray-500 mb-4">Profundidade real de leitura da página por sessão.</p>
             @if (!loading && sectionReachRows.length > 0) {
-              <div [style.height.px]="Math.max(180, sectionReachRows.length * 44)">
-                <canvas #sectionChartCanvas style="width:100%;height:100%"></canvas>
+              <div class="bars">
+                @for (row of sectionReachRows; track row.key) {
+                  <div class="bar-row">
+                    <div class="bar-head">
+                      <span class="bar-label">{{ row.label }}</span>
+                      <span class="bar-value">{{ row.reachRate }}%<small>{{ row.sessions }} sessões</small></span>
+                    </div>
+                    <div class="bar-track"><div class="bar-fill" [style.width.%]="row.reachRate"></div></div>
+                  </div>
+                }
               </div>
             } @else if (!loading) {
               <div class="py-8 text-center text-gray-600 text-sm">Sem seções visualizadas ainda</div>
@@ -778,32 +542,22 @@ interface TimeToActionRow {
               Não é só quem traz mais visita — é quem traz visita que lê a experiência e entra em contato.
             </p>
             @if (!loading && sourceQuality.length > 0) {
-              <div class="space-y-3">
+              <div class="bars">
                 @for (row of sourceQuality; track row.source) {
-                  <div class="admin-card border rounded-lg p-3">
-                    <div class="flex items-center justify-between gap-3 mb-2">
-                      <p class="text-sm text-gray-200 font-semibold">{{ row.source }}</p>
-                      <span class="text-xs px-2 py-0.5 rounded-full"
-                            [class]="row.qualityRate >= 30 ? 'bg-green-500/15 text-green-400'
-                                   : row.qualityRate >= 10 ? 'bg-amber-500/15 text-amber-400'
-                                   : 'bg-gray-700/60 text-gray-400'">
-                        {{ row.qualityRate }}% qualificadas
-                      </span>
+                  <div class="bar-row">
+                    <div class="bar-head">
+                      <span class="bar-label">{{ row.source }}</span>
+                      <span class="bar-value">{{ row.qualityRate }}%<small>qualificadas</small></span>
                     </div>
-                    <!-- Barra: sessões que chegaram na experiência vs total -->
-                    <div class="h-2 bg-gray-800 rounded-full overflow-hidden mb-2">
-                      <div class="h-full rounded-full transition-all duration-700 bg-gray-300"
-                           [style.width.%]="row.qualityRate"></div>
-                    </div>
-                    <div class="flex flex-wrap gap-x-4 gap-y-1 text-xs text-gray-500">
-                      <span>{{ row.sessions }} sessões</span>
-                      <span>{{ row.readExperience }} leram experiência</span>
+                    <div class="bar-track"><div class="bar-fill" [style.width.%]="row.qualityRate"></div></div>
+                    <p class="bar-note">
+                      {{ row.sessions }} sessões · {{ row.readExperience }} leram experiência ·
                       <span [class.text-green-400]="row.conversions > 0">{{ row.conversions }} converteram</span>
-                    </div>
+                    </p>
                   </div>
                 }
               </div>
-              <p class="text-xs text-gray-600 mt-3">
+              <p class="text-xs text-gray-600 mt-4">
                 "Qualificada" = a sessão chegou até a seção de experiência.
                 "Converteu" = baixou o currículo ou clicou em um canal de contato.
               </p>
@@ -829,21 +583,21 @@ interface TimeToActionRow {
           </div>
 
           <!-- Cards de resumo -->
-          <div class="grid grid-cols-3 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
             <div class="admin-card rounded-xl p-5 border border-red-500/30 bg-red-500/5">
               <p class="text-sm font-semibold text-red-500 mb-2">🔥 Leads quentes</p>
               <p class="text-4xl font-bold text-red-500">{{ hotLeads.length }}</p>
-              <p class="text-xs font-medium text-red-400 mt-2">Score ≥ 70</p>
+              <p class="text-xs font-medium text-red-400 mt-2">Score ≥ 60</p>
             </div>
             <div class="admin-card rounded-xl p-5 border border-amber-500/30 bg-amber-500/5">
               <p class="text-sm font-semibold text-amber-500 mb-2">🌡 Leads mornos</p>
               <p class="text-4xl font-bold text-amber-500">{{ warmLeads.length }}</p>
-              <p class="text-xs font-medium text-amber-400 mt-2">Score 40–69</p>
+              <p class="text-xs font-medium text-amber-400 mt-2">Score 30–59</p>
             </div>
             <div class="admin-card rounded-xl p-5 border border-blue-500/30 bg-blue-500/5">
               <p class="text-sm font-semibold text-blue-500 mb-2">❄️ Leads frios</p>
               <p class="text-4xl font-bold text-blue-500">{{ visitors.length - hotLeads.length - warmLeads.length }}</p>
-              <p class="text-xs font-medium text-blue-400 mt-2">Score &lt; 40</p>
+              <p class="text-xs font-medium text-blue-400 mt-2">Score &lt; 30</p>
             </div>
           </div>
 
@@ -857,9 +611,8 @@ interface TimeToActionRow {
                     <th class="text-left px-4 py-3">IP</th>
                     <th class="text-left px-4 py-3">Localização</th>
                     <th class="text-left px-4 py-3 whitespace-nowrap">Visitas</th>
-                    <th class="text-left px-4 py-3 whitespace-nowrap">Match IA</th>
-                    <th class="text-left px-4 py-3 whitespace-nowrap">Match Dev</th>
-                    <th class="text-left px-4 py-3 whitespace-nowrap">Chat</th>
+                    <th class="text-left px-4 py-3">Rede</th>
+                    <th class="text-left px-4 py-3">Por quê</th>
                     <th class="text-left px-4 py-3 whitespace-nowrap">Última visita</th>
                   </tr>
                 </thead>
@@ -867,7 +620,9 @@ interface TimeToActionRow {
                   @for (v of paginatedLeads; track v.id) {
                     @let score = computeVisitorScore(v);
                     @let sl = scoreLabel(score);
-                    <tr class="border-b border-gray-800/40 hover:bg-gray-800/30 transition-colors">
+                    <tr class="border-b border-gray-800/40 hover:bg-gray-800/30 transition-colors cursor-pointer"
+                        tabindex="0" title="Abrir no mapa ao vivo"
+                        (click)="openVisitor(v)" (keydown.enter)="openVisitor(v)">
                       <td class="px-4 py-3">
                         <span class="inline-flex items-center gap-1.5 text-sm font-bold px-3 py-1.5 rounded-full border {{ sl.bg }} {{ sl.color }}">
                           {{ score }}
@@ -878,24 +633,14 @@ interface TimeToActionRow {
                         {{ v.city }}{{ v.city && v.country ? ', ' : '' }}{{ v.country }}
                       </td>
                       <td class="px-4 py-3 text-xs text-cyan-400 font-semibold">{{ v.visitCount }}x</td>
-                      <td class="px-4 py-3 text-xs">
-                        @let aiM = getAiMatchFor(v.id);
-                        @if (aiM) {
-                          <span [class]="aiM.matchPercentage >= 70 ? 'text-green-400' : aiM.matchPercentage >= 50 ? 'text-yellow-400' : 'text-red-400'">{{ aiM.matchPercentage }}%</span>
+                      <td class="px-4 py-3 text-xs text-gray-400 max-w-56">
+                        @if (hasNetworkInfo(v)) {
+                          @let nk = networkKindMeta(v);
+                          <div class="truncate" [title]="networkSummary(v)">{{ networkSummary(v) }}</div>
+                          <span class="inline-block mt-1 rounded-full px-2 py-0.5 text-[11px] font-semibold" [style.background]="nk.bg" [style.color]="nk.fg">{{ nk.label }}</span>
                         } @else { <span class="text-gray-700">—</span> }
                       </td>
-                      <td class="px-4 py-3 text-xs">
-                        @let devM = getDevMatchFor(v.id);
-                        @if (devM) {
-                          <span [class]="devM.matchPercentage >= 70 ? 'text-green-400' : devM.matchPercentage >= 50 ? 'text-yellow-400' : 'text-red-400'">{{ devM.matchPercentage }}%</span>
-                        } @else { <span class="text-gray-700">—</span> }
-                      </td>
-                      <td class="px-4 py-3 text-xs">
-                        @let conv = getConvForIp(v.ip);
-                        @if (conv) {
-                          <span class="text-violet-400">💬 {{ conv.username }}</span>
-                        } @else { <span class="text-gray-700">—</span> }
-                      </td>
+                      <td class="px-4 py-3 text-xs text-gray-400">{{ scoreReasons(v).join(' · ') || '—' }}</td>
                       <td class="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">{{ v.lastSeen | date:'dd/MM/yy HH:mm' }}</td>
                     </tr>
                   }
@@ -1186,138 +931,143 @@ interface TimeToActionRow {
 
       </main>
 
-      <!-- Dropdown flutuante do menu de mensagem (admin) -->
-      @if (openConvMessageMenuId && convMenuPos) {
-        <div class="fixed w-36 rounded-xl border border-gray-700 bg-gray-900 shadow-2xl z-9999"
-             [style.top.px]="convMenuPos.top"
-             [style.right.px]="convMenuPos.right"
-             (click)="$event.stopPropagation()">
-          @for (msg of convMessagesList; track msg.id) {
-            @if (msg.id === openConvMessageMenuId) {
-              @if (canEditConvMessage(msg)) {
-                <button (click)="startEditConvMessage(msg)"
-                        class="w-full px-3 py-2 text-left text-sm text-gray-200 hover:bg-gray-800 transition-colors cursor-pointer">
-                  Editar
-                </button>
-              }
-              <button (click)="askDeleteConvMessage(msg)"
-                      class="w-full px-3 py-2 text-left text-sm text-red-300 hover:bg-red-500/10 transition-colors cursor-pointer">
-                Excluir
-              </button>
-            }
-          }
-        </div>
-      }
-
-      <!-- Dialog: confirmar exclusão de mensagem -->
-      @if (convMsgToDelete) {
-        <app-confirm-dialog
-          title="Excluir mensagem"
-          message="Esta mensagem será excluída para todos os participantes. Esta ação não pode ser desfeita."
-          confirmLabel="Excluir"
-          cancelLabel="Cancelar"
-          (confirmed)="confirmDeleteConvMessage()"
-          (cancelled)="cancelDeleteConvMessage()" />
-      }
-
-      <!-- Dialog: confirmar exclusão de conversa -->
-      @if (convToDelete) {
-        <app-confirm-dialog
-          title="Excluir conversa"
-          [message]="'Tem certeza que deseja excluir a conversa de ' + (convToDelete.company ? convToDelete.username + ' · ' + convToDelete.company : convToDelete.username) + '? Todas as mensagens serão removidas permanentemente.'"
-          confirmLabel="Excluir"
-          cancelLabel="Cancelar"
-          (confirmed)="confirmDeleteConv()"
-          (cancelled)="convToDelete = null" />
-      }
-
-      <!-- Toast: nova mensagem de visitante -->
-      @if (adminToastMsg) {
-        <div class="fixed bottom-6 right-6 z-50 flex items-center gap-3 bg-gray-900 border border-violet-500/50
-                    rounded-2xl shadow-2xl px-4 py-3 max-w-xs animate-[slideUp_0.3s_ease-out]">
-          <div class="w-8 h-8 rounded-full bg-violet-500/20 flex items-center justify-center shrink-0">
-            <span class="text-sm">💬</span>
-          </div>
-          <div class="flex-1 min-w-0">
-            <p class="text-xs font-semibold text-violet-400">{{ adminToastConvName }}</p>
-            <p class="text-sm text-gray-200">Nova mensagem</p>
-          </div>
-          <button (click)="openAdminToastConv()"
-                  class="shrink-0 text-xs bg-violet-600 hover:bg-violet-500 text-white px-2.5 py-1 rounded-lg transition-colors cursor-pointer">
-            Abrir
+      <!-- Navegação inferior (mobile) -->
+      <nav class="adm-bottom" aria-label="Seções do painel">
+        @for (t of tabs; track t.key) {
+          <button type="button" [class.is-active]="activeTab === t.key" (click)="setTab(t.key)">
+            <span class="adm-nav-icon" [innerHTML]="t.icon"></span>
+            <span>{{ t.short }}</span>
+            @if (t.key === 'leads' && hotLeads.length > 0) { <span class="adm-bottom-badge">{{ hotLeads.length }}</span> }
           </button>
-          <button (click)="dismissAdminToast()"
-                  class="shrink-0 text-gray-500 hover:text-white transition-colors cursor-pointer">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
-        </div>
-      }
+        }
+      </nav>
     </div>
   `,
   styles: [`
-    .map-dark-invert .leaflet-layer,
-    .map-dark-invert .leaflet-control-zoom-in,
-    .map-dark-invert .leaflet-control-zoom-out,
-    .map-dark-invert .leaflet-control-attribution {
-      filter: brightness(1.55) contrast(0.75) saturate(0.65);
+    :host { display: block; }
+    .adm { min-height: 100dvh; background: var(--bg); color: var(--fg); }
+
+    .adm-side { display: none; }
+    .adm-topbar { position: sticky; top: 0; z-index: 40; display: flex; align-items: center; justify-content: space-between; height: 3.5rem; padding: 0 1rem; background: rgba(9,9,11,.85); backdrop-filter: blur(10px); border-bottom: 1px solid var(--border); }
+    .adm-main { padding: 1.25rem 1rem 6rem; display: flex; flex-direction: column; gap: 1.5rem; min-width: 0; }
+
+    @media (min-width: 1024px) {
+      .adm-side { position: fixed; inset: 0 auto 0 0; width: 15rem; z-index: 40; display: flex; flex-direction: column; gap: 1.5rem; padding: 1.25rem 0.85rem; border-right: 1px solid var(--border); background: var(--bg-raised); }
+      .adm-topbar, .adm-bottom { display: none !important; }
+      .adm-main { margin-left: 15rem; padding: 1.5rem 2rem 2.5rem; }
     }
 
-    .access-row-clickable {
-      cursor: pointer;
-    }
+    .adm-brand { display: inline-flex; align-items: center; gap: 0.6rem; padding: 0 0.4rem; font-weight: 600; font-size: 0.9375rem; color: var(--fg); }
+    .adm-brand-mark { display: grid; place-items: center; width: 1.9rem; height: 1.9rem; border-radius: 0.55rem; background: var(--fg); color: var(--bg); font: 700 0.75rem/1 var(--font-display); letter-spacing: -0.02em; }
 
-    .access-row-clickable:hover {
-      background: rgba(148, 163, 184, 0.08);
-    }
+    .adm-nav { display: flex; flex-direction: column; gap: 0.2rem; }
+    .adm-nav-item { display: flex; align-items: center; gap: 0.7rem; padding: 0.6rem 0.7rem; border-radius: 0.6rem; font-size: 0.875rem; color: var(--fg-muted); transition: background .15s, color .15s; }
+    .adm-nav-item:hover { color: var(--fg); background: rgba(255,255,255,.03); }
+    .adm-nav-item.is-active { color: var(--fg); background: var(--surface); box-shadow: inset 0 0 0 1px var(--border); }
+    .adm-nav-icon { display: inline-grid; place-items: center; width: 1.1rem; height: 1.1rem; flex: none; }
+    .adm-nav-icon svg { width: 100%; height: 100%; }
+    .adm-badge { font-size: 0.6875rem; font-weight: 700; padding: 0.05rem 0.45rem; border-radius: 999px; background: rgba(251,191,36,.15); color: #fbbf24; }
+    .adm-badge.is-live { background: rgba(74,222,128,.15); color: #4ade80; }
 
-    .access-row-selected {
-      background: rgba(34, 211, 238, 0.12);
-    }
+    .adm-side-foot { margin-top: auto; display: flex; flex-direction: column; gap: 0.25rem; padding-top: 1rem; border-top: 1px solid var(--border); }
+    .adm-side-btn { display: flex; align-items: center; gap: 0.6rem; width: 100%; padding: 0.5rem 0.7rem; border-radius: 0.55rem; font-size: 0.8125rem; color: var(--fg-muted); text-align: left; transition: background .15s, color .15s; }
+    .adm-side-btn:hover { color: var(--fg); background: rgba(255,255,255,.03); }
+    .adm-side-btn:disabled { opacity: .5; }
 
-    .line-clamp-2 {
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
+    .adm-status-dot { display: inline-block; width: 0.5rem; height: 0.5rem; border-radius: 999px; background: var(--fg-faint); flex: none; }
+    .adm-status-dot.is-on { background: #4ade80; }
+    .adm-status-dot.is-pulse { animation: adm-ping 1.8s infinite; }
+    @keyframes adm-ping { 0% { box-shadow: 0 0 0 0 rgba(74,222,128,.5); } 70% { box-shadow: 0 0 0 6px rgba(74,222,128,0); } 100% { box-shadow: 0 0 0 0 rgba(74,222,128,0); } }
+    .adm-live-pill { display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.25rem 0.6rem; border-radius: 999px; border: 1px solid var(--border); font-size: 0.75rem; color: var(--fg-muted); }
+
+    .adm-page-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 0.75rem 1.5rem; }
+    .adm-page-head h1 { font: 600 1.5rem/1.15 var(--font-display); letter-spacing: -0.02em; }
+    .adm-page-head p { font-size: 0.8125rem; color: var(--fg-faint); margin-top: 0.25rem; }
+    .adm-sync { display: inline-flex; align-items: center; gap: 0.5rem; font-size: 0.75rem; color: var(--fg-faint); }
+    .adm-sync.is-error { color: #f87171; }
+    .adm-sync.is-error .adm-status-dot { background: #f87171; }
+
+    .adm-bottom { position: fixed; z-index: 40; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(4, 1fr); padding: 0.35rem 0.5rem calc(0.35rem + env(safe-area-inset-bottom)); background: rgba(9,9,11,.92); backdrop-filter: blur(10px); border-top: 1px solid var(--border); }
+    .adm-bottom button { position: relative; display: flex; flex-direction: column; align-items: center; gap: 0.2rem; padding: 0.4rem 0; font-size: 0.6875rem; color: var(--fg-faint); border-radius: 0.5rem; }
+    .adm-bottom button.is-active { color: var(--fg); }
+    .bars { display: flex; flex-direction: column; gap: 0.9rem; }
+    .bar-head { display: flex; align-items: baseline; justify-content: space-between; gap: 0.75rem; margin-bottom: 0.4rem; }
+    .bar-label { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 0.8125rem; color: var(--fg); }
+    .bar-index { display: inline-block; width: 1.1rem; font-family: var(--font-mono); font-size: 0.6875rem; color: var(--fg-faint); }
+    .bar-value { flex: none; font-size: 0.8125rem; font-weight: 600; color: var(--fg); font-variant-numeric: tabular-nums; white-space: nowrap; }
+    .bar-value small { margin-left: 0.45rem; font-size: 0.75rem; font-weight: 400; color: var(--fg-faint); }
+    .bar-track { height: 0.5rem; border-radius: 999px; background: var(--bg-raised); box-shadow: inset 0 0 0 1px var(--border); overflow: hidden; }
+    .bar-fill { height: 100%; min-width: 2px; border-radius: 999px; background: #d4d4d8; transition: width .6s ease; }
+    .bar-note { margin-top: 0.35rem; font-size: 0.6875rem; color: var(--fg-faint); }
+    .adm-bottom-badge { position: absolute; top: 0.1rem; left: calc(50% + 0.4rem); font-size: 0.625rem; font-weight: 700; padding: 0 0.3rem; border-radius: 999px; background: #fbbf24; color: #09090b; }
   `],
 })
 export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy {
-  @ViewChild('mapEl') mapEl!: ElementRef<HTMLDivElement>;
   @ViewChild('chartCanvas') chartCanvas!: ElementRef<HTMLCanvasElement>;
-  @ViewChild('ctaChartCanvas') ctaChartCanvas?: ElementRef<HTMLCanvasElement>;
-  @ViewChild('sectionChartCanvas') sectionChartCanvas?: ElementRef<HTMLCanvasElement>;
-  private leafletMap?: L.Map;
-  private mapMarkers = new Map<string, L.CircleMarker>();
   private lineChartInstance?: Chart;
-  private ctaChartInstance?: Chart;
-  private sectionChartInstance?: Chart;
   private themeObserver?: MutationObserver;
 
   private firebase = inject(FirebaseService);
+  private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
   private zone = inject(NgZone);
   @ViewChild('convMsgContainer') convMsgContainer?: ElementRef<HTMLDivElement>;
 
-  aiMatches: AiMatchRecord[] = [];
-  devMatches: DevMatchRecord[] = [];
   visitors: VisitorRecord[] = [];
   analyticsEvents: AnalyticsEventRecord[] = [];
-  accessRows: AccessTableRow[] = [];
-  visitorMap = new Map<string, VisitorRecord>();
   loading = true;
-  uniqueCountries = 0;
-  mobileCount = 0;
-  today = new Date();
-  hasMapCoords = false;
-  bruliasClicks = 0;
-  bruliasClicksByIp = new Map<string, number>();
-  currentPage = 1;
-  readonly pageSize = 10;
-  selectedAccessRowKey: string | null = null;
   selectedVisitorId: string | null = null;
+
+  // ── Navegação ────────────────────────────────────────────────────────
+  private sanitizer = inject(DomSanitizer);
+  readonly tabs: { key: AdminTab; label: string; short: string; hint: string; icon: SafeHtml }[] = ([
+    { key: 'live', label: 'Ao vivo', short: 'Ao vivo', hint: 'Mapa e visitantes atualizando em tempo real. Clique em um ponto ou em uma linha para ver detalhes.',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21s-7-6.2-7-11.5A7 7 0 0 1 19 9.5C19 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>' },
+    { key: 'leads', label: 'Leads', short: 'Leads', hint: 'Visitantes ordenados por interesse. Clique em uma linha para abrir no mapa.',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.9M16 3.1a4 4 0 0 1 0 7.8"/></svg>' },
+    { key: 'analytics', label: 'Análises', short: 'Análises', hint: 'Engajamento, origem do tráfego e funil — recalculados a cada novo evento.',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg>' },
+    { key: 'tests', label: 'Ferramentas', short: 'Ferram.', hint: 'Teste de push, email e token FCM.',
+      icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.7 6.3a4 4 0 0 0-5.4 5.4L3 18l3 3 6.3-6.3a4 4 0 0 0 5.4-5.4l-2.5 2.5-2.4-.6-.6-2.4z"/></svg>' },
+  ] as const).map(t => ({ ...t, icon: this.sanitizer.bypassSecurityTrustHtml(t.icon) }));  // SVGs estáticos, sem entrada de usuário
+
+  get currentTab() {
+    return this.tabs.find(t => t.key === this.activeTab) ?? this.tabs[0];
+  }
+
+  setTab(tab: AdminTab): void {
+    this.activeTab = tab;
+    this.cdr.detectChanges();
+    // Canvases ficam ocultos fora da aba; recria ao abrir para pegar o tamanho real.
+    if (tab === 'analytics') setTimeout(() => this.initCharts(), 0);
+  }
+
+  /** Abre o visitante na aba ao vivo (mapa + detalhes). */
+  openVisitor(v: VisitorRecord): void {
+    this.selectedVisitorId = v.id ?? null;
+    this.setTab('live');
+  }
+
+  async logout(): Promise<void> {
+    await this.firebase.logout();
+    void this.router.navigate(['/']);
+  }
+
+  // helpers de rede usados no template
+  readonly hasNetworkInfo = hasNetworkInfo;
+  readonly networkSummary = networkSummary;
+  readonly networkKindMeta = networkKindMeta;
+
+  // ── Tempo real ───────────────────────────────────────────────────────
+  syncError = false;
+  lastSyncAt = new Date();
+  private rawVisitors: VisitorRecord[] = [];
+  private rawEvents: AnalyticsEventRecord[] = [];
+  private visitorsReady = false;
+  private eventsReady = false;
+  private rebuildTimer?: ReturnType<typeof setTimeout>;
+  private unsubVisitors?: () => void;
+  private unsubEvents?: () => void;
   sourceConversions: SourceConversionRow[] = [];
   ctaPerformance: CtaPerformanceRow[] = [];
   sectionReachRows: SectionReachRow[] = [];
@@ -1375,9 +1125,17 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
     this.chartPresetDays = 0;
     this.initLineChart();
   }
-  activeTab: 'analytics' | 'chat' | 'leads' | 'tests' = 'analytics';
+  activeTab: AdminTab = 'live';
 
   // ── Score de visitante ───────────────────────────────────────────────
+  /** Recriada a cada rebuild para o componente ao vivo recalcular. */
+  scoreInfoFn: (v: VisitorRecord) => ScoreInfo = v => this.buildScoreInfo(v);
+
+  private buildScoreInfo(v: VisitorRecord): ScoreInfo {
+    const score = this.computeVisitorScore(v);
+    return { score, tier: scoreTier(score), label: this.scoreLabel(score).label, reasons: this.scoreReasons(v) };
+  }
+
   visitorScores = new Map<string, number>();
 
   /**
@@ -1523,31 +1281,16 @@ Resposta em português brasileiro, tom direto e profissional.`;
     try { return JSON.parse(this.journeyAiInsight); } catch { return null; }
   }
 
-  getAiMatchFor(visitorId?: string): AiMatchRecord | undefined {
-    return this.aiMatches.find(m => m.visitorId === visitorId);
-  }
-
-  getDevMatchFor(visitorId?: string): DevMatchRecord | undefined {
-    return this.devMatches.find(m => m.visitorId === visitorId);
-  }
-
-  getConvForIp(ip: string): ChatConversation | undefined {
-    return this.conversations.find(c => c.ip === ip);
-  }
-
   exportLeadsCsv(): void {
     const rows = [
-      ['IP', 'Cidade', 'País', 'Visitas', 'Score', 'Categoria', 'AI Match %', 'Dev Match %', 'Primeira Visita', 'Última Visita'],
+      ['IP', 'Cidade', 'País', 'Visitas', 'Score', 'Categoria', 'Primeira Visita', 'Última Visita'],
       ...this.visitors
         .map(v => {
           const score = this.computeVisitorScore(v);
           const { label } = this.scoreLabel(score);
-          const aiM = this.aiMatches.find(m => m.visitorId === v.id);
-          const devM = this.devMatches.find(m => m.visitorId === v.id);
           return [
             v.ip, v.city ?? '', v.country ?? '',
             v.visitCount, score, label.replace(/[🔥🌡❄️ ]/g, '').trim(),
-            aiM?.matchPercentage ?? '', devM?.matchPercentage ?? '',
             v.firstSeen.toLocaleDateString('pt-BR'),
             v.lastSeen.toLocaleDateString('pt-BR'),
           ];
@@ -1609,26 +1352,8 @@ Resposta em português brasileiro, tom direto e profissional.`;
     return this.toIsoDate(new Date(new Date(this.chartDateStart + 'T00:00:00').getTime() - 86_400_000));
   }
 
-  // ── Chat ────────────────────────────────────────────────────────────
-  conversations: ChatConversation[] = [];
-  selectedConvId: string | null = null;
-  get selectedConv(): ChatConversation | null {
-    return this.conversations.find(c => c.id === this.selectedConvId) ?? null;
-  }
-  convMessagesList: ChatMessage[] = [];
-  convReplyText = '';
-  sendingConvReply = false;
-  pendingConvFile: File | null = null;
-  convMsgToDelete: ChatMessage | null = null;
-  openConvMessageMenuId: string | null = null;
-  convMenuPos: {top: number; right: number} | null = null;
-  editingConvMessageId: string | null = null;
-  editConvMessageText = '';
-  savingConvEdit = false;
-  private readonly ALLOWED_EXT = ['.pdf', '.jpg', '.jpeg', '.png'];
   pushEnabled = false;
   pushLoading = false;
-  get totalUnread(): number { return this.conversations.reduce((s, c) => s + c.unreadByOwner, 0); }
 
   // ── Painel de Testes ─────────────────────────────────────────────────
   testPushTitle = 'Notificação de teste';
@@ -1643,22 +1368,6 @@ Resposta em português brasileiro, tom direto e profissional.`;
   testEmailResult = '';
   emailSending = false;
   private unsubTestEmail?: () => void;
-  private unsubConversations?: () => void;
-  private unsubConvMessages?: () => void;
-
-  // ── Admin toast (nova mensagem) ─────────────────────────────────────
-  adminToastMsg = '';
-  adminToastConvName = '';
-  adminToastConvId = '';
-  private adminToastTimer?: ReturnType<typeof setTimeout>;
-  private knownUnreadByConv = new Map<string, number>();
-  private hasInitializedKnownUnread = false;
-
-  // ── Delete ──────────────────────────────────────────────────────────
-  deleteTarget: AccessTableRow | null = null;
-  deleting = false;
-  convToDelete: ChatConversation | null = null;
-  deletingConv = false;
 
   async ngOnInit(): Promise<void> {
     void this.firebase.setOwnerOnline(true);
@@ -1667,72 +1376,24 @@ Resposta em português brasileiro, tom direto e profissional.`;
     this.pushEnabled = !!token;
     this.savedFcmToken = token;
     this.checkPushPermission();
-    const settle = <T>(p: Promise<T>, fallback: T) =>
-      p.catch((err: unknown) => { console.error('[Dashboard]', err); return fallback; });
-
-    const [aiMatches, devMatches, visitors, bruliasClickList, analyticsEvents] = await Promise.all([
-      settle(this.firebase.getAiMatches(), [] as AiMatchRecord[]),
-      settle(this.firebase.getDevMatches(), [] as DevMatchRecord[]),
-      settle(this.firebase.getVisitors(), [] as VisitorRecord[]),
-      settle(this.firebase.getBruliasClicks(), [] as { ip: string; createdAt: Date }[]),
-      settle(this.firebase.getAnalyticsEvents(), [] as AnalyticsEventRecord[]),
-    ]);
-
-    const ignoredVisitorIds = new Set(
-      visitors
-        .filter(v => v.id && this.OWNER_IPS.includes(v.ip))
-        .map(v => v.id!),
-    );
-
-    this.aiMatches = aiMatches.filter(m => !m.visitorId || !ignoredVisitorIds.has(m.visitorId));
-    this.devMatches = devMatches.filter(m => !m.visitorId || !ignoredVisitorIds.has(m.visitorId));
-    this.visitors = visitors.filter(v => !this.OWNER_IPS.includes(v.ip));
-    this.analyticsEvents = analyticsEvents.filter(event => {
-      if (event.ip && this.OWNER_IPS.includes(event.ip)) return false;
-      if (event.visitorId && ignoredVisitorIds.has(event.visitorId)) return false;
-      return true;
+    const onError = (err: unknown) => this.zone.run(() => {
+      console.error('[Dashboard] realtime', err);
+      this.syncError = true;
+      this.loading = false;
+      this.cdr.detectChanges();
     });
-    const filteredBrulias = bruliasClickList.filter(c => !this.OWNER_IPS.includes(c.ip));
-    this.bruliasClicks = filteredBrulias.length;
-    this.bruliasClicksByIp = filteredBrulias.reduce((map, c) => {
-      map.set(c.ip, (map.get(c.ip) ?? 0) + 1);
-      return map;
-    }, new Map<string, number>());
 
-    this.loading = false;
-    this.rebuildDashboardState();
-    this.cdr.detectChanges();
-    setTimeout(() => {
-      this.initLineChart();
-      this.initMap();
-      this.initCtaChart();
-      this.initSectionChart();
-    }, 50);
+    this.unsubVisitors = this.firebase.listenVisitors(visitors => this.zone.run(() => {
+      this.rawVisitors = visitors;
+      this.visitorsReady = true;
+      this.scheduleRebuild();
+    }), onError);
 
-    // Listener em tempo real das conversas
-    this.unsubConversations = this.firebase.listenToConversations(convs => {
-      this.zone.run(() => {
-        if (!this.hasInitializedKnownUnread) {
-          // Primeira carga: apenas inicializa sem mostrar toast
-          for (const conv of convs) {
-            if (conv.id) this.knownUnreadByConv.set(conv.id, conv.unreadByOwner);
-          }
-          this.hasInitializedKnownUnread = true;
-        } else {
-          // Atualizações posteriores: detecta novas mensagens
-          for (const conv of convs) {
-            if (!conv.id) continue;
-            const prev = this.knownUnreadByConv.get(conv.id) ?? 0;
-            if (conv.unreadByOwner > prev && this.selectedConvId !== conv.id) {
-              this.showAdminToast(conv.username, conv.id);
-            }
-            this.knownUnreadByConv.set(conv.id, conv.unreadByOwner);
-          }
-        }
-        this.conversations = convs;
-        this.cdr.detectChanges();
-      });
-    });
+    this.unsubEvents = this.firebase.listenAnalyticsEvents(events => this.zone.run(() => {
+      this.rawEvents = events;
+      this.eventsReady = true;
+      this.scheduleRebuild();
+    }), onError);
 
     // Listener visitantes ativos agora (presence)
     this.unsubActiveNow = this.firebase.listenActiveVisitors((count: number) => {
@@ -1744,6 +1405,37 @@ Resposta em português brasileiro, tom direto e profissional.`;
   }
 
   ngAfterViewInit(): void {}
+
+  /** Agrupa rajadas de snapshots (visitante + evento chegam juntos) num único recálculo. */
+  private scheduleRebuild(): void {
+    if (!this.visitorsReady || !this.eventsReady) return;
+    clearTimeout(this.rebuildTimer);
+    this.rebuildTimer = setTimeout(() => this.applySnapshot(), this.loading ? 0 : 400);
+  }
+
+  private applySnapshot(): void {
+    const ignoredVisitorIds = new Set(
+      this.rawVisitors.filter(v => v.id && this.OWNER_IPS.includes(v.ip)).map(v => v.id!),
+    );
+    this.visitors = this.rawVisitors.filter(v => !this.OWNER_IPS.includes(v.ip));
+    this.analyticsEvents = this.rawEvents.filter(event => {
+      if (event.ip && this.OWNER_IPS.includes(event.ip)) return false;
+      if (event.visitorId && ignoredVisitorIds.has(event.visitorId)) return false;
+      return true;
+    });
+
+    this.loading = false;
+    this.syncError = false;
+    this.lastSyncAt = new Date();
+    this.rebuildDashboardState();
+    this.scoreInfoFn = v => this.buildScoreInfo(v);
+    this.cdr.detectChanges();
+    if (this.activeTab === 'analytics') this.initCharts();
+  }
+
+  private initCharts(): void {
+    this.initLineChart();
+  }
 
   // ── Push Notifications ───────────────────────────────────────────────
   async togglePushNotifications(): Promise<void> {
@@ -1855,217 +1547,15 @@ Resposta em português brasileiro, tom direto e profissional.`;
   }
 
   // ── Chat methods ────────────────────────────────────────────────────────
-  selectConversation(conv: ChatConversation): void {
-    this.selectedConvId = conv.id!;
-    this.closeConvMessageMenu();
-    this.cancelEditConvMessage();
-    this.unsubConvMessages?.();
-    this.convMessagesList = [];
-    this.unsubConvMessages = this.firebase.listenToChatMessages(conv.id!, msgs => {
-      this.zone.run(() => {
-        this.convMessagesList = msgs;
-        this.scrollConvToBottom();
-        this.cdr.detectChanges();
-      });
-    });
-    if (conv.unreadByOwner > 0) {
-      void this.firebase.markConversationRead(conv.id!);
-    }
-  }
-
-  onConvFileSelected(event: Event): void {
-    const input = event.target as HTMLInputElement;
-    const file = input.files?.[0];
-    input.value = '';
-    if (!file) return;
-    const ext = '.' + file.name.split('.').pop()?.toLowerCase();
-    if (!this.ALLOWED_EXT.includes(ext)) return;
-    if (file.size > 10 * 1024 * 1024) { alert('Arquivo deve ter no máximo 10 MB.'); return; }
-    this.pendingConvFile = file;
-  }
-
-  async sendConvReply(): Promise<void> {
-    const text = this.convReplyText.trim();
-    if ((!text && !this.pendingConvFile) || !this.selectedConv || this.sendingConvReply) return;
-    this.convReplyText = '';
-    const fileToSend = this.pendingConvFile;
-    this.pendingConvFile = null;
-    this.sendingConvReply = true;
-    this.cdr.detectChanges();
-    try {
-      let fileAttachment: { url: string; name: string } | undefined;
-      if (fileToSend) {
-        fileAttachment = await this.firebase.uploadChatFile(this.selectedConv.id!, fileToSend);
-      }
-      await this.firebase.sendChatMessage(this.selectedConv.id!, text, 'owner', fileAttachment);
-    } finally {
-      this.sendingConvReply = false;
-      this.cdr.detectChanges();
-    }
-  }
-
-  onConvKeydown(event: KeyboardEvent): void {
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault();
-      void this.sendConvReply();
-    }
-  }
-
-  askDeleteConvMessage(msg: ChatMessage): void {
-    this.closeConvMessageMenu();
-    if (this.editingConvMessageId === msg.id) this.cancelEditConvMessage();
-    this.convMsgToDelete = msg;
-  }
-
-  cancelDeleteConvMessage(): void {
-    this.convMsgToDelete = null;
-  }
-
-  async confirmDeleteConvMessage(): Promise<void> {
-    const msg = this.convMsgToDelete;
-    if (!msg?.id || !this.selectedConvId) { this.convMsgToDelete = null; return; }
-    this.convMsgToDelete = null;
-    await this.firebase.softDeleteChatMessage(this.selectedConvId, msg.id);
-  }
-
-  askDeleteConv(conv: ChatConversation): void {
-    this.convToDelete = conv;
-  }
-
-  async confirmDeleteConv(): Promise<void> {
-    const conv = this.convToDelete;
-    if (!conv?.id || this.deletingConv) return;
-    this.deletingConv = true;
-    this.convToDelete = null;
-    try {
-      if (this.selectedConvId === conv.id) {
-        this.selectedConvId = null;
-        this.unsubConvMessages?.();
-        this.convMessagesList = [];
-      }
-      await this.firebase.deleteConversation(conv.id);
-    } finally {
-      this.deletingConv = false;
-      this.cdr.detectChanges();
-    }
-  }
-
-  toggleConvMessageMenu(msg: ChatMessage, event: MouseEvent): void {
-    event.stopPropagation();
-    if (!msg.id) return;
-    if (this.openConvMessageMenuId === msg.id) {
-      this.openConvMessageMenuId = null;
-      this.convMenuPos = null;
-    } else {
-      const btn = event.currentTarget as HTMLElement;
-      const rect = btn.getBoundingClientRect();
-      this.convMenuPos = { top: rect.bottom + 4, right: window.innerWidth - rect.right };
-      this.openConvMessageMenuId = msg.id;
-    }
-    this.cdr.detectChanges();
-  }
-
-  closeConvMessageMenu(): void {
-    this.openConvMessageMenuId = null;
-    this.convMenuPos = null;
-  }
-
-  canEditConvMessage(msg: ChatMessage): boolean {
-    return msg.sender === 'owner' && !msg.deletedAt && !msg.fileUrl && isChatMessageWithinEditWindow(msg.sentAt);
-  }
-
-  startEditConvMessage(msg: ChatMessage): void {
-    if (!msg.id || !this.canEditConvMessage(msg)) return;
-    this.closeConvMessageMenu();
-    this.editingConvMessageId = msg.id;
-    this.editConvMessageText = msg.text;
-  }
-
-  cancelEditConvMessage(): void {
-    this.editingConvMessageId = null;
-    this.editConvMessageText = '';
-  }
-
-  async saveEditedConvMessage(msg: ChatMessage): Promise<void> {
-    const text = this.editConvMessageText.trim();
-    if (!this.canEditConvMessage(msg)) {
-      this.cancelEditConvMessage();
-      return;
-    }
-    if (!msg.id || !this.selectedConvId || !text || this.savingConvEdit) return;
-    this.savingConvEdit = true;
-    this.cdr.detectChanges();
-    try {
-      await this.firebase.updateChatMessage(this.selectedConvId, msg.id, text);
-      this.cancelEditConvMessage();
-    } finally {
-      this.savingConvEdit = false;
-      this.cdr.detectChanges();
-    }
-  }
-
-  onConvEditKeydown(event: KeyboardEvent, msg: ChatMessage): void {
-    if (event.key === 'Escape') {
-      event.preventDefault();
-      this.cancelEditConvMessage();
-      return;
-    }
-    if (event.key === 'Enter' && !event.shiftKey) {
-      event.preventDefault();
-      void this.saveEditedConvMessage(msg);
-    }
-  }
-
-  private scrollConvToBottom(): void {
-    window.setTimeout(() => {
-      const el = document.querySelector<HTMLDivElement>('[data-conv-msgs]');
-      if (el) el.scrollTop = el.scrollHeight;
-    }, 60);
-  }
-
   ngOnDestroy(): void {
     void this.firebase.setOwnerOnline(false);
     this.lineChartInstance?.destroy();
-    this.ctaChartInstance?.destroy();
-    this.sectionChartInstance?.destroy();
     this.themeObserver?.disconnect();
-    this.leafletMap?.remove();
-    this.mapMarkers.clear();
-    this.unsubConversations?.();
-    this.unsubConvMessages?.();
+    this.unsubVisitors?.();
+    this.unsubEvents?.();
+    clearTimeout(this.rebuildTimer);
     this.unsubTestEmail?.();
     this.unsubActiveNow?.();
-    clearTimeout(this.adminToastTimer);
-    this.knownUnreadByConv.clear();
-  }
-
-  showAdminToast(username: string, convId: string): void {
-    clearTimeout(this.adminToastTimer);
-    this.adminToastConvName = username;
-    this.adminToastConvId = convId;
-    this.adminToastMsg = `Nova mensagem de ${username}`;
-    this.adminToastTimer = setTimeout(() => {
-      this.adminToastMsg = '';
-      this.cdr.detectChanges();
-    }, 8000);
-    this.cdr.detectChanges();
-  }
-
-  openAdminToastConv(): void {
-    clearTimeout(this.adminToastTimer);
-    this.adminToastMsg = '';
-    const conv = this.conversations.find(c => c.id === this.adminToastConvId);
-    if (conv) {
-      this.activeTab = 'chat';
-      this.selectConversation(conv);
-    }
-    this.cdr.detectChanges();
-  }
-
-  dismissAdminToast(): void {
-    clearTimeout(this.adminToastTimer);
-    this.adminToastMsg = '';
-    this.cdr.detectChanges();
   }
 
 
@@ -2163,7 +1653,6 @@ Resposta em português brasileiro, tom direto e profissional.`;
     this.themeObserver = new MutationObserver(() => {
       this.updateChartTheme();
       this.computeExtraStats();
-      this.initMap();
       this.cdr.detectChanges();
     });
     this.themeObserver.observe(document.documentElement, { attributes: true, attributeFilter: ['class'] });
@@ -2189,264 +1678,10 @@ Resposta em português brasileiro, tom direto e profissional.`;
     this.lineChartInstance.update();
   }
 
-  private initMap(): void {
-    const withCoords = this.visitors.filter(v => v.lat != null && v.lng != null);
-    this.mapMarkers.clear();
-    if (!withCoords.length || !this.mapEl?.nativeElement) {
-      this.leafletMap?.remove();
-      this.leafletMap = undefined;
-      return;
-    }
-    if (this.leafletMap) {
-      this.leafletMap.remove();
-      this.leafletMap = undefined;
-    }
-
-    // Fix ícones padrão do Leaflet no contexto de bundler
-    const iconUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png';
-    const iconRetina = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png';
-    const shadowUrl = 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png';
-    L.Marker.prototype.options.icon = L.icon({ iconUrl, iconRetinaUrl: iconRetina, shadowUrl, iconSize: [25, 41], iconAnchor: [12, 41], popupAnchor: [1, -34] });
-
-    this.leafletMap = L.map(this.mapEl.nativeElement, { zoomControl: true, scrollWheelZoom: true });
-
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>',
-      maxZoom: 19,
-    }).addTo(this.leafletMap);
-
-    const bounds: [number, number][] = [];
-    for (const v of withCoords) {
-      const lat = v.lat!;
-      const lng = v.lng!;
-      bounds.push([lat, lng]);
-      const markerContent = this.buildMapMarkerContent(v);
-      const marker = L.circleMarker([lat, lng], this.buildMapMarkerStyle(v, v.id === this.selectedVisitorId))
-        .bindTooltip(markerContent, {
-          direction: 'top',
-          sticky: true,
-          opacity: 0.95,
-        })
-        .bindPopup(markerContent)
-        .addTo(this.leafletMap!);
-
-      if (v.id) {
-        this.mapMarkers.set(v.id, marker);
-      }
-    }
-
-    const selectedVisitor = this.selectedVisitorId ? this.visitorMap.get(this.selectedVisitorId) : undefined;
-    if (this.hasCoordinates(selectedVisitor)) {
-      this.focusVisitorOnMap(selectedVisitor, false);
-      return;
-    }
-
-    if (bounds.length === 1) {
-      this.leafletMap.setView(bounds[0], 5);
-    } else {
-      this.leafletMap.fitBounds(bounds, { padding: [30, 30] });
-    }
-  }
-
-  focusRowOnMap(row: AccessTableRow): void {
-    const visitor = this.resolveRowMapVisitor(row);
-    if (!this.hasCoordinates(visitor)) return;
-
-    this.selectedAccessRowKey = row.key;
-    this.selectedVisitorId = visitor.id ?? null;
-    this.focusVisitorOnMap(visitor, true);
-  }
-
-  hasMapTarget(row: AccessTableRow): boolean {
-    return this.resolveRowMapVisitor(row) != null;
-  }
-
-  rowMapHint(row: AccessTableRow): string | null {
-    return this.hasMapTarget(row) ? 'Clique para focar este acesso no mapa' : null;
-  }
-
-  confirmDelete(row: AccessTableRow): void {
-    this.deleteTarget = row;
-  }
-
-  cancelDelete(): void {
-    if (this.deleting) return;
-    this.deleteTarget = null;
-  }
-
-  async executeDelete(): Promise<void> {
-    if (this.deleteTarget == null || this.deleteTarget.visitorIds.length === 0 || this.deleting) return;
-    this.deleting = true;
-    try {
-      const targetVisitorIds = new Set(this.deleteTarget.visitorIds);
-      await this.firebase.deleteVisitorsByIds([...targetVisitorIds]);
-      this.visitors = this.visitors.filter(v => !v.id || !targetVisitorIds.has(v.id));
-      this.aiMatches = this.aiMatches.filter(m => !m.visitorId || !targetVisitorIds.has(m.visitorId));
-      this.devMatches = this.devMatches.filter(m => !m.visitorId || !targetVisitorIds.has(m.visitorId));
-      this.analyticsEvents = this.analyticsEvents.filter(e => !e.visitorId || !targetVisitorIds.has(e.visitorId));
-      this.rebuildDashboardState();
-      this.deleteTarget = null;
-      this.initLineChart();
-      this.initMap();
-      this.initCtaChart();
-      this.initSectionChart();
-    } catch (err) {
-      console.error('[Dashboard] deleteVisitor', err);
-    } finally {
-      this.deleting = false;
-      this.cdr.markForCheck();
-    }
-  }
-
-  getVisitor(visitorId?: string): VisitorRecord | undefined {
-    return visitorId ? this.visitorMap.get(visitorId) : undefined;
-  }
-
-  get paginatedAccessRows(): AccessTableRow[] {
-    const start = (this.currentPage - 1) * this.pageSize;
-    return this.accessRows.slice(start, start + this.pageSize);
-  }
-
-  get totalPages(): number {
-    return Math.max(1, Math.ceil(this.accessRows.length / this.pageSize));
-  }
-
-  get pageStart(): number {
-    if (this.accessRows.length === 0) return 0;
-    return (this.currentPage - 1) * this.pageSize + 1;
-  }
-
-  get pageEnd(): number {
-    return Math.min(this.currentPage * this.pageSize, this.accessRows.length);
-  }
-
-  previousPage(): void {
-    if (this.currentPage > 1) {
-      this.currentPage -= 1;
-    }
-  }
-
-  nextPage(): void {
-    if (this.currentPage < this.totalPages) {
-      this.currentPage += 1;
-    }
-  }
-
-  private buildAccessRows(): AccessTableRow[] {
-    const seenVisitors = new Set<string>();
-    const visitorRowKeys = new Map<string, string>();
-    const rows = new Map<string, AccessTableRow>();
-    const orphanRows: AccessTableRow[] = [];
-
-    for (const visitor of this.visitors) {
-      if (!visitor.id) continue;
-      seenVisitors.add(visitor.id);
-      const ip = visitor.ip?.trim() || undefined;
-      const resolution = this.buildResolutionLabel(visitor);
-      const key = ip ? `ip:${ip}|res:${resolution}` : `visitor:${visitor.id}|res:${resolution}`;
-      visitorRowKeys.set(visitor.id, key);
-
-      const currentRow = rows.get(key);
-      const visitCount = Math.max(visitor.visitCount ?? 1, 1);
-      const lastSeen = new Date(visitor.lastSeen);
-
-      if (!currentRow) {
-        rows.set(key, {
-          key,
-          date: lastSeen,
-          ip,
-          resolution,
-          accessCount: visitCount,
-          visitorIds: [visitor.id],
-          visitor,
-        });
-        continue;
-      }
-
-      currentRow.accessCount += visitCount;
-      if (!currentRow.visitorIds.includes(visitor.id)) {
-        currentRow.visitorIds.push(visitor.id);
-      }
-      if (lastSeen.getTime() >= currentRow.date.getTime()) {
-        currentRow.date = lastSeen;
-        currentRow.visitor = visitor;
-      }
-    }
-
-    // matches sem visitante associado (dados antigos sem visitorId)
-    for (const m of this.aiMatches) {
-      if (!m.visitorId || !seenVisitors.has(m.visitorId)) {
-        orphanRows.push({
-          key: `legacy-ai:${m.id ?? orphanRows.length}`,
-          date: new Date(m.createdAt),
-          resolution: '-',
-          accessCount: 0,
-          visitorIds: [],
-          aiMatch: m,
-        });
-        continue;
-      }
-
-      const key = visitorRowKeys.get(m.visitorId);
-      if (!key) continue;
-      const row = rows.get(key);
-      if (!row) continue;
-      if (!row.aiMatch || new Date(m.createdAt).getTime() > new Date(row.aiMatch.createdAt).getTime()) {
-        row.aiMatch = m;
-      }
-      const createdAt = new Date(m.createdAt);
-      if (createdAt.getTime() > row.date.getTime()) {
-        row.date = createdAt;
-      }
-    }
-    for (const m of this.devMatches) {
-      if (!m.visitorId || !seenVisitors.has(m.visitorId)) {
-        orphanRows.push({
-          key: `legacy-dev:${m.id ?? orphanRows.length}`,
-          date: new Date(m.createdAt),
-          resolution: '-',
-          accessCount: 0,
-          visitorIds: [],
-          devMatch: m,
-        });
-        continue;
-      }
-
-      const key = visitorRowKeys.get(m.visitorId);
-      if (!key) continue;
-      const row = rows.get(key);
-      if (!row) continue;
-      if (!row.devMatch || new Date(m.createdAt).getTime() > new Date(row.devMatch.createdAt).getTime()) {
-        row.devMatch = m;
-      }
-      const createdAt = new Date(m.createdAt);
-      if (createdAt.getTime() > row.date.getTime()) {
-        row.date = createdAt;
-      }
-    }
-
-    return [...rows.values(), ...orphanRows]
-      .sort((a, b) => b.date.getTime() - a.date.getTime());
-  }
-
   private rebuildDashboardState(): void {
-    this.accessRows = this.buildAccessRows();
-    this.visitorMap = new Map(this.visitors.filter(v => v.id).map(v => [v.id!, v]));
-    this.uniqueCountries = new Set(this.visitors.map(v => v.country).filter(Boolean)).size;
-    this.mobileCount = this.visitors.filter(v => this.isMobile(v.userAgent)).length;
-    this.hasMapCoords = this.visitors.some(v => v.lat != null && v.lng != null);
-    this.currentPage = Math.min(this.currentPage, this.totalPages);
-    this.syncSelectedMapTarget();
     this.computeExtraStats();
     this.computeAnalyticsInsights();
     this.computeJourneyMap();
-  }
-
-  private buildResolutionLabel(visitor: VisitorRecord): string {
-    if (visitor.screenWidth != null && visitor.screenHeight != null) {
-      return `${visitor.screenWidth}x${visitor.screenHeight}`;
-    }
-    return 'sem resolução';
   }
 
   private computeAnalyticsInsights(): void {
@@ -2504,7 +1739,7 @@ Resposta em português brasileiro, tom direto e profissional.`;
         const category = this.getEventCategory(event);
         const key = event.target || event.eventName;
         const existing = ctaRows.get(key) ?? {
-          label: this.ctaLabel(key),
+          label: ctaLabel(key),
           category,
           section: event.section || 'detalhes',
           clicks: 0,
@@ -2599,7 +1834,7 @@ Resposta em português brasileiro, tom direto e profissional.`;
       const sessions = sectionSessions.get(section)?.size ?? 0;
       return {
         key: section,
-        label: this.sectionLabel(section),
+        label: sectionLabel(section),
         sessions,
         reachRate: totalVisitSessions > 0 ? Math.round((sessions / totalVisitSessions) * 100) : 0,
       };
@@ -2693,7 +1928,7 @@ Resposta em português brasileiro, tom direto e profissional.`;
   private computeInsightsFallback(): void {
     const sourceCounts = new Map<string, number>();
     for (const visitor of this.visitors) {
-      const source = this.resolveSourceFromReferrer(visitor.referrer);
+      const source = sourceFromReferrer(visitor.referrer);
       sourceCounts.set(source, (sourceCounts.get(source) ?? 0) + visitor.visitCount);
     }
     this.sourceConversions = [...sourceCounts.entries()]
@@ -2732,21 +1967,6 @@ Resposta em português brasileiro, tom direto e profissional.`;
     this.visitorSignals.set(visitorId, current);
   }
 
-  private resolveSourceFromReferrer(referrer?: string): string {
-    if (!referrer) return 'Direto';
-    try {
-      const host = new URL(referrer).hostname.replace(/^www\./, '').toLowerCase();
-      if (host.includes('linkedin')) return 'LinkedIn';
-      if (host.includes('github'))   return 'GitHub';
-      if (host.includes('google'))   return 'Google';
-      if (host.includes('gupy'))     return 'Gupy';
-      if (host.includes('openai') || host.includes('chatgpt')) return 'ChatGPT';
-      return 'Outro';
-    } catch {
-      return 'Direto';
-    }
-  }
-
   private addSessionToMap(map: Map<string, Set<string>>, key: string, sessionId: string): void {    const sessions = map.get(key) ?? new Set<string>();
     sessions.add(sessionId);
     map.set(key, sessions);
@@ -2767,132 +1987,6 @@ Resposta em português brasileiro, tom direto e profissional.`;
       row.sessions.forEach(session => sessions.add(session));
     }
     return [...sessions];
-  }
-
-  private ctaLabel(target: string): string {
-    const labels: Record<string, string> = {
-      hero_contact: 'Hero · Contato',
-      resume_download: 'Hero · Baixar currículo',
-      project_brulias: 'Projeto · Brulias',
-      contact_email: 'Contato · Email',
-      contact_whatsapp: 'Contato · WhatsApp',
-      dev_match_contact_success: 'Dev Match · CTA forte',
-      dev_match_contact_surprise: 'Dev Match · CTA alternativo',
-      dev_match_contact: 'Dev Match · Contato (legado)',
-      ai_match_contact: 'IA Match · Entrar em contato',
-      'nav_dev-match': 'Header · Match',
-      nav_projetos: 'Header · Projetos',
-      nav_contato: 'Header · Contato',
-    };
-    return labels[target] ?? target;
-  }
-
-  private sectionLabel(section: string): string {
-    const labels: Record<string, string> = {
-      detalhes: 'Hero',
-      escolaridade: 'Formação',
-      experiencia: 'Experiência',
-      habilidades: 'Skills',
-      projetos: 'Projetos',
-      'dev-match': 'Dev Match',
-      certificacoes: 'Certificações',
-      contato: 'Contato',
-    };
-    return labels[section] ?? section;
-  }
-
-  hasNetworkInfo(visitor?: VisitorRecord): boolean {
-    return !!visitor && !!(
-      visitor.networkOrg?.trim()
-      || visitor.networkAsn?.trim()
-      || visitor.networkType?.trim()
-    );
-  }
-
-  networkSummary(visitor?: VisitorRecord): string {
-    if (!visitor) return '';
-
-    const owner = visitor.networkOrg?.trim();
-    const asn = visitor.networkAsn?.trim();
-    return [owner, asn].filter(Boolean).join(' · ');
-  }
-
-  networkKindLabel(visitor?: VisitorRecord): string {
-    switch (this.networkKind(visitor)) {
-      case 'business':
-        return 'Empresa provável';
-      case 'isp':
-        return 'ISP / operadora';
-      case 'hosting':
-        return 'Hosting / cloud';
-      case 'education':
-        return 'Instituição de ensino';
-      default:
-        return 'Rede atribuída';
-    }
-  }
-
-  networkKindTitle(visitor?: VisitorRecord): string {
-    const summary = this.networkSummary(visitor);
-    const suffix = summary ? ` Rede detectada: ${summary}.` : '';
-    return `Estimativa baseada na organização dona do bloco de IP, não na empresa real do visitante.${suffix}`;
-  }
-
-  networkKindBackground(visitor?: VisitorRecord): string {
-    switch (this.networkKind(visitor)) {
-      case 'business':
-        return 'rgba(34, 197, 94, 0.14)';
-      case 'isp':
-        return 'rgba(56, 189, 248, 0.14)';
-      case 'hosting':
-        return 'rgba(168, 85, 247, 0.14)';
-      case 'education':
-        return 'rgba(245, 158, 11, 0.14)';
-      default:
-        return 'rgba(148, 163, 184, 0.14)';
-    }
-  }
-
-  networkKindForeground(visitor?: VisitorRecord): string {
-    switch (this.networkKind(visitor)) {
-      case 'business':
-        return '#4ade80';
-      case 'isp':
-        return '#38bdf8';
-      case 'hosting':
-        return '#a1a1aa';
-      case 'education':
-        return '#fbbf24';
-      default:
-        return '#94a3b8';
-    }
-  }
-
-  private networkKind(visitor?: VisitorRecord): 'business' | 'isp' | 'hosting' | 'education' | 'unknown' {
-    const explicitType = visitor?.networkType?.trim().toLowerCase();
-    if (explicitType) {
-      if (/(business|enterprise|company|corp)/.test(explicitType)) return 'business';
-      if (/(isp|carrier|mobile|telecom)/.test(explicitType)) return 'isp';
-      if (/(hosting|cloud|proxy|datacenter)/.test(explicitType)) return 'hosting';
-      if (/(education|edu|university|school|college)/.test(explicitType)) return 'education';
-    }
-
-    const owner = visitor?.networkOrg?.trim().toLowerCase() ?? '';
-    if (!owner) return 'unknown';
-
-    if (/(univers|college|school|institut|\bedu\b)/.test(owner)) return 'education';
-    if (/(amazon|aws|google cloud|microsoft|azure|cloudflare|digitalocean|linode|vultr|oracle cloud|ovh|contabo|hostinger|server|hosting|datacenter|cloud)/.test(owner)) return 'hosting';
-    if (/(claro|vivo|telef[oô]nica|telefonica|tim|oi|algar|embratel|comcast|verizon|at&t|telecom|internet|fibra|broadband|wireless|mobile|carrier|\bisp\b|communications?)/.test(owner)) return 'isp';
-    if (/(\bltda\b|\bs\.a\.?\b|\bsa\b|\bllc\b|\binc\b|\bcorp\b|corporation|company|empresa|grupo|group|solutions?|solu[cç]oes|tecnologia|tech|systems?|software|holding|industr(?:y|ia))/ .test(owner)) return 'business';
-    return 'unknown';
-  }
-
-  isMobile(ua?: string): boolean {
-    return /mobile|android|iphone|ipad/i.test(ua ?? '');
-  }
-
-  isTablet(ua?: string): boolean {
-    return /ipad|tablet/i.test(ua ?? '');
   }
 
   get accentColor(): string {
@@ -2922,306 +2016,6 @@ Resposta em português brasileiro, tom direto e profissional.`;
         ? Math.round((1 - step.value / (steps[i - 1].value || 1)) * 100)
         : null,
     }));
-  }
-
-  // ── Charts horizontais de barra ────────────────────────────────────────
-  private initCtaChart(): void {
-    const el = this.ctaChartCanvas?.nativeElement;
-    if (!el || !this.ctaPerformance.length) return;
-    this.ctaChartInstance?.destroy();
-
-    const isDark = !document.documentElement.classList.contains('light');
-    const gridColor  = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)';
-    const tickColor  = isDark ? '#9ca3af' : '#374151';
-    const categoryColors: Record<string, string> = {
-      project: '#a1a1aa', direct_contact: '#4ade80', resume: '#fbbf24',
-      navigation: '#71717a', contact: '#e4e4e7',
-    };
-    const rows = this.ctaPerformance.slice(0, 12);
-    const labels = rows.map(r => r.label.length > 22 ? r.label.slice(0, 20) + '…' : r.label);
-    const colors = rows.map(r => categoryColors[r.category] ?? '#a1a1aa');
-
-    const ctaDatalabels = {
-      id: 'ctaBarDatalabels',
-      afterDatasetsDraw(chart: any) {
-        const ctx2 = chart.ctx as CanvasRenderingContext2D;
-        const dark = !document.documentElement.classList.contains('light');
-        const labelPrimary   = dark ? '#e5e7eb' : '#1f2937';
-        const labelSecondary = dark ? '#6b7280' : '#6b7280';
-        chart.data.datasets.forEach((_: any, di: number) => {
-          const meta = chart.getDatasetMeta(di);
-          meta.data.forEach((bar: any, j: number) => {
-            const val = chart.data.datasets[di].data[j] as number;
-            if (val <= 0) return;
-            const clicks = rows[j]?.clicks ?? '';
-            ctx2.save();
-            ctx2.fillStyle = labelPrimary;
-            ctx2.font = 'bold 12px Inter, ui-sans-serif, sans-serif';
-            ctx2.textAlign = 'left';
-            ctx2.textBaseline = 'middle';
-            const x = Math.min(bar.x + 6, chart.chartArea.right - 58);
-            ctx2.fillText(`${val}%`, x, bar.y);
-            ctx2.fillStyle = labelSecondary;
-            ctx2.font = '11px Inter, ui-sans-serif, sans-serif';
-            ctx2.fillText(`${clicks}×`, x + 34, bar.y);
-            ctx2.restore();
-          });
-        });
-      },
-    };
-
-    this.ctaChartInstance = new Chart(el, {
-      type: 'bar',
-      data: {
-        labels,
-        datasets: [{
-          label: 'CTR %',
-          data: rows.map(r => r.ctr),
-          backgroundColor: colors.map(c => c + '33'),
-          borderColor: colors,
-          borderWidth: 1.5,
-          borderRadius: 4,
-          borderSkipped: false,
-        }],
-      },
-      options: {
-        indexAxis: 'y',
-        responsive: true,
-        maintainAspectRatio: false,
-        layout: { padding: { right: 16 } },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: ctx => ` ${ctx.parsed.x}% CTR · ${rows[ctx.dataIndex].clicks} cliques`,
-            },
-          },
-        },
-        scales: {
-          x: {
-            beginAtZero: true, max: 100,
-            grid: { color: gridColor },
-            ticks: { color: tickColor, font: { size: 13 }, callback: v => v + '%' },
-          },
-          y: {
-            grid: { color: 'transparent' },
-            ticks: { color: tickColor, font: { size: 13 } },
-          },
-        },
-      },
-      plugins: [ctaDatalabels],
-    });
-  }
-
-  private initSectionChart(): void {
-    const el = this.sectionChartCanvas?.nativeElement;
-    if (!el || !this.sectionReachRows.length) return;
-    this.sectionChartInstance?.destroy();
-
-    const isDark = !document.documentElement.classList.contains('light');
-    const gridColor = isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.08)';
-    const tickColor = isDark ? '#9ca3af' : '#374151';
-    const accent = this.accentColor;
-    const rows = this.sectionReachRows;
-
-    const sectionDatalabels = {
-      id: 'sectionBarDatalabels',
-      afterDatasetsDraw(chart: any) {
-        const ctx2 = chart.ctx as CanvasRenderingContext2D;
-        const dark = !document.documentElement.classList.contains('light');
-        const labelPrimary   = dark ? '#e5e7eb' : '#1f2937';
-        const labelSecondary = dark ? '#6b7280' : '#6b7280';
-        chart.data.datasets.forEach((_: any, di: number) => {
-          const meta = chart.getDatasetMeta(di);
-          meta.data.forEach((bar: any, j: number) => {
-            const val = chart.data.datasets[di].data[j] as number;
-            if (val <= 0) return;
-            const sessions = rows[j]?.sessions ?? '';
-            ctx2.save();
-            ctx2.fillStyle = labelPrimary;
-            ctx2.font = 'bold 12px Inter, ui-sans-serif, sans-serif';
-            ctx2.textAlign = 'left';
-            ctx2.textBaseline = 'middle';
-            const x = Math.min(bar.x + 6, chart.chartArea.right - 68);
-            ctx2.fillText(`${val}%`, x, bar.y);
-            ctx2.fillStyle = labelSecondary;
-            ctx2.font = '11px Inter, ui-sans-serif, sans-serif';
-            ctx2.fillText(`${sessions} sess.`, x + 34, bar.y);
-            ctx2.restore();
-          });
-        });
-      },
-    };
-
-    this.sectionChartInstance = new Chart(el, {
-      type: 'bar',
-      data: {
-        labels: rows.map(r => r.label),
-        datasets: [{
-          label: 'Alcance %',
-          data: rows.map(r => r.reachRate),
-          backgroundColor: accent + '33',
-          borderColor: accent,
-          borderWidth: 1.5,
-          borderRadius: 4,
-          borderSkipped: false,
-        }],
-      },
-      options: {
-        indexAxis: 'y',
-        responsive: true,
-        maintainAspectRatio: false,
-        layout: { padding: { right: 16 } },
-        plugins: {
-          legend: { display: false },
-          tooltip: {
-            callbacks: {
-              label: ctx => ` ${ctx.parsed.x}% · ${rows[ctx.dataIndex].sessions} sessões`,
-            },
-          },
-        },
-        scales: {
-          x: {
-            beginAtZero: true, max: 100,
-            grid: { color: gridColor },
-            ticks: { color: tickColor, font: { size: 13 }, callback: v => v + '%' },
-          },
-          y: {
-            grid: { color: 'transparent' },
-            ticks: { color: tickColor, font: { size: 13 } },
-          },
-        },
-      },
-      plugins: [sectionDatalabels],
-    });
-  }
-
-  private hasCoordinates(visitor?: VisitorRecord): visitor is VisitorRecord & { lat: number; lng: number } {
-    return visitor?.lat != null && visitor.lng != null;
-  }
-
-  private resolveRowMapVisitor(row: AccessTableRow): VisitorRecord | undefined {
-    if (this.hasCoordinates(row.visitor)) {
-      return row.visitor;
-    }
-
-    let latestVisitor: VisitorRecord | undefined;
-    for (const visitorId of row.visitorIds) {
-      const candidate = this.visitorMap.get(visitorId);
-      if (!this.hasCoordinates(candidate)) continue;
-      if (!latestVisitor || new Date(candidate.lastSeen).getTime() > new Date(latestVisitor.lastSeen).getTime()) {
-        latestVisitor = candidate;
-      }
-    }
-
-    return latestVisitor;
-  }
-
-  private focusVisitorOnMap(visitor: VisitorRecord & { lat: number; lng: number }, animate: boolean): void {
-    if (!this.leafletMap) return;
-
-    this.updateMarkerSelection(visitor.id ?? null);
-
-    const target: L.LatLngExpression = [visitor.lat, visitor.lng];
-    if (animate) {
-      this.leafletMap.flyTo(target, 7, { animate: true, duration: 0.8 });
-    } else {
-      this.leafletMap.setView(target, 7, { animate: false });
-    }
-
-    if (visitor.id) {
-      this.mapMarkers.get(visitor.id)?.openPopup();
-    }
-  }
-
-  private buildMapMarkerStyle(visitor: VisitorRecord, isSelected: boolean): L.CircleMarkerOptions {
-    const defaultColor = '#a1a1aa';
-    const selectedColor = '#4ade80';
-    const color = isSelected ? selectedColor : defaultColor;
-
-    return {
-      radius: this.mapMarkerRadius(visitor) + (isSelected ? 4 : 0),
-      color,
-      fillColor: color,
-      fillOpacity: isSelected ? 0.95 : 0.75,
-      weight: isSelected ? 3 : 1.5,
-    };
-  }
-
-  private mapMarkerRadius(visitor: VisitorRecord): number {
-    return visitor.visitCount > 5 ? 10 : visitor.visitCount > 2 ? 7 : 5;
-  }
-
-  private updateMarkerSelection(selectedVisitorId: string | null): void {
-    for (const visitor of this.visitors) {
-      if (!visitor.id) continue;
-      const marker = this.mapMarkers.get(visitor.id);
-      if (!marker) continue;
-
-      const isSelected = visitor.id === selectedVisitorId;
-      marker.setStyle(this.buildMapMarkerStyle(visitor, isSelected));
-      if (!isSelected) {
-        marker.closePopup();
-      }
-    }
-  }
-
-  private syncSelectedMapTarget(): void {
-    if (!this.selectedVisitorId) {
-      if (this.selectedAccessRowKey && !this.accessRows.some(row => row.key === this.selectedAccessRowKey)) {
-        this.selectedAccessRowKey = null;
-      }
-      return;
-    }
-
-    const selectedVisitor = this.visitorMap.get(this.selectedVisitorId);
-    if (!this.hasCoordinates(selectedVisitor)) {
-      this.selectedVisitorId = null;
-      this.selectedAccessRowKey = null;
-      this.updateMarkerSelection(null);
-      return;
-    }
-
-    const matchingRow = this.accessRows.find(row => this.resolveRowMapVisitor(row)?.id === this.selectedVisitorId);
-    this.selectedAccessRowKey = matchingRow?.key ?? null;
-  }
-
-  private buildMapMarkerContent(visitor: VisitorRecord): string {
-    const location = [visitor.city, visitor.region, visitor.country].filter(Boolean).join(', ') || 'Local não identificado';
-    const lastAccess = this.formatMapAccessTime(visitor.lastSeen);
-    const visitLabel = `${visitor.visitCount} ${visitor.visitCount === 1 ? 'visita' : 'visitas'}`;
-    const networkSummary = this.networkSummary(visitor);
-    const networkKind = this.hasNetworkInfo(visitor) ? this.networkKindLabel(visitor) : '';
-
-    return [
-      '<div style="min-width: 220px; line-height: 1.45;">',
-      `  <div style="font-weight: 700; margin-bottom: 4px;">${this.escapeHtml(location)}</div>`,
-      `  <div><strong>IP:</strong> ${this.escapeHtml(visitor.ip || 'indisponível')}</div>`,
-      networkSummary ? `  <div><strong>Rede:</strong> ${this.escapeHtml(networkSummary)}</div>` : '',
-      networkKind ? `  <div><strong>Tipo:</strong> ${this.escapeHtml(networkKind)}</div>` : '',
-      `  <div><strong>Último acesso:</strong> ${this.escapeHtml(lastAccess)}</div>`,
-      `  <div><strong>Visitas:</strong> ${this.escapeHtml(visitLabel)}</div>`,
-      '</div>',
-    ].filter(Boolean).join('');
-  }
-
-  private formatMapAccessTime(value: Date | string | undefined): string {
-    const date = value ? new Date(value) : undefined;
-    if (!date || Number.isNaN(date.getTime())) return 'indisponível';
-
-    return new Intl.DateTimeFormat('pt-BR', {
-      dateStyle: 'short',
-      timeStyle: 'short',
-    }).format(date);
-  }
-
-  private escapeHtml(value: string): string {
-    return value
-      .replaceAll('&', '&amp;')
-      .replaceAll('<', '&lt;')
-      .replaceAll('>', '&gt;')
-      .replaceAll('"', '&quot;')
-      .replaceAll("'", '&#39;');
   }
 
   /** Escala monocromática: quanto mais acessos, mais claro o bloco. */
@@ -3271,8 +2065,8 @@ Resposta em português brasileiro, tom direto e profissional.`;
     // ── Dispositivos / Donut ───────────────────────────────────────────────
     let mobile = 0, tablet = 0, desktop = 0;
     for (const v of this.visitors) {
-      if (this.isTablet(v.userAgent)) tablet++;
-      else if (this.isMobile(v.userAgent)) mobile++;
+      if (isTablet(v.userAgent)) tablet++;
+      else if (isMobile(v.userAgent)) mobile++;
       else desktop++;
     }
     const total = this.visitors.length || 1;
