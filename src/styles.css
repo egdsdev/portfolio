@@ -92,6 +92,15 @@ a[role="button"]:not(:disabled) { cursor: pointer; }
   color: var(--fg-faint);
 }
 
+/* Container único do site: até 88rem de conteúdo, gutter fluido (24px → 64px). */
+.wrap {
+  --gutter: clamp(1.5rem, 4vw, 4rem);
+  width: 100%;
+  max-width: calc(88rem + 2 * var(--gutter));
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
 /* ============================================================
    SUPERFÍCIES
    ============================================================ */

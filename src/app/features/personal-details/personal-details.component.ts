@@ -1,16 +1,19 @@
 import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { faGithub, faLinkedinIn, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
+import { faEnvelope } from '@fortawesome/free-regular-svg-icons';
 import { TechMarqueeComponent } from '../../shared/components/tech-marquee/tech-marquee.component';
 import { AnalyticsService } from '../../core/services/analytics.service';
 
 @Component({
   selector: 'app-personal-details',
   standalone: true,
-  imports: [TechMarqueeComponent],
+  imports: [TechMarqueeComponent, FontAwesomeModule],
   schemas: [CUSTOM_ELEMENTS_SCHEMA],
   styleUrls: ['./personal-details.scss'],
   template: `
     <section id="detalhes" class="min-h-screen flex flex-col justify-center relative">
-      <div class="relative z-10 w-full max-w-6xl mx-auto px-6 sm:px-8 pt-28 sm:pt-32 pb-12 sm:pb-16 flex-1 flex flex-col justify-center">
+      <div class="relative z-10 wrap pt-28 sm:pt-32 pb-12 sm:pb-16 flex-1 flex flex-col justify-center">
         <!-- Status -->
         <div class="inline-flex items-center gap-2.5 mb-7 sm:mb-10 eyebrow">
           <span class="relative flex h-1.5 w-1.5">
@@ -22,14 +25,28 @@ import { AnalyticsService } from '../../core/services/analytics.service';
 
         <!-- Retrato grande à esquerda; nome e cargo ocupam o resto da linha -->
         <div class="hero-row mb-4">
-          <div class="hero-photo rounded-2xl overflow-hidden border border-zinc-800">
-            <img src="profile.jpg" alt="Elias Gomes da Silva" class="w-full h-full object-cover">
+          <div class="hero-aside">
+            <div class="hero-photo rounded-2xl overflow-hidden border border-zinc-800">
+              <img src="profile.jpg" alt="Elias Gomes da Silva" class="w-full h-full object-cover">
+            </div>
+            <ul class="flex items-center justify-center gap-1" aria-label="Redes e contato">
+              @for (s of socials; track s.label) {
+                <li>
+                  <a [href]="s.href" [attr.target]="s.href.startsWith('http') ? '_blank' : null" rel="noopener noreferrer" class="social-link"
+                     [attr.aria-label]="s.label" [title]="s.label">
+                    <fa-icon [icon]="s.icon"></fa-icon>
+                  </a>
+                </li>
+              }
+            </ul>
           </div>
 
           <div class="hero-info">
             <h1 class="display text-zinc-50 mb-4 sm:mb-5 hero-name">
               Elias Gomes da Silva
             </h1>
+
+            <p class="hero-degree mb-3">Engenheiro de Computação&nbsp;· <span class="whitespace-nowrap">Pós-Graduado</span></p>
 
             <!-- min-h evita o layout "pular" enquanto o typewriter troca de frase -->
             <p class="text-lg sm:text-xl md:text-2xl text-zinc-400 font-normal leading-snug
@@ -38,9 +55,9 @@ import { AnalyticsService } from '../../core/services/analytics.service';
             </p>
 
             <div class="eyebrow leading-relaxed mt-5">
-              <span class="text-zinc-300">7+ anos de experiência</span>
+              <span class="text-zinc-300 whitespace-nowrap">7+ anos de experiência</span>
               <span class="text-zinc-700 mx-2">·</span>
-              <span class="text-zinc-500">Goiânia, GO</span>
+              <span class="text-zinc-500 whitespace-nowrap">Goiânia, GO</span>
             </div>
 
             <div class="flex flex-wrap items-center gap-3 mt-8">
@@ -72,8 +89,14 @@ import { AnalyticsService } from '../../core/services/analytics.service';
 export class PersonalDetailsComponent implements OnInit, OnDestroy {
   private analytics = inject(AnalyticsService);
 
+  readonly socials = [
+    { label: 'GitHub', href: 'https://github.com/egdsdev', icon: faGithub },
+    { label: 'LinkedIn', href: 'https://www.linkedin.com/in/egdsdev/', icon: faLinkedinIn },
+    { label: 'WhatsApp', href: 'https://wa.me/5564981476096', icon: faWhatsapp },
+    { label: 'Email', href: 'mailto:egds.dev@gmail.com', icon: faEnvelope },
+  ];
+
   readonly titles = [
-    'Engenheiro de Computação',
     'Desenvolvedor Full Stack Sênior',
     'Arquitetura, infraestrutura e banco de dados',
     'Supervisor de Backend · PHP, Laravel, Python',

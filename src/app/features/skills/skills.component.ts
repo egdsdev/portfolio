@@ -14,8 +14,8 @@ interface SkillGroup {
   selector: 'app-skills',
   standalone: true,
   template: `
-    <section id="habilidades" class="py-20 sm:py-28 px-6 sm:px-8 border-b border-zinc-900">
-      <div class="max-w-6xl mx-auto">
+    <section id="habilidades" class="py-20 sm:py-28 border-b border-zinc-900">
+      <div class="wrap">
         <div class="mb-12 sm:mb-20 max-w-4xl">
           <div class="eyebrow mb-5">02 — Stack</div>
           <h2 class="section-title mb-6">O que eu uso<br>no dia a dia</h2>
@@ -24,7 +24,7 @@ interface SkillGroup {
           </p>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-x-16">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-16">
           @for (group of groups; track group.title) {
             <div class="py-8 border-t border-zinc-900">
               <h3 class="text-zinc-100 font-medium mb-5 text-[0.9375rem]">{{ group.title }}</h3>

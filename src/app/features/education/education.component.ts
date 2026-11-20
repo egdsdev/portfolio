@@ -4,8 +4,8 @@ import { Component } from '@angular/core';
   selector: 'app-education',
   standalone: true,
   template: `
-    <section id="escolaridade" class="py-20 sm:py-28 px-6 sm:px-8 border-b border-zinc-900">
-      <div class="max-w-6xl mx-auto">
+    <section id="escolaridade" class="py-20 sm:py-28 border-b border-zinc-900">
+      <div class="wrap">
         <div class="mb-12 sm:mb-20 max-w-4xl">
           <div class="eyebrow mb-5">03 — Formação</div>
           <h2 class="section-title">Formação<br>acadêmica</h2>

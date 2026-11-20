@@ -116,3 +116,22 @@ details[open] > .experience-summary { margin-bottom: 1rem; }
   gap: 0.4rem;
   margin-top: 1.5rem;
 }
+
+/* Telas largas: stack vira coluna à direita em vez de deixar o lado vazio. */
+@media (min-width: 1280px) {
+  .exp-row { grid-template-columns: 12rem 1fr; gap: 4rem; }
+  .exp-body {
+    display: grid;
+    grid-template-columns: minmax(0, 68ch) minmax(14rem, 1fr);
+    column-gap: 4rem;
+    align-content: start;
+  }
+  .exp-body > * { grid-column: 1; }
+  .exp-body > .exp-stack {
+    grid-column: 2;
+    grid-row: 1 / span 6;
+    align-self: start;
+    align-content: flex-start;
+    margin-top: 0.35rem;
+  }
+}

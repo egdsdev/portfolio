@@ -16,9 +16,9 @@ import { AnalyticsService } from '../../core/services/analytics.service';
 
     <!-- Header Desktop: oculto no mobile -->
     <nav class="nav-desktop fixed top-0 left-0 right-0 bg-zinc-950/80 backdrop-blur-xl z-50 border-b border-zinc-900">
-      <div class="max-w-6xl mx-auto px-6 sm:px-8 py-4 flex items-center justify-between">
+      <div class="wrap h-14 flex items-center justify-between">
         <a href="#detalhes" class="text-zinc-100 font-medium text-sm tracking-tight hover:text-white transition-colors">Elias Gomes</a>
-        <ul class="flex items-center space-x-7">
+        <ul class="nav-links items-center gap-7">
           <li><a href="#experiencia" class="nav-link text-sm">Experiência</a></li>
           <li><a href="#habilidades" class="nav-link text-sm">Skills</a></li>
           <li><a href="#escolaridade" class="nav-link text-sm">Formação</a></li>
@@ -41,9 +41,9 @@ import { AnalyticsService } from '../../core/services/analytics.service';
 
     <!-- Botão Hambúrguer: visível somente no mobile -->
     <button
-      class="nav-burger fixed top-4 right-4 z-70 items-center justify-center w-10 h-10 rounded-lg bg-zinc-900/90 backdrop-blur-md border border-zinc-800 text-zinc-300 transition-colors hover:text-white"
+      class="nav-burger fixed top-2 right-4 sm:right-6 z-70 items-center justify-center w-10 h-10 rounded-lg border border-zinc-800 text-zinc-300 transition-colors hover:text-white"
       (click)="toggleMenu()"
-      aria-label="Abrir menu">
+      [attr.aria-label]="isOpen() ? 'Fechar menu' : 'Abrir menu'" [attr.aria-expanded]="isOpen()">
       @if (isOpen()) {
         <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/>
@@ -92,11 +92,11 @@ import { AnalyticsService } from '../../core/services/analytics.service';
   `,
   styles: [`
     /* Visibilidade responsiva do menu — media query própria, à prova de falha do pipeline Tailwind */
-    .nav-desktop { display: none; }
+    .nav-links { display: none; }
     .nav-burger { display: none; }
 
     @media (min-width: 768px) {
-      .nav-desktop { display: block; }
+      .nav-links { display: flex; }
       .nav-burger,
       .nav-mobile-only,
       .nav-drawer { display: none !important; }

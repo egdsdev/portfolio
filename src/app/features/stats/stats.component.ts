@@ -13,7 +13,7 @@ interface Stat {
   standalone: true,
   template: `
     <div class="border-b border-zinc-900">
-      <div #trigger class="max-w-6xl mx-auto px-6 sm:px-8 py-14 sm:py-20 grid grid-cols-1 md:grid-cols-3">
+      <div #trigger class="wrap py-14 sm:py-20 grid grid-cols-1 md:grid-cols-3">
         @for (stat of stats; track stat.label) {
           <div class="stat-cell stat-fade" [class.stat-visible]="started">
             <div class="flex items-baseline gap-1.5">
