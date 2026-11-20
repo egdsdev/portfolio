@@ -1575,7 +1575,7 @@ Resposta em português brasileiro, tom direto e profissional.`;
 
     const start = new Date(this.chartDateStart + 'T00:00:00');
     const end   = new Date(this.chartDateEnd   + 'T23:59:59');
-    const totalDays = Math.round((end.getTime() - start.getTime()) / 86_400_000) + 1;
+    const totalDays = Math.floor((end.getTime() - start.getTime()) / 86_400_000) + 1;
 
     const days = Array.from({ length: totalDays }, (_, i) => {
       const d = new Date(start);
