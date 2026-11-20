@@ -4,6 +4,10 @@ const fs = require('fs');
 
 // Primeiro navegador Chromium disponível na máquina.
 const CANDIDATES = [
+  process.env.CHROME_PATH,
+  '/usr/bin/chromium-browser',
+  '/usr/bin/chromium',
+  '/usr/bin/google-chrome',
   'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
   'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
   'C:\\Program Files (x86)\\Microsoft\\Edge\\Application\\msedge.exe',
@@ -11,14 +15,14 @@ const CANDIDATES = [
 ];
 
 (async () => {
-  const executablePath = CANDIDATES.find(p => fs.existsSync(p));
+  const executablePath = CANDIDATES.find(p => p && fs.existsSync(p));
   if (!executablePath) {
-    console.error('Nenhum Chrome/Edge encontrado. Caminhos testados:\n' + CANDIDATES.join('\n'));
+    console.error('Nenhum Chrome/Edge encontrado. Caminhos testados:\n' + CANDIDATES.filter(Boolean).join('\n'));
     process.exit(1);
   }
 
   const htmlFile = path.resolve(__dirname, 'resume.html');
-  const outputPdf = path.resolve(__dirname, '..', 'public', 'curriculo-elias-gomes.pdf');
+  const outputPdf = process.env.RESUME_OUT || path.resolve(__dirname, '..', 'public', 'curriculo-elias-gomes.pdf');
   const html = fs.readFileSync(htmlFile, 'utf-8');
 
   console.log(`Gerando PDF via ${path.basename(executablePath)}...`);

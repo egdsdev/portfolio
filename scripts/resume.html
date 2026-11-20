@@ -2,7 +2,9 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<title>Elias Gomes da Silva — Currículo</title>
+<title>Elias Gomes da Silva - Currículo - Desenvolvedor Full Stack Sênior</title>
+<meta name="author" content="Elias Gomes da Silva">
+<meta name="keywords" content="Desenvolvedor Full Stack Sênior, Backend, PHP, Laravel, Python, Vue.js, PostgreSQL, SQL Server, AWS, Docker, CI/CD, Power BI, Engenharia de Computação">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -32,6 +34,7 @@
     color: var(--body);
     background: #fff;
     -webkit-font-smoothing: antialiased;
+    font-variant-ligatures: none;
   }
 
   /* ---------- Cabeçalho ---------- */
@@ -51,6 +54,7 @@
     color: var(--accent);
     margin-top: 2px;
   }
+  .degree { font-size: 9.2pt; font-weight: 500; color: var(--body); margin-top: 1px; }
 
   .contact {
     margin-top: 7px;
@@ -58,9 +62,10 @@
     color: var(--muted);
     display: flex;
     flex-wrap: wrap;
-    gap: 4px 12px;
+    gap: 2px 6px;
   }
   .contact a { color: var(--muted); text-decoration: none; }
+  .contact .sep { color: #d4d4d8; }
   .contact strong { color: var(--body); font-weight: 500; }
 
   /* ---------- Resumo ---------- */
@@ -83,7 +88,7 @@
     margin-bottom: 7px;
     border-bottom: 1px solid var(--line);
   }
-  section { margin-bottom: 11px; }
+  section { margin-bottom: 10px; }
 
   /* ---------- Experiência ---------- */
   .job { margin-bottom: 9px; }
@@ -110,46 +115,34 @@
     margin: 1px 0 4px;
   }
 
+  /* "•" como texto (::before com content) aparece na extração do PDF e o ATS separa cada conquista;
+     marcador nativo e círculo desenhado não aparecem. */
   ul { list-style: none; }
 
   li {
     position: relative;
     padding-left: 11px;
-    margin-bottom: 2px;
+    margin-bottom: 1.5px;
     font-size: 8.9pt;
-    line-height: 1.4;
+    line-height: 1.38;
   }
-  li::before {
-    content: '';
-    position: absolute;
-    left: 0;
-    top: 0.52em;
-    width: 4px;
-    height: 4px;
-    border-radius: 50%;
-    background: #a1a1aa;
-  }
+  li::before { content: '• '; position: absolute; left: 0; color: #a1a1aa; }
   li strong { color: var(--ink); font-weight: 600; }
 
   .stack-line {
     font-size: 8.3pt;
     color: var(--muted);
     margin-top: 4px;
-    padding-left: 11px;
+    padding-left: 12px;
   }
   .stack-line span { color: var(--body); }
 
   /* ---------- Skills ---------- */
-  .skills { display: grid; grid-template-columns: 1fr 1fr; gap: 3px 22px; }
+  .skills { display: grid; grid-template-columns: 1fr; gap: 1px; }
 
-  .skill-row { font-size: 8.8pt; display: flex; gap: 6px; line-height: 1.5; }
+  .skill-row { font-size: 8.8pt; line-height: 1.5; }
 
-  .skill-cat {
-    font-weight: 600;
-    color: var(--ink);
-    min-width: 92px;
-    flex-shrink: 0;
-  }
+  .skill-cat { font-weight: 600; color: var(--ink); }
 
   /* ---------- Formação ---------- */
   .edu-item { margin-bottom: 5px; }
@@ -165,23 +158,29 @@
 <header>
   <div class="name">Elias Gomes da Silva</div>
   <div class="headline">Desenvolvedor Full Stack Sênior · Supervisor de Backend</div>
+  <div class="degree">Engenheiro de Computação · Pós-graduado em Qualidade, Teste e Desenvolvimento de Software</div>
   <div class="contact">
-    <span><strong>egds.dev@gmail.com</strong></span>
-    <span>+55 64 98147-6096</span>
-    <span>Goiânia, GO · Presencial ou remoto</span>
-    <span>linkedin.com/in/egdsdev</span>
-    <span>github.com/egdsdev</span>
+    <span><strong>egds.dev@gmail.com</strong></span><span class="sep">|</span>
+    <span>+55 64 98147-6096</span><span class="sep">|</span>
+    <span>Goiânia, GO · Presencial, híbrido ou remoto</span><span class="sep">|</span>
+    <a href="https://www.linkedin.com/in/egdsdev">https://www.linkedin.com/in/egdsdev</a><span class="sep">|</span>
+    <a href="https://github.com/egdsdev">https://github.com/egdsdev</a><span class="sep">|</span>
+    <a href="https://egdsdev.github.io/portfolio/">Portfólio: https://egdsdev.github.io/portfolio/</a>
   </div>
 </header>
 
-<p class="summary">
-  Engenheiro de computação e <strong>desenvolvedor full stack sênior</strong>, com 7+ anos construindo
-  sistemas que rodam em produção — do banco de dados e da infraestrutura à interface. Hoje
-  <strong>superviso a equipe de backend</strong> de uma plataforma distribuída de ~12 serviços no setor
-  automotivo, onde projetei o Data Warehouse e defini o processo de release adotado por todos os projetos.
-  Forte em <strong>PHP/Laravel, Python, arquitetura e bancos relacionais</strong>, com foco em performance,
-  processamento assíncrono com filas e integrações entre sistemas.
-</p>
+<section>
+  <h2>Resumo Profissional</h2>
+  <p class="summary">
+    <strong>Desenvolvedor Full Stack Sênior</strong> e engenheiro de computação com <strong>7+ anos</strong> construindo
+    sistemas em produção, do banco de dados e da infraestrutura à interface. Atualmente <strong>supervisiono a equipe de
+    backend</strong> de uma plataforma distribuída de ~12 serviços no setor automotivo (ERP, BI e integrações), onde projetei
+    o <strong>Data Warehouse</strong> e defini o processo de release adotado por todos os projetos. Especialista em
+    <strong>PHP/Laravel, Python e bancos relacionais (PostgreSQL, SQL Server, MySQL)</strong>, com experiência em
+    Vue.js/React, AWS (SQS, S3), Docker, CI/CD, mensageria e Power BI. Foco em performance, processamento assíncrono,
+    integrações entre sistemas, code review e liderança técnica.
+  </p>
+</section>
 
 <section>
   <h2>Experiência Profissional</h2>
@@ -192,18 +191,18 @@
         <div class="job-role">Desenvolvedor Full Stack Sênior · Supervisor de Backend</div>
         <div class="job-co">Dadus Fábrica de Software</div>
       </div>
-      <div class="job-meta">2026 — Atual · Goiânia, GO</div>
+      <div class="job-meta">2026 – Atual · Presencial · Goiânia, GO</div>
     </div>
-    <div class="job-ctx">Software house do setor automotivo — ERP, BI e integrações para distribuidores e varejo de autopeças</div>
+    <div class="job-ctx">Software house do setor automotivo: ERP, BI e integrações para distribuidores e varejo de autopeças</div>
     <ul>
-      <li>Superviso a equipe de backend do ERP de autopeças e dos serviços ao redor: <strong>SSO, Data Warehouse, motor de relatórios e SDK de autenticação</strong> compartilhado (~12 serviços)</li>
-      <li>Projetei o <strong>Data Warehouse do zero</strong> — modelo estrela em PostgreSQL com ETL em Python, carga incremental por watermark e consultas de BI servidas via fila SQS com cache em Redis</li>
-      <li>Defini o <strong>processo de release</strong> usado por todos os projetos: GitFlow com Release Candidate, versionamento semanal e automação de merge requests</li>
-      <li>Construí o serviço de <strong>relatórios assíncrono</strong>: a API publica na fila SQS, worker Python gera PDF/CSV no S3 e devolve por Redis, sem prender a requisição do usuário</li>
-      <li>Autenticação centralizada com SSO em Laravel e <strong>SDK PHP próprio</strong> (JWT/JWKS, PSR-15) consumido pelos demais serviços</li>
-      <li>Conduzo code review e integração das entregas do time, além de manter a documentação de APIs em OpenAPI</li>
+      <li>Supervisiono a equipe de backend do ERP de autopeças e dos serviços ao redor (<strong>~12 serviços</strong>): SSO, Data Warehouse, motor de relatórios e SDK de autenticação compartilhado</li>
+      <li>Projetei o <strong>Data Warehouse do zero</strong>: modelo estrela em PostgreSQL, ETL em Python com carga incremental por watermark e consultas de BI servidas via fila AWS SQS com cache em Redis</li>
+      <li>Defini o <strong>processo de release</strong> adotado por todos os projetos: GitFlow com Release Candidate, versionamento semanal e automação de merge requests no GitLab CI</li>
+      <li>Construí o <strong>serviço de relatórios assíncrono</strong>: a API publica na fila SQS, um worker Python gera PDF/CSV no S3 e devolve o resultado via Redis, sem bloquear a requisição do usuário</li>
+      <li>Implementei a <strong>autenticação centralizada (SSO)</strong> em Laravel e um SDK PHP próprio (JWT/JWKS, PSR-15) consumido pelos demais serviços</li>
+      <li>Conduzo <strong>code review</strong> e a integração das entregas do time, e mantenho a documentação das APIs em OpenAPI</li>
     </ul>
-    <div class="stack-line">Stack: <span>PHP, Laravel, Python, Vue.js, PostgreSQL, Redis, AWS (SQS, S3), Docker, GitLab CI</span></div>
+    <div class="stack-line">Tecnologias: <span>PHP, Laravel, Python, Vue.js, PostgreSQL, Redis, AWS SQS, AWS S3, Docker, GitLab CI, OpenAPI</span></div>
   </div>
 
   <div class="job">
@@ -212,17 +211,16 @@
         <div class="job-role">Desenvolvedor Full Stack</div>
         <div class="job-co">ByToken</div>
       </div>
-      <div class="job-meta">2026 · Goiânia, GO</div>
+      <div class="job-meta">2026 · Presencial · Goiânia, GO</div>
     </div>
     <div class="job-ctx">SaaS de governança de certificados digitais ICP-Brasil para escritórios contábeis</div>
     <ul>
-      <li>Plataforma <strong>SaaS multi-tenant</strong> que centraliza o uso de certificados digitais: cada escritório controla quem acessa qual certificado, com trilha de auditoria e sem distribuir arquivo ou senha</li>
-      <li>Otimização de banco em ambiente multi-tenant com <strong>stored procedures, triggers, views e índices</strong>, sustentando consultas sobre bases isoladas por cliente</li>
-      <li>Processamento assíncrono com <strong>Laravel Queues e Redis</strong>; automação de alertas de vencimento com Laravel Scheduler</li>
-      <li>Monitoramento em tempo real via <strong>WebSocket</strong>; módulo de procurações e-CAC integrado à API da Receita Federal</li>
-      <li>Análise de risco automatizada com IA (OpenAI/Gemini), autenticação 2FA, OAuth multi-host e RBAC</li>
+      <li>Desenvolvi a <strong>plataforma SaaS multi-tenant</strong> que centraliza o uso de certificados digitais: cada escritório controla quem acessa qual certificado, com trilha de auditoria e sem distribuir arquivo ou senha</li>
+      <li>Otimizei o banco multi-tenant com <strong>stored procedures, triggers, views e índices</strong> para consultas sobre bases isoladas por cliente</li>
+      <li>Processamento assíncrono com <strong>Laravel Queues e Redis</strong>, rotinas com Laravel Scheduler, monitoramento em tempo real via <strong>WebSocket</strong> e integração com a API da Receita Federal (procurações e-CAC)</li>
+      <li>Análise de risco automatizada com <strong>IA (OpenAI e Gemini)</strong>, autenticação 2FA, OAuth multi-host, RBAC, notificações push (Firebase) e CI/CD com GitHub Actions</li>
     </ul>
-    <div class="stack-line">Stack: <span>PHP, Laravel, Vue.js, PostgreSQL, Redis, WebSocket, Firebase</span></div>
+    <div class="stack-line">Tecnologias: <span>PHP, Laravel, Vue.js, PostgreSQL, Redis, WebSocket, Firebase, GitHub Actions</span></div>
   </div>
 
   <div class="job">
@@ -231,15 +229,15 @@
         <div class="job-role">Desenvolvedor Backend / BI</div>
         <div class="job-co">EQ Seguros</div>
       </div>
-      <div class="job-meta">2025 · Goiânia, GO</div>
+      <div class="job-meta">2025 · Presencial · Goiânia, GO</div>
     </div>
     <div class="job-ctx">Seguradora de vida e previdência autorizada pela SUSEP, com distribuição digital via parceiros</div>
     <ul>
-      <li>Dashboards de <strong>Power BI</strong> sobre a operação de seguros — apólices, produção por canal e desempenho da rede de parceiros — usados pela área de negócio para decisão comercial</li>
-      <li><strong>Modelagem dimensional (star schema)</strong> e queries SQL complexas no SQL Server para sustentar relatórios sobre alto volume de vendas mensais</li>
+      <li>Criei dashboards de <strong>Power BI</strong> sobre a operação de seguros (apólices, produção por canal e desempenho da rede de parceiros) usados pela área de negócio na decisão comercial</li>
+      <li><strong>Modelagem dimensional (star schema)</strong> e queries SQL complexas no SQL Server para relatórios sobre alto volume de vendas mensais</li>
       <li>Medidas e colunas calculadas em <strong>DAX</strong> para métricas do setor: conversão, churn de apólices e comissionamento</li>
     </ul>
-    <div class="stack-line">Stack: <span>SQL Server, Power BI, DAX, modelagem dimensional</span></div>
+    <div class="stack-line">Tecnologias: <span>SQL Server, Power BI, DAX, modelagem dimensional, star schema</span></div>
   </div>
 
   <div class="job">
@@ -248,16 +246,16 @@
         <div class="job-role">Desenvolvedor Backend</div>
         <div class="job-co">Meeta Solutions</div>
       </div>
-      <div class="job-meta">2022 — 2025 · Remoto</div>
+      <div class="job-meta">2022 – 2025 · Remoto</div>
     </div>
     <div class="job-ctx">Fábrica de software de CX e inteligência de dados para operações de atendimento na América Latina</div>
     <ul>
       <li><strong>Otimização de queries lentas</strong> com análise de plano de execução, criação de índices e refatoração de procedures críticas em bases de alto volume</li>
-      <li><strong>Migração de servidores de banco</strong> de Windows Server para Linux, incluindo reescrita de procedures e ajuste de collation</li>
-      <li>Sistemas distribuídos com Python, <strong>Azure Functions</strong> (HTTP e Timer Triggers), React, React Native e MongoDB</li>
+      <li>Conduzi a <strong>migração de servidores de banco</strong> de Windows Server para Linux, com reescrita de procedures e ajuste de collation</li>
+      <li>Stored procedures, triggers e views para regras de negócio, com rotinas agendadas via <strong>SQL Server Agent e cron</strong>; sistemas distribuídos com Python, <strong>Azure Functions</strong> (HTTP e Timer Triggers), React, React Native e MongoDB</li>
       <li>APIs <strong>REST e SOAP</strong> com autenticação, versionamento e documentação; dashboards no Power BI com métricas em DAX</li>
     </ul>
-    <div class="stack-line">Stack: <span>PHP, Laravel, SQL Server, PostgreSQL, Python, Azure Functions, React Native, MongoDB</span></div>
+    <div class="stack-line">Tecnologias: <span>PHP, Laravel, SQL Server, PostgreSQL, Python, Azure Functions, React, React Native, MongoDB, Power BI</span></div>
   </div>
 
   <div class="job">
@@ -266,16 +264,16 @@
         <div class="job-role">Desenvolvedor Full Stack Pleno</div>
         <div class="job-co">Dadus Fábrica de Software</div>
       </div>
-      <div class="job-meta">2020 — 2023 · Remoto</div>
+      <div class="job-meta">2020 – 2023 · Remoto</div>
     </div>
-    <div class="job-ctx">Mesma empresa onde atuo hoje, em uma passagem anterior</div>
+    <div class="job-ctx">Passagem anterior pela mesma empresa, com foco em operação industrial e sistemas internos</div>
     <ul>
       <li><strong>Modernização de sistema legado</strong> de fábrica de calçados: migração para aplicação web full stack (PHP, Vue.js, Node.js) com remodelagem completa do banco</li>
-      <li>Pipelines <strong>ETL com Pentaho</strong> integrando grandes volumes entre SQL Server e MySQL</li>
+      <li>Pipelines <strong>ETL com Pentaho</strong> integrando grandes volumes de dados entre SQL Server e MySQL</li>
       <li>Dashboards corporativos no <strong>Power BI</strong> com KPIs de produção, vendas e estoque</li>
       <li>Sistema desktop cross-platform de autenticação e monitoramento de estações com <strong>Electron</strong></li>
     </ul>
-    <div class="stack-line">Stack: <span>Power BI, Pentaho ETL, SQL Server, MySQL, PHP, Vue.js, Electron</span></div>
+    <div class="stack-line">Tecnologias: <span>PHP, Vue.js, Node.js, SQL Server, MySQL, Pentaho ETL, Power BI, Electron</span></div>
   </div>
 
   <div class="job">
@@ -284,14 +282,14 @@
         <div class="job-role">Desenvolvedor Web Full Stack</div>
         <div class="job-co">SalesFarm</div>
       </div>
-      <div class="job-meta">2022 — 2023 · Remoto</div>
+      <div class="job-meta">2022 – 2023 · Remoto</div>
     </div>
-    <div class="job-ctx">Startup de Sales as a Service — conecta empresas a vendedores e SDRs terceirizados</div>
+    <div class="job-ctx">Startup de Sales as a Service: conecta empresas a vendedores e SDRs terceirizados</div>
     <ul>
-      <li>Refatoração de queries e stored procedures para <strong>reduzir o tempo de resposta</strong> dos relatórios de performance de vendas</li>
-      <li><strong>Mentoria e onboarding técnico</strong> de novos desenvolvedores, conduzindo code reviews e definindo padrões do time em fase de crescimento acelerado</li>
+      <li>Refatorei queries e stored procedures para <strong>reduzir o tempo de resposta</strong> dos relatórios de performance de vendas usados por gestores</li>
+      <li><strong>Mentoria e onboarding técnico</strong> de novos desenvolvedores, com code reviews, definição de padrões do time e planejamento de sprint (<strong>Scrum</strong>)</li>
     </ul>
-    <div class="stack-line">Stack: <span>PHP, Laravel, MySQL</span></div>
+    <div class="stack-line">Tecnologias: <span>PHP, Laravel, MySQL, Scrum</span></div>
   </div>
 
   <div class="job">
@@ -300,44 +298,47 @@
         <div class="job-role">Desenvolvedor Web Full Stack Pleno</div>
         <div class="job-co">VirtuaMax Comunicação</div>
       </div>
-      <div class="job-meta">2021 — 2022 · Remoto</div>
+      <div class="job-meta">2021 – 2022 · Remoto</div>
     </div>
     <div class="job-ctx">Agência de comunicação e desenvolvimento web, com produto próprio de atendimento</div>
     <ul>
       <li>Desenvolvimento full stack do <strong>Deskkio</strong>, produto de help desk: tickets, histórico de atendimento e painel do operador</li>
       <li>Integração de <strong>chatbot com Twilio</strong> para atendimento via WhatsApp e SMS, reduzindo o volume que chegava ao atendimento humano</li>
     </ul>
-    <div class="stack-line">Stack: <span>PHP, Laravel, Vue.js, MySQL, Twilio</span></div>
+    <div class="stack-line">Tecnologias: <span>PHP, Laravel, Vue.js, MySQL, Twilio, Jira</span></div>
   </div>
 </section>
 
 <section>
   <h2>Competências Técnicas</h2>
   <div class="skills">
-    <div class="skill-row"><span class="skill-cat">Backend</span><span>PHP, Laravel, Python, Node.js, REST, SOAP, WebSocket</span></div>
-    <div class="skill-row"><span class="skill-cat">Banco de dados</span><span>PostgreSQL, SQL Server, MySQL, MongoDB, procedures, índices</span></div>
-    <div class="skill-row"><span class="skill-cat">Arquitetura</span><span>Filas (SQS), Redis, multi-tenant, SSO/JWT, OpenAPI</span></div>
-    <div class="skill-row"><span class="skill-cat">BI &amp; Dados</span><span>Power BI, DAX, ETL, modelagem dimensional, star schema</span></div>
-    <div class="skill-row"><span class="skill-cat">Frontend</span><span>Vue.js, React, React Native, Angular, TypeScript</span></div>
-    <div class="skill-row"><span class="skill-cat">DevOps</span><span>Docker, GitLab CI, GitHub Actions, AWS, Azure, Linux</span></div>
-    <div class="skill-row"><span class="skill-cat">Liderança</span><span>Supervisão de equipe, code review, GitFlow, mentoria</span></div>
-    <div class="skill-row"><span class="skill-cat">Idiomas</span><span>Português (nativo), Inglês (técnico)</span></div>
+    <div class="skill-row"><span class="skill-cat">Linguagens:</span> <span>PHP (7 anos), JavaScript (7 anos), TypeScript (4 anos), Python (3 anos), SQL</span></div>
+    <div class="skill-row"><span class="skill-cat">Backend:</span> <span>Laravel (6 anos), Node.js (5 anos), APIs REST, SOAP, WebSocket, OpenAPI</span></div>
+    <div class="skill-row"><span class="skill-cat">Banco de dados:</span> <span>MySQL (5 anos), PostgreSQL (4 anos), SQL Server (4 anos), MongoDB, stored procedures, triggers, índices</span></div>
+    <div class="skill-row"><span class="skill-cat">Arquitetura:</span> <span>Mensageria (AWS SQS), Redis, multi-tenant, SSO, JWT, processamento assíncrono</span></div>
+    <div class="skill-row"><span class="skill-cat">Frontend:</span> <span>Vue.js (5 anos), React (3 anos), React Native, Angular, HTML5, CSS3, Tailwind CSS</span></div>
+    <div class="skill-row"><span class="skill-cat">BI e Dados:</span> <span>Power BI, DAX, ETL (Pentaho, Python), Data Warehouse, modelagem dimensional</span></div>
+    <div class="skill-row"><span class="skill-cat">DevOps e Cloud:</span> <span>Docker, Git, CI/CD, GitLab CI, GitHub Actions, AWS (S3, SQS), Azure Functions, Linux</span></div>
+    <div class="skill-row"><span class="skill-cat">Práticas:</span> <span>Supervisão de equipe, code review, mentoria, GitFlow, SOLID, Clean Code, Scrum, Kanban</span></div>
   </div>
 </section>
 
 <section>
   <h2>Formação Acadêmica</h2>
-  <div class="two-col">
+  <div>
     <div class="edu-item">
-      <div class="edu-deg">Pós-graduação · Qualidade, Teste e Desenvolvimento de Software</div>
-      <div class="edu-sub">UNIMAIS · 2020 – 2022</div>
+      <div class="edu-deg">Pós-graduação em Qualidade, Teste e Desenvolvimento de Software · <span class="edu-sub">UNIMAIS · 2020 – 2022</span></div>
     </div>
     <div class="edu-item">
-      <div class="edu-deg">Bacharelado em Engenharia da Computação</div>
-      <div class="edu-sub">PUC Goiás · 2015 – 2019</div>
-      <div class="edu-sub">TCC em Segurança da Informação (Redes IEEE 802.11) — certificado de mérito e apresentação oral no V Congresso de Ciência e Tecnologia da PUC Goiás · Diretor do Centro Acadêmico</div>
+      <div class="edu-deg">Bacharelado em Engenharia da Computação · <span class="edu-sub">PUC Goiás · 2015 – 2019</span></div>
+      <div class="edu-sub">TCC em Segurança da Informação (redes IEEE 802.11), com certificado de mérito e apresentação oral no V Congresso de Ciência e Tecnologia da PUC Goiás · Diretor do Centro Acadêmico</div>
     </div>
   </div>
+</section>
+
+<section>
+  <h2>Idiomas</h2>
+  <p class="skill-row"><span class="skill-cat">Português:</span> nativo · <span class="skill-cat">Inglês:</span> técnico (leitura de documentação e comunicação escrita)</p>
 </section>
 
 </body>
