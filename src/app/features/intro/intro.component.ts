@@ -71,6 +71,8 @@ interface Particle {
 
     .portrait {
       position: relative;
+      /* no toque, arrastar sobre o retrato mexe nos pontos em vez de rolar a página */
+      touch-action: none;
       height: min(84svh, calc(96vw * 586 / 640));
       aspect-ratio: 640 / 586;
     }
@@ -184,6 +186,24 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
   };
   private onPointerLeave = () => { this.mouse.active = false; };
 
+  // Toque no retrato: arrastar brinca com os pontos; deslizada rápida para cima revela.
+  private touchStart: { x: number; y: number; t: number } | null = null;
+  private onPortraitDown = (e: PointerEvent) => {
+    if (e.pointerType === 'mouse') return;
+    this.touchStart = { x: e.clientX, y: e.clientY, t: performance.now() };
+    this.onPointer(e);
+  };
+  private onPortraitUp = (e: PointerEvent) => {
+    if (e.pointerType === 'mouse' || !this.touchStart) return;
+    const dy = this.touchStart.y - e.clientY;
+    const dx = Math.abs(e.clientX - this.touchStart.x);
+    const dt = performance.now() - this.touchStart.t;
+    this.touchStart = null;
+    this.mouse.active = false;
+    // deslizada vertical rápida (> 300 px/s); arraste lento de brincadeira não revela
+    if (e.type === 'pointerup' && dy > 50 && dy > dx * 1.5 && dy / Math.max(dt, 1) > 0.3) this.reveal();
+  };
+
   ngAfterViewInit(): void {
     this.zone.runOutsideAngular(() => {
       this.ctx = this.canvasRef.nativeElement.getContext('2d')!;
@@ -202,6 +222,10 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
       addEventListener('resize', this.onResize);
       addEventListener('pointermove', this.onPointer, { passive: true });
       document.documentElement.addEventListener('pointerleave', this.onPointerLeave);
+      const portrait = this.portraitRef.nativeElement;
+      portrait.addEventListener('pointerdown', this.onPortraitDown);
+      portrait.addEventListener('pointerup', this.onPortraitUp);
+      portrait.addEventListener('pointercancel', this.onPortraitUp);
     });
   }
 
@@ -212,6 +236,10 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
     removeEventListener('resize', this.onResize);
     removeEventListener('pointermove', this.onPointer);
     document.documentElement.removeEventListener('pointerleave', this.onPointerLeave);
+    const portrait = this.portraitRef.nativeElement;
+    portrait.removeEventListener('pointerdown', this.onPortraitDown);
+    portrait.removeEventListener('pointerup', this.onPortraitUp);
+    portrait.removeEventListener('pointercancel', this.onPortraitUp);
     document.body.classList.remove('intro-active');
     document.documentElement.style.removeProperty('--hero-photo-o');
   }
