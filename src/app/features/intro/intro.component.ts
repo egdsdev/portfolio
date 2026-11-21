@@ -29,7 +29,7 @@ interface Particle {
       <div class="caption">
         <div class="who">
           <p class="who-name">Elias Gomes da Silva</p>
-          <p class="who-role">Desenvolvedor Full Stack Sênior <span>·</span> Engenheiro de Computação</p>
+          <p class="who-role"><span class="role-prefix">Desenvolvedor </span>Full Stack Sênior <span>·</span> Engenheiro de Computação</p>
         </div>
         <button class="reveal" type="button" (click)="reveal()"><i></i><span>Revelar</span></button>
       </div>
@@ -102,7 +102,7 @@ interface Particle {
     }
     .who-name { font-size: clamp(1.1rem, 2.4vw, 1.6rem); font-weight: 600; letter-spacing: -0.02em; color: var(--fg); }
     .who-role { margin-top: .25rem; font-size: .875rem; color: var(--fg-muted); }
-    .who-role span { color: #ff5a1f; }
+    .who-role span:not(.role-prefix) { color: #ff5a1f; }
 
     .reveal {
       display: inline-flex;
@@ -137,10 +137,16 @@ interface Particle {
     @media (max-width: 600px) {
       .intro { display: flex; flex-direction: column; justify-content: flex-end; }
       .portrait { height: auto; width: 100vw; margin-top: 30svh; }
-      .caption { position: relative; flex-direction: column; align-items: flex-start; padding-top: 0; }
+      .caption { position: relative; align-self: stretch; flex-direction: column; align-items: flex-start; padding-top: 0; }
       .word { top: 50svh; }
       .scroll-hint { left: 1rem; right: auto; }
       .reveal { display: none; }
+      /* "DEVELOPER" já está gigante atrás: no celular a linha cabe sem quebrar */
+      .role-prefix { display: none; }
+      .who-role { white-space: nowrap; }
+    }
+    @media (max-width: 359px) {
+      .who-role { font-size: .78rem; }
     }
   `],
 })
