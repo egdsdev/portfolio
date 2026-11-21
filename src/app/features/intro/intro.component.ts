@@ -138,6 +138,7 @@ interface Particle {
       .caption { position: relative; flex-direction: column; align-items: flex-start; padding-top: 0; }
       .word { top: 50svh; }
       .scroll-hint { left: 1rem; right: auto; }
+      .reveal { display: none; }
     }
   `],
 })
