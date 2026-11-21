@@ -155,6 +155,14 @@ a[role="button"]:not(:disabled) { cursor: pointer; }
 .btn-ghost:hover { color: var(--fg); border-color: var(--fg-muted); }
 
 /* ============================================================
+   INTRO — as bolinhas compõem a foto do hero; a foto real e o
+   header entram no fim da descida (variáveis/classe setadas pela intro).
+   ============================================================ */
+app-personal-details .hero-photo img { opacity: var(--hero-photo-o, 1); }
+app-header { transition: opacity .35s ease; }
+body.intro-active app-header { opacity: 0; pointer-events: none; }
+
+/* ============================================================
    MISC
    ============================================================ */
 ::-webkit-scrollbar { width: 8px; }

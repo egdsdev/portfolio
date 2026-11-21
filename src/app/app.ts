@@ -3,6 +3,7 @@ import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
 import { AnalyticsService } from './core/services/analytics.service';
 import { HeaderComponent } from './features/header/header.component';
+import { IntroComponent } from './features/intro/intro.component';
 import { PersonalDetailsComponent } from './features/personal-details/personal-details.component';
 import { EducationComponent } from './features/education/education.component';
 import { ExperienceComponent } from './features/experience/experience.component';
@@ -18,6 +19,7 @@ import { RevealDirective } from './shared/directives/reveal.directive';
   imports: [
     RouterOutlet,
     HeaderComponent,
+    IntroComponent,
     PersonalDetailsComponent,
     StatsComponent,
     EducationComponent,
@@ -36,6 +38,7 @@ import { RevealDirective } from './shared/directives/reveal.directive';
         <router-outlet></router-outlet>
       } @else {
         <div class="min-h-screen relative">
+          <app-intro></app-intro>
           <app-personal-details></app-personal-details>
           <div appReveal="fade" [revealDelay]="0">
             <app-stats></app-stats>
