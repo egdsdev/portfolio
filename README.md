@@ -1,78 +1,53 @@
-# Portfolio
+# Portfólio — Elias Gomes da Silva
 
-This project was generated using [Angular CLI](https://github.com/angular/angular-cli) version 20.3.8.
+**Desenvolvedor Full Stack Sênior · Supervisor de Backend · Engenheiro de Computação**
 
-## Development server
+🔗 **Site:** https://egdsdev.github.io/portfolio/ · **LinkedIn:** [/in/egdsdev](https://www.linkedin.com/in/egdsdev/) · **Currículo:** [PDF](https://egdsdev.github.io/portfolio/curriculo-elias-gomes.pdf)
 
-To start a local development server, run:
+![Prévia do portfólio](public/og-image.jpg)
 
-```bash
-ng serve
+Portfólio pessoal com analytics próprio: além de apresentar experiência, cases e stack, ele mede
+como recrutadores navegam (origem, seções lidas, downloads de currículo e contatos) e mostra tudo
+num painel administrativo em tempo real.
+
+## Destaques técnicos
+
+- **Intro em canvas** — retrato em halftone com milhares de partículas que reagem ao mouse/toque e,
+  ao rolar a página, descem em fluxo para compor a foto do hero. Otimizada para celular: o miolo
+  parado vira uma camada em cache, a quantidade de partículas se adapta ao aparelho e a animação
+  dorme sem interação.
+- **Analytics próprio no Firestore** — visitas, seções vistas, cliques em CTA e jornadas por sessão,
+  com score de interesse por visitante.
+- **Painel admin em tempo real** — dados via `onSnapshot`, mapa ao vivo (Leaflet) sincronizado com a
+  lista de visitantes, funil de recrutamento, CTR por CTA e leads.
+- **Performance** — SDK do Firebase carregado sob demanda: JavaScript inicial de ~1 MB para ~519 KB.
+- **Currículo otimizado para ATS** — gerado de HTML para PDF com Puppeteer (`scripts/`), com texto
+  extraível na ordem certa para triagem por IA.
+- **SEO e compartilhamento** — dados estruturados (JSON-LD), Open Graph com imagem própria e sitemap.
+
+## Stack
+
+Angular 20 (standalone components, signals) · TypeScript · Tailwind CSS v4 · Firebase
+(Firestore, Auth, Storage, Cloud Functions) · Leaflet · Chart.js · Canvas 2D · Puppeteer
+
+## Estrutura
+
+```
+src/app/core/        serviços (Firebase, analytics) e guard do admin
+src/app/features/    seções do site (intro, hero, experiência, cases, skills…) e o painel admin
+src/app/shared/      componentes e diretivas compartilhados
+functions/           Cloud Functions
+scripts/             gerador do currículo em PDF e preparo do bundle do GitHub Pages
 ```
 
-Once the server is running, open your browser and navigate to `http://localhost:4200/`. The application will automatically reload whenever you modify any of the source files.
-
-## Code scaffolding
-
-Angular CLI includes powerful code scaffolding tools. To generate a new component, run:
+## Rodando localmente
 
 ```bash
-ng generate component component-name
+npm ci
+npm start            # http://localhost:4200
+npm run build        # build de produção (base /portfolio/)
 ```
 
-For a complete list of available schematics (such as `components`, `directives`, or `pipes`), run:
+## Deploy
 
-```bash
-ng generate --help
-```
-
-## Building
-
-To build the project run:
-
-```bash
-ng build
-```
-
-This will compile your project and store the build artifacts in the `dist/` directory. By default, the production build optimizes your application for performance and speed.
-
-## Running unit tests
-
-To execute unit tests with the [Karma](https://karma-runner.github.io) test runner, use the following command:
-
-```bash
-ng test
-```
-
-## Running end-to-end tests
-
-For end-to-end (e2e) testing, run:
-
-```bash
-ng e2e
-```
-
-Angular CLI does not come with an end-to-end testing framework by default. You can choose one that suits your needs.
-
-## Additional Resources
-
-For more information on using the Angular CLI, including detailed command references, visit the [Angular CLI Overview and Command Reference](https://angular.dev/tools/cli) page.
-
-## GitHub Pages
-
-The canonical GitHub Pages routine is:
-
-```bash
-npm run pages:check
-```
-
-This command:
-
-- builds the app with the correct base href for `/portfolio/`
-- writes the static output directly to `docs/`
-- creates a `404.html` fallback for Angular routes on GitHub Pages
-- creates `.nojekyll` and fails fast if the Pages bundle is incomplete
-
-The workflow in [.github/workflows/deploy.yml](.github/workflows/deploy.yml) validates this bundle on pull requests and deploys it on pushes to `main`.
-
-One-time repository setting: in GitHub Pages, set **Source** to **GitHub Actions**. The workflow now fails fast if the repository is switched back to branch-based publishing, because that is what caused the `404 File not found` state.
+GitHub Pages: o build de produção é publicado na branch `gh-pages` (`npm run deploy`).
