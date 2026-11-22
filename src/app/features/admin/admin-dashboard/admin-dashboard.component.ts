@@ -1090,7 +1090,8 @@ export class AdminDashboardComponent implements OnInit, AfterViewInit, OnDestroy
   usingFallback = false;
 
   readonly Math = Math;
-  private readonly OWNER_IPS = ['45.179.22.183', '138.255.215.188'];
+  /** dono do site + servidor dos testes automatizados: fora de todas as métricas */
+  private readonly OWNER_IPS = ['45.179.22.183', '138.255.215.188', '177.104.188.141'];
 
   // ── Novos widgets ──────────────────────────────────────────────────────────
   heatmapRows: { label: string; cells: Array<{ color: string; title: string }> }[] = [];
@@ -1824,8 +1825,10 @@ Resposta em português brasileiro, tom direto e profissional.`;
       .sort((a, b) => b.uniqueSessions - a.uniqueSessions || b.clicks - a.clicks);
 
     const orderedSections = [
+      'intro',
       'detalhes',
       'experiencia',
+      'cases',
       'habilidades',
       'escolaridade',
       'contato',

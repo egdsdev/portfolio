@@ -17,7 +17,7 @@ interface SkillGroup {
     <section id="habilidades" class="py-20 sm:py-28 border-b border-zinc-900">
       <div class="wrap">
         <div class="mb-12 sm:mb-20 max-w-4xl">
-          <div class="eyebrow mb-5">02 — Stack</div>
+          <div class="eyebrow mb-5">03 — Stack</div>
           <h2 class="section-title mb-6">O que eu uso<br>no dia a dia</h2>
           <p class="section-lead">
             Anos indicam tempo de uso em projetos reais, não em cursos.

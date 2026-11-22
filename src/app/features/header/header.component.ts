@@ -1,6 +1,6 @@
 import { Component, signal, inject, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
-import { FirebaseService } from '../../core/services/firebase.service';
+import { lazyFirebase, whenIdle } from '../../core/services/firebase.loader';
 import { AnalyticsService } from '../../core/services/analytics.service';
 
 @Component({
@@ -20,6 +20,7 @@ import { AnalyticsService } from '../../core/services/analytics.service';
         <a href="#detalhes" class="text-zinc-100 font-medium text-sm tracking-tight hover:text-white transition-colors">Elias Gomes</a>
         <ul class="nav-links items-center gap-7">
           <li><a href="#experiencia" class="nav-link text-sm">Experiência</a></li>
+          <li><a href="#cases" class="nav-link text-sm">Cases</a></li>
           <li><a href="#habilidades" class="nav-link text-sm">Skills</a></li>
           <li><a href="#escolaridade" class="nav-link text-sm">Formação</a></li>
           <li><a href="#contato" (click)="trackNavClick('contato', 'desktop')" class="px-4 py-1.5 rounded-lg bg-zinc-100 text-zinc-900 hover:bg-white transition-colors text-sm font-medium">Contato</a></li>
@@ -29,10 +30,6 @@ import { AnalyticsService } from '../../core/services/analytics.service';
               <button (click)="logout()" class="px-3 py-1.5 rounded-lg border border-zinc-800 text-zinc-400 hover:text-zinc-100 hover:border-zinc-700 text-sm transition-colors cursor-pointer">
                 Sair
               </button>
-            </li>
-          } @else {
-            <li class="flex items-center">
-              <a routerLink="/admin/login" class="text-zinc-700 hover:text-zinc-500 transition-colors" title="Admin"><svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg></a>
             </li>
           }
         </ul>
@@ -76,6 +73,7 @@ import { AnalyticsService } from '../../core/services/analytics.service';
 
       <nav class="flex flex-col p-6 gap-5">
         <a href="#experiencia" class="nav-link text-sm py-1" (click)="closeMenu()">Experiência</a>
+        <a href="#cases" class="nav-link text-sm py-1" (click)="closeMenu()">Cases</a>
         <a href="#habilidades" class="nav-link text-sm py-1" (click)="closeMenu()">Skills</a>
         <a href="#escolaridade" class="nav-link text-sm py-1" (click)="closeMenu()">Formação</a>
         <a href="#contato" class="mt-2 px-4 py-2 rounded-lg bg-zinc-100 text-zinc-900 hover:bg-white transition-colors text-sm font-medium text-center" (click)="trackNavClick('contato', 'mobile'); closeMenu()">Contato</a>
@@ -84,8 +82,6 @@ import { AnalyticsService } from '../../core/services/analytics.service';
             <a routerLink="/admin" class="nav-link text-sm" (click)="closeMenu()">Dashboard</a>
             <button (click)="logout(); closeMenu()" class="text-zinc-500 hover:text-zinc-300 transition-colors text-sm text-left">Sair</button>
           </div>
-        } @else {
-          <a routerLink="/admin/login" class="text-zinc-700 hover:text-zinc-500 transition-colors text-xs flex items-center gap-1.5 mt-2 pt-4 border-t border-zinc-900" (click)="closeMenu()"><svg xmlns="http://www.w3.org/2000/svg" class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg> Admin</a>
         }
       </nav>
     </aside>
@@ -111,7 +107,7 @@ import { AnalyticsService } from '../../core/services/analytics.service';
   `]
 })
 export class HeaderComponent implements OnInit, OnDestroy {
-  private firebase = inject(FirebaseService);
+  private firebase = lazyFirebase();
   private analytics = inject(AnalyticsService);
   private router = inject(Router);
   private cdr = inject(ChangeDetectorRef);
@@ -128,7 +124,8 @@ export class HeaderComponent implements OnInit, OnDestroy {
   };
 
   ngOnInit() {
-    this.checkAuth();
+    // login só importa para o dono do site: verifica depois da primeira pintura
+    whenIdle(() => void this.checkAuth(), 4000);
     window.addEventListener('scroll', this.onScroll, { passive: true });
   }
 
@@ -137,13 +134,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
   }
 
   private async checkAuth() {
-    const logged = await this.firebase.isLoggedIn();
+    const logged = await (await this.firebase()).isLoggedIn();
     this.loggedIn.set(logged);
     this.cdr.detectChanges();
   }
 
   async logout() {
-    await this.firebase.logout();
+    await (await this.firebase()).logout();
     this.loggedIn.set(false);
     this.cdr.detectChanges();
     this.router.navigate(['/']);

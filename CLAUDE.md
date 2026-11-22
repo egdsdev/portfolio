@@ -17,7 +17,8 @@ There is no e2e test suite. There is no lint script defined in package.json.
 ## Structure
 
 - `src/app/core/` — singleton services (`analytics.service.ts`, `firebase.service.ts`) and route guards.
-- `src/app/features/` — one folder per page/feature area (admin, certifications, contact, dev-match, education, experience, header, how-i-work, personal-details, portfolio, recruiter, skills, stats, tech-timeline). Standalone components, colocated per feature.
+- `src/app/features/` — one folder per page/feature area (admin, cases, contact, education, experience, header, intro, personal-details, skills, stats). Standalone components, colocated per feature.
+- `src/app/core/services/firebase.loader.ts` — `lazyFirebase()`/`whenIdle()`: the public site must load the Firebase SDK on demand (keeps it out of the initial bundle). Don't statically import `FirebaseService` outside `features/admin`.
 - `src/app/shared/` — shared components and directives used across features.
 - `src/environments/environment.ts` — Firebase config + Gemini API key (client-side keys; treat as sensitive, never print/log/echo this file's contents or commit new secrets to git history).
 - `functions/` — Firebase Cloud Functions source.

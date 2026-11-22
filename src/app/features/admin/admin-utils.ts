@@ -105,6 +105,9 @@ export function sourceFromReferrer(referrer?: string): string {
 export function ctaLabel(target: string): string {
   const labels: Record<string, string> = {
     hero_contact: 'Hero · Contato',
+    intro_reveal: 'Intro · Revelar',
+    intro_resume: 'Intro · Currículo',
+    case_portfolio_code: 'Cases · Código do portfólio',
     resume_download: 'Hero · Baixar currículo',
     project_brulias: 'Projeto · Brulias',
     contact_email: 'Contato · Email',
@@ -122,7 +125,9 @@ export function ctaLabel(target: string): string {
 
 export function sectionLabel(section: string): string {
   const labels: Record<string, string> = {
+    intro: 'Intro',
     detalhes: 'Hero',
+    cases: 'Cases',
     escolaridade: 'Formação',
     experiencia: 'Experiência',
     habilidades: 'Skills',

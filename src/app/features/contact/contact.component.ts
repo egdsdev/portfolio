@@ -13,7 +13,7 @@ import { AnalyticsService } from '../../core/services/analytics.service';
     <section id="contato" class="py-20 sm:py-28">
       <div class="wrap">
         <div class="mb-12 sm:mb-16 max-w-4xl">
-          <div class="eyebrow mb-5">04 — Contato</div>
+          <div class="eyebrow mb-5">05 — Contato</div>
           <h2 class="section-title mb-6">Disponível para<br>novas oportunidades</h2>
           <p class="section-lead">
             Aberto a conversas sobre cargos de desenvolvedor ou liderança técnica — full stack,

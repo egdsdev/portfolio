@@ -1,11 +1,11 @@
 import { inject } from '@angular/core';
 import { CanActivateFn, Router } from '@angular/router';
-import { FirebaseService } from '../services/firebase.service';
+import { lazyFirebase } from '../services/firebase.loader';
 
 export const authGuard: CanActivateFn = async () => {
-  const firebase = inject(FirebaseService);
+  const firebase = lazyFirebase();
   const router = inject(Router);
-  const loggedIn = await firebase.isLoggedIn();
+  const loggedIn = await (await firebase()).isLoggedIn();
   if (!loggedIn) {
     router.navigate(['/admin/login']);
     return false;

@@ -20,7 +20,7 @@ import { AnalyticsService } from '../../core/services/analytics.service';
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400"></span>
           </span>
-          Disponível para novos projetos
+          Aberto a novas oportunidades
         </div>
 
         <!-- Retrato grande à esquerda; nome e cargo ocupam o resto da linha -->
@@ -57,7 +57,7 @@ import { AnalyticsService } from '../../core/services/analytics.service';
             <div class="eyebrow leading-relaxed mt-5">
               <span class="text-zinc-300 whitespace-nowrap">7+ anos de experiência</span>
               <span class="text-zinc-700 mx-2">·</span>
-              <span class="text-zinc-500 whitespace-nowrap">Goiânia, GO</span>
+              <span class="text-zinc-400 whitespace-nowrap">Goiânia, GO</span>
             </div>
 
             <div class="flex flex-wrap items-center gap-3 mt-8">

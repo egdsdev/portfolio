@@ -2,10 +2,12 @@ import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
 import { AnalyticsService } from './core/services/analytics.service';
+import { whenIdle } from './core/services/firebase.loader';
 import { HeaderComponent } from './features/header/header.component';
 import { IntroComponent } from './features/intro/intro.component';
 import { PersonalDetailsComponent } from './features/personal-details/personal-details.component';
 import { EducationComponent } from './features/education/education.component';
+import { CasesComponent } from './features/cases/cases.component';
 import { ExperienceComponent } from './features/experience/experience.component';
 import { SkillsComponent } from './features/skills/skills.component';
 import { ContactComponent } from './features/contact/contact.component';
@@ -24,6 +26,7 @@ import { RevealDirective } from './shared/directives/reveal.directive';
     StatsComponent,
     EducationComponent,
     ExperienceComponent,
+    CasesComponent,
     SkillsComponent,
     ContactComponent,
     FooterComponent,
@@ -45,6 +48,9 @@ import { RevealDirective } from './shared/directives/reveal.directive';
           </div>
           <div appReveal="up" [revealDelay]="0" [revealThreshold]="0.03">
             <app-experience></app-experience>
+          </div>
+          <div appReveal="up" [revealDelay]="0" [revealThreshold]="0.03">
+            <app-cases></app-cases>
           </div>
           <div appReveal="up" [revealDelay]="0">
             <app-skills></app-skills>
@@ -80,14 +86,16 @@ export class App implements OnInit, OnDestroy {
     ).subscribe((e) => {
       const url = (e as NavigationEnd).urlAfterRedirects;
       const admin = url.startsWith('/admin');
-      const recruiter = url.startsWith('/recruiter');
-      this.isAdmin.set(admin || recruiter);
+      this.isAdmin.set(admin);
       this.isAdminArea.set(admin);
       if (!this.routerResolved()) {
         this.routerResolved.set(true);
         if (!admin) {
-          this.analytics.trackVisit();
-          this.analytics.trackSitePresence();
+          // analytics (e o SDK do Firebase) só depois da primeira pintura
+          whenIdle(() => {
+            void this.analytics.trackVisit();
+            void this.analytics.trackSitePresence();
+          });
         }
       }
     });

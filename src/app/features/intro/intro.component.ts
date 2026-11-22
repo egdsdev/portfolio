@@ -1,4 +1,5 @@
 import { AfterViewInit, Component, ElementRef, NgZone, OnDestroy, ViewChild, inject } from '@angular/core';
+import { AnalyticsService } from '../../core/services/analytics.service';
 
 interface Particle {
   /** posição local no retrato da intro */
@@ -9,6 +10,8 @@ interface Particle {
   x: number; y: number; vx: number; vy: number;
   /** 0 no miolo, 1 na borda: flutuação e dispersão */
   e: number; ph: number;
+  /** flutua (borda) — o miolo parado vai para a camada em cache */
+  w: boolean;
   /** atraso da descida (0..~0.4) e desvio lateral da trajetória */
   d: number; arc: number;
   delay: number;
@@ -22,7 +25,7 @@ interface Particle {
   selector: 'app-intro',
   standalone: true,
   template: `
-    <section class="intro" #stage aria-label="Introdução">
+    <section id="intro" class="intro" #stage aria-label="Introdução">
       <div class="word" data-text="DEVELOPER" aria-hidden="true">DEVELOPER</div>
       <div class="portrait" #portrait aria-hidden="true"></div>
 
@@ -31,9 +34,13 @@ interface Particle {
           <p class="who-name">Elias Gomes da Silva</p>
           <p class="who-role"><span class="role-prefix">Desenvolvedor </span>Full Stack Sênior <span>·</span> Engenheiro de Computação</p>
         </div>
-        <button class="reveal" type="button" (click)="reveal()"><i></i><span>Revelar</span></button>
+        <div class="actions">
+          <a class="cv-link" [href]="resumeUrl" download="Curriculo-Elias-Gomes-da-Silva.pdf" (click)="onResume()">Currículo ↓</a>
+          <button class="reveal" type="button" (click)="reveal('button')"><i></i><span>Revelar</span></button>
+        </div>
       </div>
       <span class="scroll-hint" aria-hidden="true">Role para revelar ↓</span>
+      <a class="cv-link cv-top" [href]="resumeUrl" download="Curriculo-Elias-Gomes-da-Silva.pdf" (click)="onResume()">Currículo ↓</a>
     </section>
     <canvas #canvas class="dots" aria-hidden="true"></canvas>
   `,
@@ -123,6 +130,19 @@ interface Particle {
     .reveal:focus-visible { outline: 2px solid #ff5a1f; outline-offset: 3px; }
     .reveal i { width: .5rem; height: .5rem; border-radius: 999px; background: #ff5a1f; box-shadow: 0 0 10px #ff5a1f; }
 
+    /* atalho discreto para o currículo: recrutador não precisa passar pela intro */
+    .actions { display: flex; align-items: center; gap: 1.25rem; }
+    .cv-link {
+      font-size: .75rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--fg-muted);
+      text-decoration: none;
+      transition: color .2s;
+    }
+    .cv-link:hover, .cv-link:focus-visible { color: var(--fg); }
+    .cv-top { display: none; }
+
     .scroll-hint {
       position: absolute;
       z-index: 41;
@@ -141,6 +161,15 @@ interface Particle {
       .word { top: 50svh; }
       .scroll-hint { left: 1rem; right: auto; }
       .reveal { display: none; }
+      .actions .cv-link { display: none; }
+      .cv-top {
+        display: block;
+        position: absolute;
+        z-index: 41;
+        top: 1.25rem;
+        right: 1rem;
+        opacity: var(--intro-ui, 1);
+      }
       /* "DEVELOPER" já está gigante atrás: no celular a linha cabe sem quebrar */
       .role-prefix { display: none; }
       .who-role { white-space: nowrap; }
@@ -155,15 +184,32 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
   @ViewChild('portrait') private portraitRef!: ElementRef<HTMLElement>;
   @ViewChild('canvas') private canvasRef!: ElementRef<HTMLCanvasElement>;
   private zone = inject(NgZone);
+  private analytics = inject(AnalyticsService);
+  readonly resumeUrl = 'curriculo-elias-gomes.pdf';
 
-  private readonly MAX_PARTICLES = 9000;
+  /** abaixo disso a flutuação seria < 1px: o ponto fica parado e entra no cache */
+  private readonly WOBBLE_MIN = 0.15;
+  /** sem interação por este tempo, a animação dorme (bateria/CPU) */
+  private readonly IDLE_MS = 15000;
   private readonly MOUSE_RADIUS = 90;
   private readonly reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   private ctx!: CanvasRenderingContext2D;
   private dotsSrc = new Image();
   private heroSrc = new Image();
+  /** foto do hero já recortada e reduzida (fora da thread principal) para mapear os pontos */
+  private heroThumb: CanvasImageSource | null = null;
   private particles: Particle[] = [];
+  /** só as partículas da borda, recalculadas a cada quadro quando o miolo está em cache */
+  private live: Particle[] = [];
+  /** miolo parado desenhado uma vez; vale enquanto nada empurra os pontos */
+  private layer: HTMLCanvasElement | null = null;
+  private layerAt: { left: number; top: number } | null = null;
+  private stillSettled = false;
+  private idleSince = performance.now();
+  private frame = 0;
+  /** últimos valores gravados no DOM: regravar o mesmo valor recalcula o estilo da página */
+  private applied = { photo: '', ui: '', active: false as boolean | null, events: '' };
   private silhouette: HTMLCanvasElement | null = null;
   private PW = 0; PH = 0;
   private step = 5;
@@ -179,7 +225,7 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
   private resizeTimer?: ReturnType<typeof setTimeout>;
   private ready = false;
 
-  private onScroll = () => this.wake();
+  private onScroll = () => { this.idleSince = performance.now(); this.wake(); };
   private onResize = () => {
     clearTimeout(this.resizeTimer);
     this.resizeTimer = setTimeout(() => { this.build(); this.wake(); }, 150);
@@ -188,6 +234,7 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
     this.mouse.x = e.clientX;
     this.mouse.y = e.clientY;
     this.mouse.active = true;
+    this.idleSince = performance.now();
     if (this.progress < 0.05) this.wake();
   };
   private onPointerLeave = () => { this.mouse.active = false; };
@@ -207,7 +254,7 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
     this.touchStart = null;
     this.mouse.active = false;
     // deslizada vertical rápida (> 300 px/s); arraste lento de brincadeira não revela
-    if (e.type === 'pointerup' && dy > 50 && dy > dx * 1.5 && dy / Math.max(dt, 1) > 0.3) this.reveal();
+    if (e.type === 'pointerup' && dy > 50 && dy > dx * 1.5 && dy / Math.max(dt, 1) > 0.3) this.reveal('swipe');
   };
 
   ngAfterViewInit(): void {
@@ -218,11 +265,20 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
       const loaded = (img: HTMLImageElement) => img.complete && img.naturalWidth
         ? Promise.resolve()
         : new Promise<void>(ok => img.addEventListener('load', () => ok(), { once: true }));
-      Promise.all([loaded(this.dotsSrc), loaded(this.heroSrc)]).then(() => {
+      // Monta as partículas quando o navegador estiver livre: não atrasa a primeira pintura.
+      const start = async () => {
+        this.heroThumb = await this.thumb(this.heroSrc, 160);
         this.build();
         this.ready = true;
         this.last = performance.now();
+        this.idleSince = this.last;
         this.wake();
+      };
+      // decode() decodifica fora da thread principal; sem ele a 1ª pintura no canvas trava a página
+      const decoded = (img: HTMLImageElement) => loaded(img).then(() => img.decode?.().catch(() => undefined));
+      Promise.all([decoded(this.dotsSrc), decoded(this.heroSrc)]).then(() => {
+        if ('requestIdleCallback' in window) requestIdleCallback(start, { timeout: 700 });
+        else setTimeout(start, 120);
       });
       addEventListener('scroll', this.onScroll, { passive: true });
       addEventListener('resize', this.onResize);
@@ -250,8 +306,13 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
     document.documentElement.style.removeProperty('--hero-photo-o');
   }
 
+  onResume(): void {
+    void this.analytics.trackCtaClick('intro_resume', 'intro', 'resume');
+  }
+
   /** Rola até o hero: a própria rolagem conduz as bolinhas até a foto. */
-  reveal(): void {
+  reveal(via: 'button' | 'swipe' = 'button'): void {
+    void this.analytics.trackCtaClick('intro_reveal', 'intro', 'navigation', { via });
     const top = this.stageRef.nativeElement.offsetTop + this.stageRef.nativeElement.offsetHeight;
     window.scrollTo({ top, behavior: this.reduceMotion ? 'auto' : 'smooth' });
   }
@@ -270,7 +331,8 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
   // Amostra o retrato numa grade (halftone) e casa cada ponto com um ponto da foto do hero.
   private build(): void {
     const canvas = this.canvasRef.nativeElement;
-    const dpr = Math.min(window.devicePixelRatio || 1, 2);
+    // celular: 1.5x já fica nítido para pontos pequenos e pinta ~44% menos pixels que 2x
+    const dpr = Math.min(window.devicePixelRatio || 1, window.innerWidth < 700 ? 1.5 : 2);
     this.vw = window.innerWidth;
     this.vh = window.innerHeight;
     canvas.width = Math.round(this.vw * dpr);
@@ -287,7 +349,7 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
     octx.drawImage(this.dotsSrc, 0, 0, ow, oh);
     const data = octx.getImageData(0, 0, ow, oh).data;
 
-    const step = this.step = Math.max(3, Math.round(Math.sqrt((ow * oh * 0.45) / this.MAX_PARTICLES)));
+    const step = this.step = Math.max(3, Math.round(Math.sqrt((ow * oh * 0.45) / this.particleBudget())));
     const maxR = step * 0.48;
 
     // Alfa desfocado (reduz e amplia): distância até o contorno, em qualquer navegador.
@@ -355,18 +417,45 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
       list.push({
         lx: x + jx, ly: y + jy, hu: 0, hv: 0, r, hr: r,
         x: p ? p.x : prect.left + Math.random() * this.PW,
-        y: p ? p.y : this.vh + Math.random() * this.vh * 0.6,
+        y: p ? p.y : this.vh + Math.random() * this.vh * 0.25,
         vx: 0, vy: 0, e, ph: Math.random() * Math.PI * 2,
+        w: e > this.WOBBLE_MIN && !this.reduceMotion,
         // de baixo para cima: quem está mais perto do hero desce primeiro
         d: 0.22 * (1 - y / oh) + Math.random() * 0.14,
         arc: (Math.random() - 0.5) * 120,
-        delay: p ? 0 : Math.random() * 40 + (oh - y) * 0.06,
+        delay: p ? 0 : Math.random() * 16 + (oh - y) * 0.03,
       });
     }
 
     this.assignHeroTargets(list);
     if (this.reduceMotion) list.forEach(p => { p.delay = 0; });
     this.particles = list;
+    this.live = list.filter(q => q.w);
+    this.layer = null;
+    this.layerAt = null;
+    this.stillSettled = false;
+  }
+
+  /** Recorte quadrado central (como object-fit: cover) reduzido fora da thread principal. */
+  private async thumb(img: HTMLImageElement, size: number): Promise<CanvasImageSource> {
+    const iw = img.naturalWidth, ih = img.naturalHeight, s = Math.min(iw, ih);
+    try {
+      return await createImageBitmap(img, (iw - s) / 2, (ih - s) / 2, s, s,
+        { resizeWidth: size, resizeHeight: size, resizeQuality: 'medium' });
+    } catch {
+      const c = document.createElement('canvas');
+      c.width = c.height = size;
+      c.getContext('2d')!.drawImage(img, (iw - s) / 2, (ih - s) / 2, s, s, 0, 0, size, size);
+      return c;
+    }
+  }
+
+  /** Menos partículas em tela pequena e CPU modesta: o visual se mantém, o custo cai. */
+  private particleBudget(): number {
+    const small = window.innerWidth < 700;
+    const strong = (navigator.hardwareConcurrency || 4) >= 8;
+    if (small) return strong ? 4000 : 3000;
+    return strong ? 8000 : 5500;
   }
 
   // Grade de halftone sobre a foto do hero, com o mesmo número aproximado de pontos.
@@ -381,10 +470,8 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
     const off = document.createElement('canvas');
     off.width = cols; off.height = cols;
     const octx = off.getContext('2d', { willReadFrequently: true })!;
-    // object-fit: cover centralizado, igual ao <img> do hero
-    const iw = this.heroSrc.naturalWidth, ih = this.heroSrc.naturalHeight;
-    const s = Math.min(iw, ih);
-    octx.drawImage(this.heroSrc, (iw - s) / 2, (ih - s) / 2, s, s, 0, 0, cols, cols);
+    // miniatura já em object-fit: cover (recorte quadrado central), igual ao <img> do hero
+    if (this.heroThumb) octx.drawImage(this.heroThumb, 0, 0, cols, cols);
     const px = octx.getImageData(0, 0, cols, cols).data;
 
     const cells: { u: number; v: number; lum: number }[] = [];
@@ -412,21 +499,54 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
     const p = Math.min(1, Math.max(0, scrolled / introH));
     this.progress = p;
 
-    // Foto real e header: entram no fim da descida.
-    const photoO = smooth(0.86, 1, p);
-    document.documentElement.style.setProperty('--hero-photo-o', photoO.toFixed(3));
-    document.body.classList.toggle('intro-active', p < 0.55);
-    const ui = 1 - smooth(0, 0.3, p);
-    stage.style.setProperty('--intro-ui', ui.toFixed(3));
-    stage.style.pointerEvents = ui < 0.05 ? 'none' : '';
+    // Foto real e header: entram no fim da descida. Grava só o que mudou.
+    const a = this.applied;
+    const photo = smooth(0.86, 1, p).toFixed(2);
+    if (photo !== a.photo) { document.documentElement.style.setProperty('--hero-photo-o', photo); a.photo = photo; }
+    const active = p < 0.55;
+    if (active !== a.active) { document.body.classList.toggle('intro-active', active); a.active = active; }
+    const uiN = 1 - smooth(0, 0.3, p);
+    const ui = uiN.toFixed(2);
+    if (ui !== a.ui) { stage.style.setProperty('--intro-ui', ui); a.ui = ui; }
+    const events = uiN < 0.05 ? 'none' : '';
+    if (events !== a.events) { stage.style.pointerEvents = events; a.events = events; }
 
+    // até 4 passos por quadro: a física é barata perto do desenho, e o retrato assenta em menos
+    // quadros pesados; o limite evita espiral de atraso em aparelho lento
     const steps = Math.min(4, Math.max(1, Math.round((now - this.last) / 16.67)));
     this.last = now;
     const prect = this.portraitRef.nativeElement.getBoundingClientRect();
     const hrect = this.heroRect();
-    for (let i = 0; i < steps; i++) this.physics(p, prect, hrect);
+
+    // Mouse/dedo perto do retrato empurra pontos do miolo: aí o cache não vale.
+    const R = this.MOUSE_RADIUS;
+    const m = this.mouse;
+    const mouseNear = m.active && p < 0.05
+      && m.x > prect.left - R && m.x < prect.right + R && m.y > prect.top - R && m.y < prect.bottom + R;
+    const canCache = p === 0 && !mouseNear && this.stillSettled;
+    if (this.layerAt && (!canCache || this.layerAt.left !== prect.left || this.layerAt.top !== prect.top)) {
+      this.layer = null;
+      this.layerAt = null;
+    }
+    const cached = !!this.layerAt;
+    const idle = cached && this.ring < 0.02;
+
+    // Ocioso (só a borda flutuando): ~20 quadros/s bastam para a flutuação lenta.
+    if (idle && this.frame++ % 3 !== 0) {
+      this.raf = requestAnimationFrame(t => this.tick(t));
+      return;
+    }
+
+    for (let i = 0; i < steps; i++) this.physics(p, prect, hrect, cached ? this.live : this.particles);
+    if (!cached && canCache && this.stillSettled) this.buildLayer(prect);
 
     this.draw(p, prect);
+
+    // Sem interação há um tempo (ou movimento reduzido): congela o quadro e dorme.
+    if (idle && (this.reduceMotion || now - this.idleSince > this.IDLE_MS)) {
+      this.running = false;
+      return;
+    }
 
     // Parado no portfolio (foto real visível) e sem movimento: dorme até a próxima rolagem.
     if (p >= 1 && this.particles.every(q => q.delay <= 0)) {
@@ -437,19 +557,21 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
     this.raf = requestAnimationFrame(t => this.tick(t));
   }
 
-  private physics(p: number, prect: DOMRect, hrect: DOMRect | null): void {
+  private physics(p: number, prect: DOMRect, hrect: DOMRect | null, list: Particle[]): void {
     const R = this.MOUSE_RADIUS, R2 = R * R;
     const amp = this.step * 0.7;
     const mouseOn = this.mouse.active && p < 0.05;
     this.t += 0.016;
     this.ring += ((mouseOn ? 1 : 0) - this.ring) * 0.1;
+    const full = list === this.particles;
     let settled = 0;
+    let stillMoving = 0;
 
-    for (const q of this.particles) {
-      if (q.delay > 0) { q.delay -= 1; continue; }
+    for (const q of list) {
+      if (q.delay > 0) { q.delay -= 1; stillMoving++; continue; }
 
       // alvo na intro (com flutuação nas bordas)
-      const wob = q.e > 0.05 && !this.reduceMotion;
+      const wob = q.w;
       let gx = prect.left + q.lx + (wob ? Math.sin(this.t * 0.9 + q.ph) * q.e * amp : 0);
       let gy = prect.top + q.ly + (wob ? Math.cos(this.t * 0.7 + q.ph) * q.e * amp : 0);
 
@@ -463,7 +585,7 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
       }
 
       // durante a rolagem a mola fica mais firme para acompanhar a página
-      const kSpring = p > 0 ? 0.14 : 0.06;
+      const kSpring = p > 0 ? 0.14 : 0.1;
       let ax = (gx - q.x) * kSpring;
       let ay = (gy - q.y) * kSpring;
 
@@ -482,10 +604,40 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
       q.vy = (q.vy + ay) * 0.78;
       q.x += q.vx;
       q.y += q.vy;
-      if (Math.abs(gx - q.x) + Math.abs(gy - q.y) < 6) settled++;
+      let ex = Math.abs(gx - q.x), ey = Math.abs(gy - q.y);
+      // a menos de ~1px e quase parado: encaixa (a mola levaria muitos quadros para o último pixel)
+      if (!q.w && !mouseOn && p === 0 && ex + ey < 0.9 && Math.abs(q.vx) + Math.abs(q.vy) < 0.4) {
+        q.x = gx; q.y = gy; q.vx = 0; q.vy = 0; ex = 0; ey = 0;
+      }
+      if (ex + ey < 6) settled++;
+      if (!q.w && (ex > 0.35 || ey > 0.35 || Math.abs(q.vx) + Math.abs(q.vy) > 0.15)) stillMoving++;
     }
-    const target = this.particles.length ? settled / this.particles.length : 0;
-    this.formed += (target - this.formed) * 0.05;
+    if (full) {
+      this.stillSettled = stillMoving === 0;
+      const target = list.length ? settled / list.length : 0;
+      this.formed += (target - this.formed) * 0.05;
+    }
+  }
+
+  /** Desenha uma vez o miolo parado; nos quadros seguintes ele é só copiado. */
+  private buildLayer(prect: DOMRect): void {
+    const main = this.canvasRef.nativeElement;
+    const c = document.createElement('canvas');
+    c.width = main.width;
+    c.height = main.height;
+    const lctx = c.getContext('2d')!;
+    const dpr = main.width / Math.max(1, this.vw);
+    lctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    lctx.beginPath();
+    for (const q of this.particles) {
+      if (q.w) continue;
+      lctx.moveTo(q.x + q.r, q.y);
+      lctx.arc(q.x, q.y, q.r, 0, Math.PI * 2);
+    }
+    lctx.fillStyle = '#ff5a1f';
+    lctx.fill();
+    this.layer = c;
+    this.layerAt = { left: prect.left, top: prect.top };
   }
 
   private draw(p: number, prect: DOMRect): void {
@@ -502,8 +654,13 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
     const dotsA = 1 - smooth(0.9, 1, p);
     if (dotsA > 0.01) {
       const ease = smooth(0.15, 0.95, p);
+      const layer = this.layerAt ? this.layer : null;
+      if (layer) {
+        ctx.globalAlpha = dotsA;
+        ctx.drawImage(layer, 0, 0, this.vw, this.vh);
+      }
       ctx.beginPath();
-      for (const q of this.particles) {
+      for (const q of layer ? this.live : this.particles) {
         if (q.delay > 0) continue;
         const r = q.r + (q.hr - q.r) * ease;
         ctx.moveTo(q.x + r, q.y);

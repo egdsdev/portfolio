@@ -1,5 +1,6 @@
-import { Injectable, inject } from '@angular/core';
-import { AnalyticsMetadata, FirebaseService } from './firebase.service';
+import { Injectable } from '@angular/core';
+import type { AnalyticsMetadata } from './firebase.service';
+import { lazyFirebase } from './firebase.loader';
 
 interface GeoPayload {
   ip?: string;
@@ -25,12 +26,16 @@ interface AnalyticsContext {
 
 @Injectable({ providedIn: 'root' })
 export class AnalyticsService {
-  private firebase = inject(FirebaseService);
+  /** SDK do Firebase carregado sob demanda (fora do JS inicial) */
+  private firebase = lazyFirebase();
 
-  private readonly IGNORED_IPS = ['45.179.22.183', '138.255.215.188'];
+  /** dono do site + servidor dos testes automatizados (177.104.188.141): não contam como visita */
+  private readonly IGNORED_IPS = ['45.179.22.183', '138.255.215.188', '177.104.188.141'];
   private readonly TRACKED_SECTIONS = [
+    'intro',
     'detalhes',
     'experiencia',
+    'cases',
     'habilidades',
     'escolaridade',
     'contato',
@@ -49,7 +54,7 @@ export class AnalyticsService {
       const ctx = await this.ensureContext();
       if (!ctx) return;
 
-      await this.firebase.trackVisitor(ctx.visitorId, ctx.isFirstVisit, {
+      await (await this.firebase()).trackVisitor(ctx.visitorId, ctx.isFirstVisit, {
         ip: ctx.geo.ip ?? 'unknown',
         city: ctx.geo.city,
         country: ctx.geo.country,
@@ -86,7 +91,7 @@ export class AnalyticsService {
       // Solicita localização precisa em background — atualiza coords se concedido
       this.requestPreciseLocation().then(coords => {
         if (coords) {
-          this.firebase.updateVisitorCoords(ctx.visitorId, coords.latitude, coords.longitude);
+          void this.firebase().then(f => f.updateVisitorCoords(ctx.visitorId, coords.latitude, coords.longitude));
         }
       });
     } catch (err) {
@@ -148,8 +153,9 @@ export class AnalyticsService {
     try {
       const ip = await this.getVisitorIp();
       if (ip === 'unknown') return;
-      await this.firebase.setVisitorPresenceByIp(ip, true);
-      const offline = () => { void this.firebase.setVisitorPresenceByIp(ip, false); };
+      const firebase = await this.firebase();
+      await firebase.setVisitorPresenceByIp(ip, true);
+      const offline = () => { void firebase.setVisitorPresenceByIp(ip, false); };
       window.addEventListener('beforeunload', offline);
       window.addEventListener('pagehide', offline);
     } catch { /* silencioso */ }
@@ -199,7 +205,7 @@ export class AnalyticsService {
       const ctx = await this.ensureContext();
       if (!ctx) return;
 
-      await this.firebase.trackAnalyticsEvent({
+      await (await this.firebase()).trackAnalyticsEvent({
         visitorId: ctx.visitorId,
         sessionId: ctx.sessionId,
         ip: ctx.geo.ip,
