@@ -39,7 +39,10 @@ if (fs.existsSync(legacyBrowserDir)) {
   fs.rmSync(legacyBrowserDir, { recursive: true, force: true });
 }
 
-fs.writeFileSync(notFoundPath, indexHtml);
+// Com pré-renderização, index.html traz a página inicial pronta; rotas só-navegador
+// (admin, URLs desconhecidas) precisam da casca vazia index.csr.html no 404.
+const csrPath = path.join(pagesDir, 'index.csr.html');
+fs.writeFileSync(notFoundPath, fs.existsSync(csrPath) ? fs.readFileSync(csrPath, 'utf8') : indexHtml);
 fs.writeFileSync(noJekyllPath, '\n');
 
 console.log('GitHub Pages bundle preparado em docs/.');

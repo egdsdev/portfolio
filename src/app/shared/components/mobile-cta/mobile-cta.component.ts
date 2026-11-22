@@ -1,4 +1,5 @@
-import { Component, NgZone, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { Component, NgZone, OnDestroy, OnInit, inject, signal, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { AnalyticsService } from '../../../core/services/analytics.service';
 
 /**
@@ -63,6 +64,7 @@ import { AnalyticsService } from '../../../core/services/analytics.service';
   `],
 })
 export class MobileCtaComponent implements OnInit, OnDestroy {
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private zone = inject(NgZone);
   private analytics = inject(AnalyticsService);
   readonly visible = signal(false);
@@ -75,6 +77,7 @@ export class MobileCtaComponent implements OnInit, OnDestroy {
   };
 
   ngOnInit(): void {
+    if (!this.isBrowser) return;
     // fora da zona: rolagem não dispara detecção de mudanças; o signal só muda quando a barra entra/sai
     this.zone.runOutsideAngular(() => {
       addEventListener('scroll', this.onScroll, { passive: true });
@@ -83,6 +86,7 @@ export class MobileCtaComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (!this.isBrowser) return;
     removeEventListener('scroll', this.onScroll);
     removeEventListener('resize', this.onScroll);
   }

@@ -1,4 +1,5 @@
-import { Component, OnInit, OnDestroy, inject, signal } from '@angular/core';
+import { Component, OnInit, OnDestroy, PLATFORM_ID, inject, signal } from '@angular/core';
+import { Location, isPlatformBrowser } from '@angular/common';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
 import { AnalyticsService } from './core/services/analytics.service';
@@ -35,37 +36,35 @@ import { RevealDirective } from './shared/directives/reveal.directive';
     RevealDirective,
   ],
   template: `
-    @if (routerResolved()) {
-      @if (!isAdminArea()) {
-        <app-header></app-header>
-      }
-      @if (isAdminRoute()) {
-        <router-outlet></router-outlet>
-      } @else {
-        <div class="min-h-screen relative">
-          <app-intro></app-intro>
-          <app-personal-details></app-personal-details>
-          <div appReveal="fade" [revealDelay]="0">
-            <app-stats></app-stats>
-          </div>
-          <div appReveal="up" [revealDelay]="0" [revealThreshold]="0.03">
-            <app-experience></app-experience>
-          </div>
-          <div appReveal="up" [revealDelay]="0" [revealThreshold]="0.03">
-            <app-cases></app-cases>
-          </div>
-          <div appReveal="up" [revealDelay]="0">
-            <app-skills></app-skills>
-          </div>
-          <div appReveal="up" [revealDelay]="0">
-            <app-education></app-education>
-          </div>
-          <app-contact></app-contact>
-          <app-footer></app-footer>
-          <app-mobile-cta></app-mobile-cta>
+    @if (!isAdminArea()) {
+      <app-header></app-header>
+    }
+    @if (isAdminRoute()) {
+      <router-outlet></router-outlet>
+    } @else {
+      <div class="min-h-screen relative">
+        <app-intro></app-intro>
+        <app-personal-details></app-personal-details>
+        <div appReveal="fade" [revealDelay]="0">
+          <app-stats></app-stats>
         </div>
-        <router-outlet></router-outlet>
-      }
+        <div appReveal="up" [revealDelay]="0" [revealThreshold]="0.03">
+          <app-experience></app-experience>
+        </div>
+        <div appReveal="up" [revealDelay]="0" [revealThreshold]="0.03">
+          <app-cases></app-cases>
+        </div>
+        <div appReveal="up" [revealDelay]="0">
+          <app-skills></app-skills>
+        </div>
+        <div appReveal="up" [revealDelay]="0">
+          <app-education></app-education>
+        </div>
+        <app-contact></app-contact>
+        <app-footer></app-footer>
+        <app-mobile-cta></app-mobile-cta>
+      </div>
+      <router-outlet></router-outlet>
     }
   `,
   styleUrl: './app.css'
@@ -73,10 +72,14 @@ import { RevealDirective } from './shared/directives/reveal.directive';
 export class App implements OnInit, OnDestroy {
   private router = inject(Router);
   private analytics = inject(AnalyticsService);
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  private visitTracked = false;
 
-  routerResolved = signal(false);
-  isAdmin = signal(false);
-  isAdminArea = signal(false);
+  // Decide público × admin pela URL já na criação (servidor e navegador iguais no 1º quadro,
+  // requisito da hidratação; esperar o 1º evento do router faria a página piscar).
+  private readonly initialAdmin = inject(Location).path().startsWith('/admin');
+  isAdmin = signal(this.initialAdmin);
+  isAdminArea = signal(this.initialAdmin);
 
 
   isAdminRoute(): boolean {
@@ -86,21 +89,19 @@ export class App implements OnInit, OnDestroy {
   ngOnInit() {
     this.router.events.pipe(
       filter(e => e instanceof NavigationEnd),
-    ).subscribe((e) => {
-      const url = (e as NavigationEnd).urlAfterRedirects;
-      const admin = url.startsWith('/admin');
-      this.isAdmin.set(admin);
-      this.isAdminArea.set(admin);
-      if (!this.routerResolved()) {
-        this.routerResolved.set(true);
-        if (!admin) {
-          // analytics (e o SDK do Firebase) só depois da primeira pintura
-          whenIdle(() => {
-            void this.analytics.trackVisit();
-            void this.analytics.trackSitePresence();
-          });
-        }
-      }
+    ).subscribe((e) => this.onNavigated((e as NavigationEnd).urlAfterRedirects));
+  }
+
+  private onNavigated(url: string): void {
+    const admin = url.startsWith('/admin');
+    this.isAdmin.set(admin);
+    this.isAdminArea.set(admin);
+    if (this.visitTracked || admin || !this.isBrowser) return;
+    this.visitTracked = true;
+    // analytics (e o SDK do Firebase) só no navegador, depois da primeira pintura
+    whenIdle(() => {
+      void this.analytics.trackVisit();
+      void this.analytics.trackSitePresence();
     });
   }
 

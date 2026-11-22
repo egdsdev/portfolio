@@ -1,4 +1,5 @@
-import { Component, OnDestroy, AfterViewInit, ChangeDetectorRef, inject } from '@angular/core';
+import { Component, OnDestroy, AfterViewInit, ChangeDetectorRef, inject, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 interface Stat {
   target: number;
@@ -47,6 +48,7 @@ interface Stat {
   `]
 })
 export class StatsComponent implements AfterViewInit, OnDestroy {
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private cdr = inject(ChangeDetectorRef);
   private observer?: IntersectionObserver;
   private animationFrames: number[] = [];
@@ -72,6 +74,7 @@ export class StatsComponent implements AfterViewInit, OnDestroy {
   ];
 
   ngAfterViewInit() {
+    if (!this.isBrowser) return;
     this.observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && !this.started) {

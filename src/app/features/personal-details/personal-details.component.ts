@@ -1,4 +1,5 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, signal, OnInit, OnDestroy } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, signal, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faGithub, faLinkedinIn, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { faEnvelope } from '@fortawesome/free-regular-svg-icons';
@@ -87,6 +88,7 @@ import { AnalyticsService } from '../../core/services/analytics.service';
   `
 })
 export class PersonalDetailsComponent implements OnInit, OnDestroy {
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private analytics = inject(AnalyticsService);
 
   readonly socials = [
@@ -109,6 +111,7 @@ export class PersonalDetailsComponent implements OnInit, OnDestroy {
   private timer?: ReturnType<typeof setTimeout>;
 
   ngOnInit(): void {
+    if (!this.isBrowser) return;
     this.timer = setTimeout(() => this.tick(), 3000);
   }
 

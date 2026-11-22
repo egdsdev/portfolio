@@ -11,7 +11,7 @@
     "pages:check": "npm run build:pages && npm run pages:prepare",
     "watch": "ng build --watch --configuration development",
     "test": "ng test",
-    "deploy": "ng build --configuration production && npx angular-cli-ghpages --dir=dist/portfolio/browser"
+    "deploy": "ng build --configuration production && node -e \"require('fs').copyFileSync('dist/portfolio/browser/index.csr.html', 'dist/portfolio/browser/404.html')\" && npx angular-cli-ghpages --dir=dist/portfolio/browser --no-notfound"
   },
   "prettier": {
     "printWidth": 100,
@@ -32,7 +32,9 @@
     "@angular/core": "^20.3.0",
     "@angular/forms": "^20.3.0",
     "@angular/platform-browser": "^20.3.0",
+    "@angular/platform-server": "^20.3.9",
     "@angular/router": "^20.3.0",
+    "@angular/ssr": "^20.3.8",
     "@fortawesome/angular-fontawesome": "^3.0.0",
     "@fortawesome/fontawesome-svg-core": "^7.1.0",
     "@fortawesome/free-brands-svg-icons": "^7.1.0",

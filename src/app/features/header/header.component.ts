@@ -1,4 +1,5 @@
-import { Component, signal, inject, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, signal, inject, OnInit, OnDestroy, ChangeDetectorRef, PLATFORM_ID } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { RouterLink, Router } from '@angular/router';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faGithub, faLinkedinIn, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
@@ -130,6 +131,7 @@ import { AnalyticsService } from '../../core/services/analytics.service';
   `]
 })
 export class HeaderComponent implements OnInit, OnDestroy {
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private firebase = lazyFirebase();
   private analytics = inject(AnalyticsService);
   private router = inject(Router);
@@ -147,12 +149,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
   };
 
   ngOnInit() {
+    if (!this.isBrowser) return;
     // login só importa para o dono do site: verifica depois da primeira pintura
     whenIdle(() => void this.checkAuth(), 4000);
     window.addEventListener('scroll', this.onScroll, { passive: true });
   }
 
   ngOnDestroy() {
+    if (!this.isBrowser) return;
     window.removeEventListener('scroll', this.onScroll);
   }
 

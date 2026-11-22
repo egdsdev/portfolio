@@ -1,4 +1,5 @@
-import { Directive, ElementRef, Input, OnInit, OnDestroy } from '@angular/core';
+import { Directive, ElementRef, Input, OnInit, OnDestroy, PLATFORM_ID, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 
 type RevealDirection = 'up' | 'down' | 'left' | 'right' | 'fade';
 
@@ -12,10 +13,13 @@ export class RevealDirective implements OnInit, OnDestroy {
   @Input() revealThreshold = 0.15;
 
   private observer?: IntersectionObserver;
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
 
   constructor(private el: ElementRef<HTMLElement>) {}
 
   ngOnInit() {
+    // no HTML pré-renderizado o conteúdo fica visível; a animação é só no navegador
+    if (!this.isBrowser) return;
     const el = this.el.nativeElement;
 
     // Estado inicial (escondido)

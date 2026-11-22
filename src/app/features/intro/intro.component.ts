@@ -1,4 +1,5 @@
-import { AfterViewInit, Component, ElementRef, NgZone, OnDestroy, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, NgZone, OnDestroy, PLATFORM_ID, ViewChild, inject } from '@angular/core';
+import { isPlatformBrowser } from '@angular/common';
 import { AnalyticsService } from '../../core/services/analytics.service';
 
 interface Particle {
@@ -192,11 +193,13 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
   /** sem interação por este tempo, a animação dorme (bateria/CPU) */
   private readonly IDLE_MS = 15000;
   private readonly MOUSE_RADIUS = 90;
-  private readonly reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+  private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  /** lidos no navegador (no servidor não existem matchMedia/Image) */
+  private reduceMotion = false;
 
   private ctx!: CanvasRenderingContext2D;
-  private dotsSrc = new Image();
-  private heroSrc = new Image();
+  private dotsSrc!: HTMLImageElement;
+  private heroSrc!: HTMLImageElement;
   /** foto do hero já recortada e reduzida (fora da thread principal) para mapear os pontos */
   private heroThumb: CanvasImageSource | null = null;
   private particles: Particle[] = [];
@@ -258,6 +261,11 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
   };
 
   ngAfterViewInit(): void {
+    // pré-renderização: no servidor só o HTML da intro (texto, botão) sai pronto
+    if (!this.isBrowser) return;
+    this.reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    this.dotsSrc = new Image();
+    this.heroSrc = new Image();
     this.zone.runOutsideAngular(() => {
       this.ctx = this.canvasRef.nativeElement.getContext('2d')!;
       this.dotsSrc.src = 'profile-dots.png';
@@ -292,6 +300,7 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    if (!this.isBrowser) return;
     cancelAnimationFrame(this.raf);
     clearTimeout(this.resizeTimer);
     removeEventListener('scroll', this.onScroll);
