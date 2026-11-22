@@ -21,10 +21,6 @@ export async function trackVisitor(
   await updateDoc(ref, { ...clean, visitCount: increment(1), lastSeen: Timestamp.now() }).catch(fresh);
 }
 
-export async function updateVisitorCoords(visitorId: string, lat: number, lng: number): Promise<void> {
-  await updateDoc(doc(db, 'visitors', visitorId), { lat, lng, preciseLocation: true }).catch(() => undefined);
-}
-
 export async function trackAnalyticsEvent(data: Omit<AnalyticsEventRecord, 'id' | 'createdAt'>): Promise<void> {
   await addDoc(collection(db, 'analytics_events'), { ...data, createdAt: Timestamp.now() });
 }

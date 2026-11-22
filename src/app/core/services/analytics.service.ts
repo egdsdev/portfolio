@@ -86,13 +86,6 @@ export class AnalyticsService {
           referrer: document.referrer || 'direct',
         },
       });
-
-      // Solicita localização precisa em background — atualiza coords se concedido
-      this.requestPreciseLocation().then(coords => {
-        if (coords) {
-          void this.firebase().then(f => f.updateVisitorCoords(ctx.visitorId, coords.latitude, coords.longitude));
-        }
-      });
     } catch (err) {
       console.error('[Analytics] trackVisit error:', err);
     }
@@ -370,14 +363,4 @@ export class AnalyticsService {
     };
   }
 
-  private requestPreciseLocation(): Promise<GeolocationCoordinates | null> {
-    return new Promise(resolve => {
-      if (!navigator.geolocation) { resolve(null); return; }
-      navigator.geolocation.getCurrentPosition(
-        pos => resolve(pos.coords),
-        () => resolve(null),
-        { timeout: 10000, enableHighAccuracy: true, maximumAge: 0 },
-      );
-    });
-  }
 }
