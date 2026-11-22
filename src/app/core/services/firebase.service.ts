@@ -197,7 +197,11 @@ export class FirebaseService {
 
   isLoggedIn(): Promise<boolean> {
     return new Promise(resolve => {
-      onAuthStateChanged(this.auth, user => resolve(!!user));
+      onAuthStateChanged(this.auth, user => {
+        // marca o navegador do dono: só nele o site público confere o login (ver header)
+        try { user ? localStorage.setItem('portfolio-admin', '1') : localStorage.removeItem('portfolio-admin'); } catch {}
+        resolve(!!user);
+      });
     });
   }
 

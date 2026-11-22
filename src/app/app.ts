@@ -47,22 +47,23 @@ import { RevealDirective } from './shared/directives/reveal.directive';
         <app-intro></app-intro>
         <app-personal-details></app-personal-details>
         <div appReveal="fade" [revealDelay]="0">
-          <app-stats></app-stats>
+          @defer (hydrate on viewport) { <app-stats></app-stats> }
         </div>
         <div appReveal="up" [revealDelay]="0" [revealThreshold]="0.03">
-          <app-experience></app-experience>
+          @defer (hydrate on viewport) { <app-experience></app-experience> }
         </div>
         <div appReveal="up" [revealDelay]="0" [revealThreshold]="0.03">
-          <app-cases></app-cases>
+          @defer (hydrate on viewport) { <app-cases></app-cases> }
         </div>
         <div appReveal="up" [revealDelay]="0">
-          <app-skills></app-skills>
+          @defer (hydrate on viewport) { <app-skills></app-skills> }
         </div>
         <div appReveal="up" [revealDelay]="0">
-          <app-education></app-education>
+          @defer (hydrate on viewport) { <app-education></app-education> }
         </div>
-        <app-contact></app-contact>
-        <app-footer></app-footer>
+        <!-- abaixo da dobra: o HTML já vem pronto; o JavaScript só ativa quando aparece na tela -->
+        @defer (hydrate on viewport) { <app-contact></app-contact> }
+        @defer (hydrate on viewport) { <app-footer></app-footer> }
         <app-mobile-cta></app-mobile-cta>
       </div>
       <router-outlet></router-outlet>

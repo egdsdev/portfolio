@@ -164,7 +164,10 @@ export class HeaderComponent implements OnInit, OnDestroy {
   ngOnInit() {
     if (!this.isBrowser) return;
     // login só importa para o dono do site: verifica depois da primeira pintura
-    whenIdle(() => void this.checkAuth(), 4000);
+    // só no navegador de quem já entrou no admin: visitantes não baixam o Firebase Auth
+    let owner = false;
+    try { owner = localStorage.getItem('portfolio-admin') === '1'; } catch {}
+    if (owner) whenIdle(() => void this.checkAuth(), 4000);
     window.addEventListener('scroll', this.onScroll, { passive: true });
   }
 

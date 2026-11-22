@@ -1,6 +1,5 @@
 import { Injectable } from '@angular/core';
 import type { AnalyticsMetadata } from './firebase.service';
-import { lazyFirebase } from './firebase.loader';
 
 interface GeoPayload {
   ip?: string;
@@ -26,8 +25,8 @@ interface AnalyticsContext {
 
 @Injectable({ providedIn: 'root' })
 export class AnalyticsService {
-  /** SDK do Firebase carregado sob demanda (fora do JS inicial) */
-  private firebase = lazyFirebase();
+  /** gravador leve (Firestore Lite) carregado sob demanda, fora do JS inicial */
+  private firebase = () => import('./tracker');
 
   /** dono do site + servidor dos testes automatizados (177.104.188.141): não contam como visita */
   private readonly IGNORED_IPS = ['45.179.22.183', '138.255.215.188', '177.104.188.141'];

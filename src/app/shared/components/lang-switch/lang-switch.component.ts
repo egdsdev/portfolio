@@ -1,19 +1,17 @@
 import { Component, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
 import { LanguageService, Lang } from '../../../core/i18n/language.service';
 import { AnalyticsService } from '../../../core/services/analytics.service';
 
-/** Seletor PT · EN: troca pela URL (/ e /en), sem recarregar nem perder a rolagem. */
+/** Seletor PT · EN: abre a página pré-renderizada de cada idioma (/ e /en/). */
 @Component({
   selector: 'app-lang-switch',
   standalone: true,
-  imports: [RouterLink],
   template: `
     <nav class="lang" [attr.aria-label]="i18n.isEn() ? 'Language' : 'Idioma'">
-      <a routerLink="/" hreflang="pt-BR" lang="pt-BR" title="Português"
+      <a href="./" hreflang="pt-BR" lang="pt-BR" title="Português"
          [class.is-active]="!i18n.isEn()" [attr.aria-current]="i18n.isEn() ? null : 'page'" (click)="track('pt')">PT</a>
       <span aria-hidden="true">·</span>
-      <a routerLink="/en" hreflang="en" lang="en" title="English"
+      <a href="en/" hreflang="en" lang="en" title="English"
          [class.is-active]="i18n.isEn()" [attr.aria-current]="i18n.isEn() ? 'page' : null" (click)="track('en')">EN</a>
     </nav>
   `,

@@ -227,6 +227,8 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
   private stillSettled = false;
   private idleSince = performance.now();
   private frame = 0;
+  /** custo médio (ms) de um quadro: acima de ~20ms o aparelho é lento e a animação vai a 30 qps */
+  private cost = 0;
   /** últimos valores gravados no DOM: regravar o mesmo valor recalcula o estilo da página */
   private applied = { photo: '', ui: '', active: false as boolean | null, events: '' };
   private silhouette: HTMLCanvasElement | null = null;
@@ -539,7 +541,6 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
     // até 4 passos por quadro: a física é barata perto do desenho, e o retrato assenta em menos
     // quadros pesados; o limite evita espiral de atraso em aparelho lento
     const steps = Math.min(4, Math.max(1, Math.round((now - this.last) / 16.67)));
-    this.last = now;
     const prect = this.portraitRef.nativeElement.getBoundingClientRect();
     const hrect = this.heroRect();
 
@@ -558,14 +559,23 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
 
     // Ocioso (só a borda flutuando): ~20 quadros/s bastam para a flutuação lenta.
     if (idle && this.frame++ % 3 !== 0) {
+      this.last = now;
       this.raf = requestAnimationFrame(t => this.tick(t));
       return;
     }
 
+    // aparelho lento: pula quadro alternado — libera a thread para toque/rolagem; a física compensa o tempo
+    if (!idle && this.cost > 20 && this.frame++ % 2) {
+      this.raf = requestAnimationFrame(t => this.tick(t));
+      return;
+    }
+    this.last = now;
+    const t0 = performance.now();
     for (let i = 0; i < steps; i++) this.physics(p, prect, hrect, cached ? this.live : this.particles);
     if (!cached && canCache && this.stillSettled) this.buildLayer(prect);
 
     this.draw(p, prect);
+    this.cost += (performance.now() - t0 - this.cost) * 0.2;
 
     // Sem interação há um tempo (ou movimento reduzido): congela o quadro e dorme.
     if (idle && (this.reduceMotion || now - this.idleSince > this.IDLE_MS)) {
