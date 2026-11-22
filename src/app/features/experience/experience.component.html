@@ -1,6 +1,6 @@
-<section id="experiencia" class="py-20 sm:py-28 border-b border-zinc-900">
+<section id="experiencia" class="py-16 sm:py-28 border-b border-zinc-900">
   <div class="wrap">
-    <div class="mb-12 sm:mb-20 max-w-4xl">
+    <div class="mb-10 sm:mb-20 max-w-4xl">
       <div class="eyebrow mb-5">01 — Experiência</div>
       <h2 class="section-title mb-6">Onde eu já<br>entreguei software</h2>
       <p class="section-lead">
@@ -11,10 +11,14 @@
     </div>
 
     <div class="exp-list">
-      @for (entry of entries; track entry.company; let first = $first) {
-        <article class="exp-row">
+      @for (entry of entries; track entry.company + entry.date; let first = $first, i = $index) {
+        @if (i === OLDER_FROM) {
+          <p class="exp-earlier eyebrow">Experiências anteriores</p>
+        }
+        <article class="exp-row" [class.is-older]="i >= OLDER_FROM" [class.is-open]="opened().has(i)">
           <div class="exp-meta">
-            <div class="eyebrow">{{ entry.date }}</div>
+            <!-- com o selo "Atual" ao lado, a data não repete a palavra -->
+            <div class="eyebrow">{{ first ? entry.date.replace(' Atual', '') : entry.date }}</div>
             @if (first) {
               <div class="exp-now">Atual</div>
             }
@@ -24,6 +28,13 @@
             <h3 class="exp-company">{{ entry.company }}</h3>
             <p class="exp-context">{{ entry.context }}</p>
             <p class="exp-role">{{ entry.role }} · <span class="exp-modality">{{ entry.modality }}</span></p>
+
+            <!-- celular: cargos antigos ficam compactos até o toque -->
+            @if (i >= OLDER_FROM) {
+              <button type="button" class="exp-toggle" (click)="toggle(i, entry.company)" [attr.aria-expanded]="opened().has(i)">
+                {{ opened().has(i) ? 'Ocultar detalhes' : 'Ver detalhes' }}
+              </button>
+            }
 
             <!-- Os 2 primeiros bullets sempre visíveis: o recrutador lê sem clicar -->
             <ul class="exp-highlights">

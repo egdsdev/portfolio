@@ -1,12 +1,15 @@
 import { Component, signal, inject, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
 import { RouterLink, Router } from '@angular/router';
+import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
+import { faGithub, faLinkedinIn, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
+import { faEnvelope } from '@fortawesome/free-regular-svg-icons';
 import { lazyFirebase, whenIdle } from '../../core/services/firebase.loader';
 import { AnalyticsService } from '../../core/services/analytics.service';
 
 @Component({
   selector: 'app-header',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, FontAwesomeModule],
   template: `
     <!-- Barra de progresso de scroll -->
     <div class="progress-bar-wrap fixed top-0 left-0 right-0 z-51 h-px pointer-events-none">
@@ -84,6 +87,26 @@ import { AnalyticsService } from '../../core/services/analytics.service';
           </div>
         }
       </nav>
+
+      <div class="mt-auto p-6 border-t border-zinc-900 flex flex-col gap-4">
+        <a href="curriculo-elias-gomes.pdf" download="Curriculo-Elias-Gomes-da-Silva.pdf"
+           class="flex items-center gap-2 text-sm text-zinc-300 hover:text-white transition-colors"
+           (click)="trackDrawerResume(); closeMenu()">
+          <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" /></svg>
+          Baixar currículo (PDF)
+        </a>
+        <ul class="flex items-center gap-1 -ml-2" aria-label="Redes e contato">
+          @for (s of socials; track s.label) {
+            <li>
+              <a [href]="s.href" [attr.target]="s.href.startsWith('http') ? '_blank' : null" rel="noopener noreferrer"
+                 class="inline-flex items-center justify-center w-10 h-10 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
+                 [attr.aria-label]="s.label" [title]="s.label" (click)="closeMenu()">
+                <fa-icon [icon]="s.icon"></fa-icon>
+              </a>
+            </li>
+          }
+        </ul>
+      </div>
     </aside>
   `,
   styles: [`
@@ -152,6 +175,17 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   closeMenu() {
     this.isOpen.set(false);
+  }
+
+  readonly socials = [
+    { label: 'GitHub', href: 'https://github.com/egdsdev', icon: faGithub },
+    { label: 'LinkedIn', href: 'https://www.linkedin.com/in/egdsdev/', icon: faLinkedinIn },
+    { label: 'WhatsApp', href: 'https://wa.me/5564981476096', icon: faWhatsapp },
+    { label: 'Email', href: 'mailto:egds.dev@gmail.com', icon: faEnvelope },
+  ];
+
+  trackDrawerResume(): void {
+    void this.analytics.trackCtaClick('menu_resume', 'navigation', 'resume');
   }
 
   trackNavClick(targetSection: 'contato', surface: 'desktop' | 'mobile'): void {

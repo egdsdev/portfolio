@@ -13,15 +13,15 @@ interface Stat {
   standalone: true,
   template: `
     <div class="border-b border-zinc-900">
-      <div #trigger class="wrap py-14 sm:py-20 grid grid-cols-1 md:grid-cols-3">
+      <div #trigger class="wrap py-10 sm:py-20 grid grid-cols-3">
         @for (stat of stats; track stat.label) {
           <div class="stat-cell stat-fade" [class.stat-visible]="started">
             <div class="flex items-baseline gap-1.5">
-              <span class="stat-number display text-6xl md:text-7xl text-zinc-50">{{ stat.current }}</span>
-              <span class="stat-number display text-3xl md:text-4xl text-zinc-600">{{ stat.suffix }}</span>
+              <span class="stat-number display text-[2.6rem] sm:text-6xl md:text-7xl text-zinc-50">{{ stat.current }}</span>
+              <span class="stat-number display text-2xl sm:text-3xl md:text-4xl text-zinc-600">{{ stat.suffix }}</span>
             </div>
-            <div class="text-zinc-200 text-[0.9375rem] font-medium mt-4">{{ stat.label }}</div>
-            <div class="text-zinc-500 text-sm mt-1.5 leading-relaxed">{{ stat.detail }}</div>
+            <div class="text-zinc-200 text-xs leading-snug sm:text-[0.9375rem] font-medium mt-2.5 sm:mt-4">{{ stat.label }}</div>
+            <div class="hidden sm:block text-zinc-400 text-sm mt-1.5 leading-relaxed">{{ stat.detail }}</div>
           </div>
         }
       </div>
@@ -30,16 +30,11 @@ interface Stat {
   styles: [`
     .stat-number { font-weight: 600; letter-spacing: -0.045em; line-height: 1; }
 
-    .stat-cell { padding: 2rem 0; border-top: 1px solid var(--border); }
-
-    @media (min-width: 768px) {
-      .stat-cell {
-        padding: 0 2.5rem;
-        border-top: none;
-        border-left: 1px solid var(--border);
-      }
-      .stat-cell:first-child { padding-left: 0; border-left: none; }
-    }
+    /* lado a lado em qualquer largura; no celular, compacto (número + rótulo) */
+    .stat-cell { padding: 0 .85rem; border-left: 1px solid var(--border); }
+    .stat-cell:first-child { padding-left: 0; border-left: none; }
+    @media (min-width: 640px) { .stat-cell { padding: 0 1.5rem; } }
+    @media (min-width: 768px) { .stat-cell { padding: 0 2.5rem; } }
 
     .stat-fade {
       opacity: 0;

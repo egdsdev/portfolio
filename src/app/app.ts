@@ -11,6 +11,7 @@ import { CasesComponent } from './features/cases/cases.component';
 import { ExperienceComponent } from './features/experience/experience.component';
 import { SkillsComponent } from './features/skills/skills.component';
 import { ContactComponent } from './features/contact/contact.component';
+import { MobileCtaComponent } from './shared/components/mobile-cta/mobile-cta.component';
 import { FooterComponent } from './shared/components/footer/footer.component';
 import { StatsComponent } from './features/stats/stats.component';
 import { RevealDirective } from './shared/directives/reveal.directive';
@@ -30,6 +31,7 @@ import { RevealDirective } from './shared/directives/reveal.directive';
     SkillsComponent,
     ContactComponent,
     FooterComponent,
+    MobileCtaComponent,
     RevealDirective,
   ],
   template: `
@@ -60,6 +62,7 @@ import { RevealDirective } from './shared/directives/reveal.directive';
           </div>
           <app-contact></app-contact>
           <app-footer></app-footer>
+          <app-mobile-cta></app-mobile-cta>
         </div>
         <router-outlet></router-outlet>
       }

@@ -24,9 +24,9 @@ interface Case {
   selector: 'app-cases',
   standalone: true,
   template: `
-    <section id="cases" class="py-20 sm:py-28 border-b border-zinc-900">
+    <section id="cases" class="py-16 sm:py-28 border-b border-zinc-900">
       <div class="wrap">
-        <div class="mb-12 sm:mb-20 max-w-4xl">
+        <div class="mb-10 sm:mb-20 max-w-4xl">
           <div class="eyebrow mb-5">02 — Cases</div>
           <h2 class="section-title mb-6">Como eu resolvo<br>problemas</h2>
           <p class="section-lead">

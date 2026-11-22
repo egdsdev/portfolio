@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 
 interface SkillPill {
   name: string;
@@ -14,9 +14,9 @@ interface SkillGroup {
   selector: 'app-skills',
   standalone: true,
   template: `
-    <section id="habilidades" class="py-20 sm:py-28 border-b border-zinc-900">
+    <section id="habilidades" class="py-16 sm:py-28 border-b border-zinc-900">
       <div class="wrap">
-        <div class="mb-12 sm:mb-20 max-w-4xl">
+        <div class="mb-10 sm:mb-20 max-w-4xl">
           <div class="eyebrow mb-5">03 — Stack</div>
           <h2 class="section-title mb-6">O que eu uso<br>no dia a dia</h2>
           <p class="section-lead">
@@ -24,16 +24,28 @@ interface SkillGroup {
           </p>
         </div>
 
+        <!-- celular: uma categoria por vez (as demais seguem no HTML para buscadores) -->
+        <div class="skill-tabs" role="tablist" aria-label="Categorias de skills">
+          @for (group of groups; track group.title; let i = $index) {
+            <button type="button" role="tab" class="skill-tab" [class.is-active]="active() === i"
+                    [attr.aria-selected]="active() === i" [attr.aria-controls]="'skills-' + i"
+                    (click)="active.set(i)">
+              {{ group.title }}
+            </button>
+          }
+        </div>
+
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-16">
-          @for (group of groups; track group.title) {
-            <div class="py-8 border-t border-zinc-900">
+          @for (group of groups; track group.title; let i = $index) {
+            <div class="skill-group py-8 border-t border-zinc-900" [id]="'skills-' + i" role="tabpanel"
+                 [class.is-active]="active() === i">
               <h3 class="text-zinc-100 font-medium mb-5 text-[0.9375rem]">{{ group.title }}</h3>
               <div class="flex flex-wrap gap-2">
                 @for (pill of group.pills; track pill.name) {
                   <span class="pill">
                     {{ pill.name }}
                     @if (pill.years) {
-                      <span class="ml-1.5 text-zinc-600 font-mono text-[11px]">{{ pill.years }}</span>
+                      <span class="ml-1.5 text-zinc-500 font-mono text-[11px]">{{ pill.years }}</span>
                     }
                   </span>
                 }
@@ -43,9 +55,46 @@ interface SkillGroup {
         </div>
       </div>
     </section>
-  `
+  `,
+  styles: [`
+    .skill-tabs { display: none; }
+
+    @media (max-width: 639px) {
+      .skill-tabs {
+        display: flex;
+        gap: .4rem;
+        margin: 0 calc(-1 * var(--gutter, 1.5rem)) 1.25rem;
+        padding: 0 var(--gutter, 1.5rem) .25rem;
+        overflow-x: auto;
+        scroll-snap-type: x proximity;
+        scroll-padding-inline: var(--gutter, 1.5rem);
+        scrollbar-width: none;
+      }
+      .skill-tabs::-webkit-scrollbar { display: none; }
+      .skill-tab {
+        flex: none;
+        scroll-snap-align: start;
+        padding: .5rem .9rem;
+        border-radius: 999px;
+        border: 1px solid var(--border);
+        background: var(--bg-raised);
+        color: var(--fg-muted);
+        font-size: .8125rem;
+        white-space: nowrap;
+        transition: color .2s, border-color .2s, background .2s;
+      }
+      .skill-tab.is-active { color: var(--bg); background: var(--fg); border-color: var(--fg); font-weight: 500; }
+
+      .skill-group { display: none; }
+      .skill-group.is-active { display: block; padding-top: 1.25rem; animation: skill-in .25s ease-out; }
+      .skill-group h3 { display: none; }
+      @keyframes skill-in { from { opacity: 0; transform: translateY(4px); } }
+    }
+  `]
 })
 export class SkillsComponent {
+  readonly active = signal(0);
+
   groups: SkillGroup[] = [
     {
       title: 'Backend',

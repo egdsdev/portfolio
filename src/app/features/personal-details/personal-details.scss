@@ -87,3 +87,26 @@
 }
 
 .hero-aside { display: flex; flex-direction: column; gap: 0.75rem; flex: none; }
+
+/* Celular: composição centralizada. A foto fica no eixo da intro, então as
+   bolinhas descem em linha reta até ela. */
+@media (max-width: 699px) {
+  .hero-status { align-self: center; }
+  .hero-row { align-items: center; gap: 1.5rem; }
+  .hero-aside { align-items: center; gap: 0.5rem; }
+  .hero-photo { width: 11.5rem; height: 11.5rem; }
+  .hero-info { width: 100%; text-align: center; }
+  .hero-name { font-size: clamp(2rem, 9vw, 2.6rem); }
+  .hero-title { min-height: 3.25rem; }
+  .hero-meta {
+    margin-top: 0.75rem;
+    letter-spacing: 0.1em;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    row-gap: 0.25rem;
+  }
+  .hero-ctas { justify-content: center; margin-top: 1.75rem; }
+  /* larguras iguais: lado a lado quando cabem, empilhados (largura toda) em telas estreitas */
+  .hero-ctas > a { flex: 1 1 10rem; white-space: nowrap; padding-inline: 1rem; }
+}

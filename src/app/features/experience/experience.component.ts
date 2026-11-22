@@ -1,4 +1,4 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { AnalyticsService } from '../../core/services/analytics.service';
 
 interface ExperienceEntry {
@@ -21,6 +21,23 @@ interface ExperienceEntry {
 export class ExperienceComponent {
   private analytics = inject(AnalyticsService);
   private expandTracked = new Set<string>();
+
+  /** No celular, a partir deste índice os cargos aparecem compactos. */
+  readonly OLDER_FROM = 3;
+  readonly opened = signal<ReadonlySet<number>>(new Set());
+
+  toggle(i: number, company: string): void {
+    const next = new Set(this.opened());
+    if (next.has(i)) next.delete(i);
+    else {
+      next.add(i);
+      if (!this.expandTracked.has(company + i)) {
+        this.expandTracked.add(company + i);
+        void this.analytics.trackExperienceExpand(company);
+      }
+    }
+    this.opened.set(next);
+  }
 
   /** Só a abertura interessa, e uma vez por empresa. */
   onExpand(event: Event, company: string): void {

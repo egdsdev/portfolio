@@ -13,9 +13,9 @@ import { AnalyticsService } from '../../core/services/analytics.service';
   styleUrls: ['./personal-details.scss'],
   template: `
     <section id="detalhes" class="min-h-screen flex flex-col justify-center relative">
-      <div class="relative z-10 wrap pt-28 sm:pt-32 pb-12 sm:pb-16 flex-1 flex flex-col justify-center">
+      <div class="relative z-10 wrap pt-24 sm:pt-32 pb-12 sm:pb-16 flex-1 flex flex-col justify-center">
         <!-- Status -->
-        <div class="inline-flex items-center gap-2.5 mb-7 sm:mb-10 eyebrow">
+        <div class="hero-status inline-flex items-center gap-2.5 mb-7 sm:mb-10 eyebrow">
           <span class="relative flex h-1.5 w-1.5">
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400"></span>
@@ -49,18 +49,18 @@ import { AnalyticsService } from '../../core/services/analytics.service';
             <p class="hero-degree mb-3">Engenheiro de Computação&nbsp;· <span class="whitespace-nowrap">Pós-Graduado</span></p>
 
             <!-- min-h evita o layout "pular" enquanto o typewriter troca de frase -->
-            <p class="text-lg sm:text-xl md:text-2xl text-zinc-400 font-normal leading-snug
+            <p class="hero-title text-lg sm:text-xl md:text-2xl text-zinc-400 font-normal leading-snug
                       min-h-[3.5rem] sm:min-h-[2.5rem]">
               {{ displayTitle() }}<span class="typewriter-cursor text-zinc-600">|</span>
             </p>
 
-            <div class="eyebrow leading-relaxed mt-5">
+            <div class="hero-meta eyebrow leading-relaxed mt-5">
               <span class="text-zinc-300 whitespace-nowrap">7+ anos de experiência</span>
               <span class="text-zinc-700 mx-2">·</span>
               <span class="text-zinc-400 whitespace-nowrap">Goiânia, GO</span>
             </div>
 
-            <div class="flex flex-wrap items-center gap-3 mt-8">
+            <div class="hero-ctas flex flex-wrap items-center gap-3 mt-8">
               <a href="#contato" (click)="onHeroContactClick()" class="btn-primary">
                 Entre em contato
               </a>
