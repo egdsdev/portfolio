@@ -227,7 +227,7 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
   private stillSettled = false;
   private idleSince = performance.now();
   private frame = 0;
-  /** custo médio (ms) de um quadro: acima de ~20ms o aparelho é lento e a animação vai a 30 qps */
+  /** custo médio (ms) de um quadro: acima de 50ms cada quadro já trava a página e a animação pula quadros */
   private cost = 0;
   /** últimos valores gravados no DOM: regravar o mesmo valor recalcula o estilo da página */
   private applied = { photo: '', ui: '', active: false as boolean | null, events: '' };
@@ -565,7 +565,7 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
     }
 
     // aparelho lento: pula quadro alternado — libera a thread para toque/rolagem; a física compensa o tempo
-    if (!idle && this.cost > 20 && this.frame++ % 2) {
+    if (!idle && this.cost > 50 && this.frame++ % 2) {
       this.raf = requestAnimationFrame(t => this.tick(t));
       return;
     }
