@@ -1,11 +1,14 @@
 import { Component, OnDestroy, AfterViewInit, ChangeDetectorRef, inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
+import { LanguageService } from '../../core/i18n/language.service';
 
 interface Stat {
   target: number;
   suffix: string;
   label: string;
   detail: string;
+  labelEn: string;
+  detailEn: string;
   current: number;
 }
 
@@ -21,8 +24,8 @@ interface Stat {
               <span class="stat-number display text-[2.6rem] sm:text-6xl md:text-7xl text-zinc-50">{{ stat.current }}</span>
               <span class="stat-number display text-2xl sm:text-3xl md:text-4xl text-zinc-600">{{ stat.suffix }}</span>
             </div>
-            <div class="text-zinc-200 text-xs leading-snug sm:text-[0.9375rem] font-medium mt-2.5 sm:mt-4">{{ stat.label }}</div>
-            <div class="hidden sm:block text-zinc-400 text-sm mt-1.5 leading-relaxed">{{ stat.detail }}</div>
+            <div class="text-zinc-200 text-xs leading-snug sm:text-[0.9375rem] font-medium mt-2.5 sm:mt-4">{{ i18n.isEn() ? stat.labelEn : stat.label }}</div>
+            <div class="hidden sm:block text-zinc-400 text-sm mt-1.5 leading-relaxed">{{ i18n.isEn() ? stat.detailEn : stat.detail }}</div>
           </div>
         }
       </div>
@@ -49,6 +52,7 @@ interface Stat {
 })
 export class StatsComponent implements AfterViewInit, OnDestroy {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
+  readonly i18n = inject(LanguageService);
   private cdr = inject(ChangeDetectorRef);
   private observer?: IntersectionObserver;
   private animationFrames: number[] = [];
@@ -59,16 +63,22 @@ export class StatsComponent implements AfterViewInit, OnDestroy {
     {
       target: 7, suffix: '+', current: 0,
       label: 'Anos em produção',
+      labelEn: 'Years in production',
+      detailEn: 'End-to-end full stack: database modeling, APIs, infrastructure and interface.',
       detail: 'Full stack de ponta a ponta: modelagem de banco, APIs, infraestrutura e interface.',
     },
     {
       target: 12, suffix: '', current: 0,
       label: 'Serviços que superviso',
+      labelEn: 'Services I supervise',
+      detailEn: 'I designed the Data Warehouse and the release process every team follows.',
       detail: 'Projetei o Data Warehouse e o processo de release que todos os times seguem.',
     },
     {
       target: 6, suffix: '', current: 0,
       label: 'Times por onde passei',
+      labelEn: 'Teams I’ve worked in',
+      detailEn: 'From developer to supervisor — leading code review, mentoring and architecture.',
       detail: 'De desenvolvedor a supervisor — conduzindo code review, mentoria e arquitetura.',
     },
   ];

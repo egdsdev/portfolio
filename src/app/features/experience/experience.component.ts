@@ -1,4 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
+import { LanguageService, Lang } from '../../core/i18n/language.service';
 import { AnalyticsService } from '../../core/services/analytics.service';
 
 interface ExperienceEntry {
@@ -12,6 +13,24 @@ interface ExperienceEntry {
   bullets: string[];
 }
 
+const COPY: Record<Lang, {
+  eyebrow: string; title1: string; title2: string; lead: string; current: string;
+  earlier: string; show: string; hide: string; more: (n: number) => string;
+}> = {
+  pt: {
+    eyebrow: '01 — Experiência', title1: 'Onde eu já', title2: 'entreguei software',
+    lead: 'Sete anos construindo sistemas que rodam em produção — varejo automotivo, seguros, certificação digital e indústria. Do banco de dados e da infraestrutura à interface, hoje como desenvolvedor sênior e supervisor do backend de uma plataforma de ERP e dados.',
+    current: 'Atual', earlier: 'Experiências anteriores', show: 'Ver detalhes', hide: 'Ocultar detalhes',
+    more: (n) => `Mais ${n} entregas`,
+  },
+  en: {
+    eyebrow: '01 — Experience', title1: 'Where I’ve', title2: 'shipped software',
+    lead: 'Seven years building systems that run in production — automotive retail, insurance, digital certification and manufacturing. From databases and infrastructure to the interface; today a senior developer and backend supervisor for an ERP and data platform.',
+    current: 'Current', earlier: 'Earlier experience', show: 'Show details', hide: 'Hide details',
+    more: (n) => `${n} more highlights`,
+  },
+};
+
 @Component({
   selector: 'app-experience',
   standalone: true,
@@ -21,6 +40,14 @@ interface ExperienceEntry {
 export class ExperienceComponent {
   private analytics = inject(AnalyticsService);
   private expandTracked = new Set<string>();
+  private readonly i18n = inject(LanguageService);
+  readonly t = computed(() => COPY[this.i18n.lang()]);
+  readonly entries = computed(() => (this.i18n.isEn() ? this.en : this.pt));
+
+  /** com o selo ao lado, a data do cargo atual não repete a palavra (Atual/Present) */
+  dateLabel(date: string, first: boolean): string {
+    return first ? date.replace(/\s(Atual|Present)$/, '') : date;
+  }
 
   /** No celular, a partir deste índice os cargos aparecem compactos. */
   readonly OLDER_FROM = 3;
@@ -49,7 +76,7 @@ export class ExperienceComponent {
 
   // Os 2 primeiros bullets de cada entrada aparecem sem clique — por isso são
   // sempre os de maior impacto para quem está avaliando o currículo.
-  entries: ExperienceEntry[] = [
+  private readonly pt: ExperienceEntry[] = [
     {
       date: '2026 — Atual',
       company: 'Dadus Fábrica de Software',
@@ -157,6 +184,118 @@ export class ExperienceComponent {
         'Integração de chatbot automatizado com Twilio para atendimento via WhatsApp e SMS, reduzindo o volume que chegava ao atendimento humano',
         'Modelagem de banco relacional com relacionamentos complexos, queries otimizadas e stored procedures',
         'Sites e landing pages responsivos (PHP, JavaScript, CSS3, HTML5, Vue.js, Node.js, MySQL)',
+      ],
+    },
+  ];
+
+  private readonly en: ExperienceEntry[] = [
+    {
+      date: '2026 — Present',
+      company: 'Dadus Fábrica de Software',
+      context: 'Automotive-sector software house — ERP, BI and integrations for auto parts distributors and retailers',
+      role: 'Senior Full Stack Developer · Backend Supervisor',
+      modality: 'Goiânia, Brazil',
+      stack: ['PHP', 'Laravel', 'Python', 'Vue.js', 'PostgreSQL', 'Redis', 'AWS SQS', 'S3', 'Docker', 'GitLab CI'],
+      bullets: [
+        'I supervise the backend team for the auto parts ERP and its surrounding services: SSO, Data Warehouse, reporting engine and a shared authentication SDK (~12 services)',
+        'Designed the Data Warehouse from scratch — star schema on PostgreSQL with Python ETL, watermark-based incremental loads and BI queries served through an SQS queue with Redis caching',
+        'Defined the release process adopted by every project: GitFlow with Release Candidates, weekly versioning and merge request automation integrated with Discord',
+        'Built the asynchronous reporting service: the API publishes to an SQS queue, a Python worker generates PDF/CSV files on S3 and returns the result via Redis, without blocking the user request',
+        'Centralized authentication with a Laravel SSO and an in-house PHP SDK (JWT/JWKS, PSR-15) used by the other services',
+        'I lead code reviews and the integration of the team’s deliveries into the development branches, and maintain the API documentation in OpenAPI',
+      ],
+    },
+    {
+      date: '2026',
+      company: 'ByToken',
+      context: 'SaaS for governance of ICP-Brasil digital certificates for accounting firms',
+      role: 'Full Stack Developer',
+      modality: 'On-site · Goiânia, Brazil',
+      stack: ['PHP', 'Laravel', 'Vue.js', 'PostgreSQL', 'Redis', 'WebSocket', 'Firebase'],
+      bullets: [
+        'Multi-tenant SaaS platform that centralizes the use of digital certificates: each firm controls who can use which certificate, with an audit trail and without sharing files or passwords',
+        'Database optimization in a multi-tenant environment with stored procedures, triggers, views and indexes, supporting queries over per-client isolated databases',
+        'Asynchronous processing with Laravel Queues and Redis for notifications, document generation and long-running tasks',
+        'Automated routines with Laravel Scheduler: certificate expiration alerts, synchronizations and periodic reports',
+        'Real-time monitoring of websites and processes via WebSocket, with a history dashboard and data export',
+        'Power of attorney module for e-CAC (Brazilian Federal Revenue portal) with status control, blocking and integration with the Federal Revenue API',
+        'Automated risk analysis with AI (OpenAI and Gemini) and a rules engine configurable per tenant',
+        '2FA authentication, multi-host OAuth and granular role-based access control (RBAC)',
+        'Push notifications via Firebase and a CI/CD pipeline with GitHub Actions',
+      ],
+    },
+    {
+      date: '2025',
+      company: 'EQ Seguros',
+      context: 'Life insurance and pension company authorized by SUSEP (Brazil’s insurance regulator), with digital distribution through partners',
+      role: 'Backend / BI Developer',
+      modality: 'On-site · Goiânia, Brazil',
+      stack: ['SQL Server', 'Power BI', 'DAX', 'Dimensional modeling'],
+      bullets: [
+        'Power BI dashboards on insurance operations — policies, production by channel and partner network performance — used by the business team for commercial decisions',
+        'Dimensional modeling (star schema) and complex SQL queries on SQL Server to support reports over high monthly sales volumes',
+        'DAX measures and calculated columns for industry metrics: conversion, policy churn and commissions',
+      ],
+    },
+    {
+      date: '2022 — 2025',
+      company: 'Meeta Solutions',
+      context: 'Software factory for customer experience and data intelligence, building solutions for customer service operations in Latin America',
+      role: 'Backend Developer',
+      modality: 'Remote',
+      stack: ['PHP', 'Laravel', 'SQL Server', 'PostgreSQL', 'Python', 'Azure Functions', 'React Native', 'MongoDB'],
+      bullets: [
+        'Optimized slow queries through execution plan analysis, new indexes and refactoring of critical procedures on high-volume customer service databases',
+        'Migrated database servers from Windows Server to Linux, including rewriting procedures and adjusting collation',
+        'Developed and maintained custom business systems for clients with PHP/Laravel, SQL Server and PostgreSQL',
+        'Stored procedures, functions, triggers and views to encapsulate business rules and ensure data integrity',
+        'Scheduled jobs with SQL Server Agent and Linux cron for processing routines, reports and maintenance',
+        'Distributed systems across multiple repositories using Python, Azure Functions (HTTP and Timer Triggers), React, React Native and MongoDB',
+        'REST and SOAP APIs with authentication, versioning and documentation',
+        'Analytical Power BI dashboards with data modeling and DAX metrics',
+      ],
+    },
+    {
+      date: '2020 — 2023',
+      company: 'Dadus Fábrica de Software',
+      context: 'Same company I work for today, in an earlier stint — back then focused on industrial operations and internal systems',
+      role: 'Mid-level Full Stack Developer',
+      modality: 'Remote',
+      stack: ['Power BI', 'Pentaho ETL', 'SQL Server', 'MySQL', 'PHP', 'Vue.js', 'Electron'],
+      bullets: [
+        'Modernized a shoe factory’s legacy system: migration to a full stack web application (PHP, Vue.js, Node.js) with a complete database redesign',
+        'ETL pipelines with Pentaho integrating large data volumes between SQL Server and MySQL',
+        'Corporate Power BI dashboards with production, sales and inventory KPIs',
+        'Stored procedures, views and SQL automation scripts supporting the BI pipelines',
+        'Cross-platform desktop system for workstation authentication and monitoring, built with Electron',
+      ],
+    },
+    {
+      date: '2022 — 2023',
+      company: 'SalesFarm',
+      context: 'Sales-as-a-Service startup — a platform connecting companies to outsourced salespeople and SDRs',
+      role: 'Full Stack Web Developer',
+      modality: 'Remote',
+      stack: ['PHP', 'Laravel', 'MySQL', 'Code review', 'Scrum'],
+      bullets: [
+        'Refactored queries and stored procedures to cut the response time of the sales performance reports managers used during operations',
+        'Mentoring and technical onboarding of new developers, leading code reviews and setting team standards during a period of rapid growth',
+        'New features, bug fixes and performance optimization on the platform connecting salespeople to client companies',
+        'Took part in sprint planning, stack decisions and requirements gathering',
+      ],
+    },
+    {
+      date: '2021 — 2022',
+      company: 'VirtuaMax Comunicação',
+      context: 'Communication and web development agency with its own customer service product',
+      role: 'Mid-level Full Stack Web Developer',
+      modality: 'Remote',
+      stack: ['PHP', 'Laravel', 'Vue.js', 'MySQL', 'Twilio', 'Jira'],
+      bullets: [
+        'Full stack development of Deskkio, the company’s help desk product: tickets, service history and operator dashboard (PHP/Laravel, Vue.js, MySQL)',
+        'Integrated an automated Twilio chatbot for WhatsApp and SMS support, reducing the volume that reached human agents',
+        'Relational database modeling with complex relationships, optimized queries and stored procedures',
+        'Responsive websites and landing pages (PHP, JavaScript, CSS3, HTML5, Vue.js, Node.js, MySQL)',
       ],
     },
   ];

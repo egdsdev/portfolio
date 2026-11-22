@@ -1,6 +1,7 @@
 import { Component, NgZone, OnDestroy, OnInit, inject, signal, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { AnalyticsService } from '../../../core/services/analytics.service';
+import { LanguageService } from '../../../core/i18n/language.service';
 
 /**
  * Barra fixa de ação no celular: contato e currículo sempre à mão.
@@ -10,16 +11,16 @@ import { AnalyticsService } from '../../../core/services/analytics.service';
   selector: 'app-mobile-cta',
   standalone: true,
   template: `
-    <div class="mcta" [class.is-visible]="visible()" role="region" aria-label="Ações rápidas" [attr.aria-hidden]="!visible()">
+    <div class="mcta" [class.is-visible]="visible()" role="region" [attr.aria-label]="i18n.isEn() ? 'Quick actions' : 'Ações rápidas'" [attr.aria-hidden]="!visible()">
       <a href="#contato" class="mcta-btn is-primary" [attr.tabindex]="visible() ? null : -1" (click)="track('contact')">
-        Falar comigo
+        {{ i18n.isEn() ? 'Contact me' : 'Falar comigo' }}
       </a>
-      <a href="curriculo-elias-gomes.pdf" download="Curriculo-Elias-Gomes-da-Silva.pdf" class="mcta-btn"
+      <a [href]="i18n.resume().href" [attr.download]="i18n.resume().file" class="mcta-btn"
          [attr.tabindex]="visible() ? null : -1" (click)="track('resume')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
           <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
         </svg>
-        Currículo
+        {{ i18n.isEn() ? 'Résumé' : 'Currículo' }}
       </a>
     </div>
   `,
@@ -67,6 +68,7 @@ export class MobileCtaComponent implements OnInit, OnDestroy {
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private zone = inject(NgZone);
   private analytics = inject(AnalyticsService);
+  readonly i18n = inject(LanguageService);
   readonly visible = signal(false);
   private ticking = false;
 

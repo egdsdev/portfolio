@@ -1,4 +1,5 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
+import { LanguageService, Lang } from '../../core/i18n/language.service';
 import { AnalyticsService } from '../../core/services/analytics.service';
 
 interface FlowStep {
@@ -20,6 +21,19 @@ interface Case {
   link?: { href: string; label: string };
 }
 
+const COPY: Record<Lang, { eyebrow: string; title1: string; title2: string; lead: string; decisions: string; architecture: string; flowAria: string }> = {
+  pt: {
+    eyebrow: '02 — Cases', title1: 'Como eu resolvo', title2: 'problemas',
+    lead: 'Alguns sistemas que projetei, explicados como numa entrevista técnica: o objetivo, o desenho da solução e as decisões que fizeram diferença.',
+    decisions: 'Decisões que importaram', architecture: 'Arquitetura', flowAria: 'Fluxo da arquitetura: ',
+  },
+  en: {
+    eyebrow: '02 — Case studies', title1: 'How I solve', title2: 'problems',
+    lead: 'A few systems I designed, explained the way I would in a technical interview: the goal, the solution design and the decisions that made a difference.',
+    decisions: 'Decisions that mattered', architecture: 'Architecture', flowAria: 'Architecture flow: ',
+  },
+};
+
 @Component({
   selector: 'app-cases',
   standalone: true,
@@ -27,23 +41,20 @@ interface Case {
     <section id="cases" class="py-16 sm:py-28 border-b border-zinc-900">
       <div class="wrap">
         <div class="mb-10 sm:mb-20 max-w-4xl">
-          <div class="eyebrow mb-5">02 — Cases</div>
-          <h2 class="section-title mb-6">Como eu resolvo<br>problemas</h2>
-          <p class="section-lead">
-            Alguns sistemas que projetei, explicados como numa entrevista técnica: o objetivo,
-            o desenho da solução e as decisões que fizeram diferença.
-          </p>
+          <div class="eyebrow mb-5">{{ t().eyebrow }}</div>
+          <h2 class="section-title mb-6">{{ t().title1 }}<br>{{ t().title2 }}</h2>
+          <p class="section-lead">{{ t().lead }}</p>
         </div>
 
         <div class="cases">
-          @for (c of cases; track c.id; let i = $index) {
+          @for (c of cases(); track c.id; let i = $index) {
             <article class="case" [attr.aria-labelledby]="'case-' + c.id">
               <div class="case-body">
                 <div class="eyebrow case-where">{{ (i + 1).toString().padStart(2, '0') }} · {{ c.where }}</div>
                 <h3 class="case-title" [id]="'case-' + c.id">{{ c.title }}</h3>
                 <p class="case-goal">{{ c.goal }}</p>
 
-                <p class="case-label">Decisões que importaram</p>
+                <p class="case-label">{{ t().decisions }}</p>
                 <ul class="case-decisions">
                   @for (d of c.decisions; track d) { <li>{{ d }}</li> }
                 </ul>
@@ -60,8 +71,8 @@ interface Case {
               </div>
 
               <div class="case-flow">
-                <p class="case-label">Arquitetura</p>
-                <ol [attr.aria-label]="'Fluxo da arquitetura: ' + c.title">
+                <p class="case-label">{{ t().architecture }}</p>
+                <ol [attr.aria-label]="t().flowAria + c.title">
                   @for (s of c.flow; track s.label) {
                     <li [class.is-key]="s.key">
                       <span class="node-label">{{ s.label }}</span>
@@ -190,8 +201,11 @@ interface Case {
 })
 export class CasesComponent {
   private analytics = inject(AnalyticsService);
+  private readonly i18n = inject(LanguageService);
+  readonly t = computed(() => COPY[this.i18n.lang()]);
+  readonly cases = computed(() => (this.i18n.isEn() ? this.en : this.pt));
 
-  readonly cases: Case[] = [
+  private readonly pt: Case[] = [
     {
       id: 'data-warehouse',
       where: 'Dadus Fábrica de Software',
@@ -280,11 +294,108 @@ export class CasesComponent {
       ],
       decisions: [
         'Intro em canvas com milhares de partículas, otimizada para celular (cache do que está parado e repouso sem interação).',
-        'SDK do Firebase carregado sob demanda: o JavaScript inicial caiu de 1 MB para 519 KB.',
+        'Página pré-renderizada no build (SSG) e SDK do Firebase sob demanda: o conteúdo aparece antes do JavaScript, e o pacote inicial caiu de 1 MB para 519 KB.',
         'Painel administrativo com dados em tempo real (onSnapshot) e mapa sincronizado com a lista de visitantes.',
       ],
-      stack: ['Angular', 'TypeScript', 'Firebase', 'Canvas', 'Tailwind CSS'],
+      stack: ['Angular', 'Angular SSR', 'TypeScript', 'Firebase', 'Canvas', 'Tailwind CSS'],
       link: { href: 'https://github.com/egdsdev/portfolio', label: 'Ver o código no GitHub' },
+    },
+  ];
+
+  private readonly en: Case[] = [
+    {
+      id: 'data-warehouse',
+      where: 'Dadus Fábrica de Software',
+      title: 'Data Warehouse from scratch for the auto parts ERP',
+      goal: 'Give BI its own analytical database, separate from the ERP’s transactional database, with data refreshed incrementally.',
+      flow: [
+        { label: 'ERP', note: 'transactional database' },
+        { label: 'Python ETL', note: 'watermark-based incremental loads' },
+        { label: 'Data Warehouse', note: 'PostgreSQL · star schema', key: true },
+        { label: 'AWS SQS queue', note: 'BI queries' },
+        { label: 'Redis cache' },
+        { label: 'Reports and dashboards' },
+      ],
+      decisions: [
+        'Star schema (facts and dimensions): analytical queries that are simple to write and fast to run.',
+        'Watermark-based incremental loads: each run only processes what changed since the previous one.',
+        'Queries served through an SQS queue with Redis caching: heavy reports don’t compete with the API for resources, and repeated queries come from the cache.',
+      ],
+      stack: ['PostgreSQL', 'Python', 'AWS SQS', 'Redis'],
+    },
+    {
+      id: 'relatorios',
+      where: 'Dadus Fábrica de Software',
+      title: 'Heavy reports without blocking the user',
+      goal: 'Generate PDF and CSV reports asynchronously: the screen stays responsive while the file is being produced.',
+      flow: [
+        { label: 'Laravel API', note: 'receives the request and responds right away' },
+        { label: 'AWS SQS queue' },
+        { label: 'Python worker', note: 'generates PDF/CSV', key: true },
+        { label: 'AWS S3', note: 'stores the file' },
+        { label: 'Redis', note: 'returns the result' },
+      ],
+      decisions: [
+        'The API only publishes the request to the queue: no request is left waiting for the report.',
+        'A dedicated Python worker handles the generation, separate from the API.',
+        'File on S3 and result delivered via Redis: users get the link as soon as the file is ready.',
+      ],
+      stack: ['Laravel', 'Python', 'AWS SQS', 'AWS S3', 'Redis'],
+    },
+    {
+      id: 'sso',
+      where: 'Dadus Fábrica de Software',
+      title: 'Single sign-on for ~12 services with an in-house SDK',
+      goal: 'Centralize the platform’s authentication so no service has to reimplement login and token validation.',
+      flow: [
+        { label: 'User' },
+        { label: 'Laravel SSO', note: 'issues the JWT', key: true },
+        { label: 'In-house PHP SDK', note: 'validates via JWKS · PSR-15 middleware' },
+        { label: 'Platform services', note: 'ERP, Data Warehouse, reports…' },
+      ],
+      decisions: [
+        'A single login point (SSO) issuing JWT tokens for every service.',
+        'A shared PHP SDK that validates tokens against the public keys (JWKS), plugged in as PSR-15 middleware.',
+        'Each service just installs the SDK: the same authentication everywhere, maintained in one place.',
+      ],
+      stack: ['Laravel', 'PHP', 'JWT', 'JWKS', 'PSR-15'],
+    },
+    {
+      id: 'saas-certificados',
+      where: 'ByToken',
+      title: 'Multi-tenant SaaS for digital certificates',
+      goal: 'Let accounting firms use ICP-Brasil digital certificates with access control and auditing, without sharing files or passwords.',
+      flow: [
+        { label: 'Firm (tenant)' },
+        { label: '2FA login + RBAC', note: 'who can use which certificate' },
+        { label: 'Certificate use', note: 'without exposing files or passwords', key: true },
+        { label: 'Audit trail' },
+      ],
+      decisions: [
+        'Per-client isolated databases, with procedures, triggers, views and indexes to keep queries fast.',
+        'Long-running tasks on Laravel Queues with Redis, and automatic expiration alerts with the Scheduler.',
+        'Real-time monitoring via WebSocket and integration with the Brazilian Federal Revenue API (e-CAC powers of attorney).',
+      ],
+      stack: ['Laravel', 'Vue.js', 'PostgreSQL', 'Redis', 'WebSocket'],
+    },
+    {
+      id: 'portfolio',
+      where: 'Personal project · open source',
+      title: 'This portfolio, with its own analytics',
+      goal: 'A personal site that also measures how recruiters browse it: traffic sources, sections read and contacts, in a real-time dashboard.',
+      flow: [
+        { label: 'Visitor', note: 'Angular 20' },
+        { label: 'Browsing events', note: 'sections viewed, clicks, résumé' },
+        { label: 'Firestore', key: true },
+        { label: 'Real-time dashboard', note: 'live map, funnel, leads' },
+      ],
+      decisions: [
+        'Canvas intro with thousands of particles, optimized for mobile (caching what stands still and resting when there is no interaction).',
+        'Prerendered at build time (SSG) with the Firebase SDK loaded on demand: content shows up before the JavaScript, and the initial bundle dropped from 1 MB to 519 KB.',
+        'Admin dashboard with real-time data (onSnapshot) and a map synced with the visitor list.',
+      ],
+      stack: ['Angular', 'Angular SSR', 'TypeScript', 'Firebase', 'Canvas', 'Tailwind CSS'],
+      link: { href: 'https://github.com/egdsdev/portfolio', label: 'See the code on GitHub' },
     },
   ];
 

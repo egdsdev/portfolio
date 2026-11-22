@@ -1,4 +1,18 @@
-import { Component, inject } from '@angular/core';
+import { Component, computed, inject } from '@angular/core';
+import { LanguageService } from '../../core/i18n/language.service';
+
+const COPY = {
+  pt: {
+    eyebrow: '05 — Contato', title1: 'Disponível para', title2: 'novas oportunidades',
+    lead: 'Aberto a conversas sobre cargos de desenvolvedor ou liderança técnica — full stack, arquitetura, infraestrutura, DevOps ou dados. Presencial em Goiânia ou remoto, respondo em até 24h.',
+    location: 'Localização', place: 'Goiânia, GO · Brasil',
+  },
+  en: {
+    eyebrow: '05 — Contact', title1: 'Open to', title2: 'new opportunities',
+    lead: 'Open to conversations about developer or technical leadership roles — full stack, architecture, infrastructure, DevOps or data. On-site in Goiânia or remote; I reply within 24 hours.',
+    location: 'Location', place: 'Goiânia, GO · Brazil',
+  },
+};
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faGithub, faLinkedinIn, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { faEnvelope } from '@fortawesome/free-regular-svg-icons';
@@ -13,12 +27,9 @@ import { AnalyticsService } from '../../core/services/analytics.service';
     <section id="contato" class="py-16 sm:py-28">
       <div class="wrap">
         <div class="mb-10 sm:mb-16 max-w-4xl">
-          <div class="eyebrow mb-5">05 — Contato</div>
-          <h2 class="section-title mb-6">Disponível para<br>novas oportunidades</h2>
-          <p class="section-lead">
-            Aberto a conversas sobre cargos de desenvolvedor ou liderança técnica — full stack,
-            arquitetura, infraestrutura, DevOps ou dados. Presencial em Goiânia ou remoto, respondo em até 24h.
-          </p>
+          <div class="eyebrow mb-5">{{ t().eyebrow }}</div>
+          <h2 class="section-title mb-6">{{ t().title1 }}<br>{{ t().title2 }}</h2>
+          <p class="section-lead">{{ t().lead }}</p>
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-x-16">
@@ -53,8 +64,8 @@ import { AnalyticsService } from '../../core/services/analytics.service';
 
           <div class="contact-row cursor-default md:col-span-2">
             <fa-icon [icon]="icons.faLocationDot" class="contact-icon"></fa-icon>
-            <span class="contact-text"><span class="eyebrow">Localização</span>
-            <span class="contact-value text-zinc-400">Goiânia, GO · Brasil</span></span>
+            <span class="contact-text"><span class="eyebrow">{{ t().location }}</span>
+            <span class="contact-value text-zinc-400">{{ t().place }}</span></span>
           </div>
         </div>
       </div>
@@ -95,6 +106,8 @@ import { AnalyticsService } from '../../core/services/analytics.service';
 })
 export class ContactComponent {
   private analytics = inject(AnalyticsService);
+  private readonly i18n = inject(LanguageService);
+  readonly t = computed(() => COPY[this.i18n.lang()]);
   readonly icons = { faEnvelope, faWhatsapp, faLinkedinIn, faGithub, faLocationDot, faArrowRight };
 
   onEmailClick(event: MouseEvent): void {

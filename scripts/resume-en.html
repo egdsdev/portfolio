@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Elias Gomes da Silva - Resume - Senior Full Stack Developer</title>
+<meta name="author" content="Elias Gomes da Silva">
+<meta name="keywords" content="Senior Full Stack Developer, Backend Engineer, PHP, Laravel, Python, Vue.js, PostgreSQL, SQL Server, AWS, Docker, CI/CD, Power BI, Computer Engineering">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ============================================================
+     Currículo — layout de coluna única, otimizado para ATS e
+     para leitura humana em 30 segundos.
+     Sem sidebar colorida: fundo branco imprime bem e não
+     desperdiça 1/3 da largura útil.
+     ============================================================ */
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  :root {
+    --ink:     #18181b;
+    --body:    #3f3f46;
+    --muted:   #71717a;
+    --line:    #e4e4e7;
+    --accent:  #1d4ed8;
+  }
+
+  @page { size: A4; margin: 10mm 13mm; }
+
+  body {
+    font-family: 'Inter', system-ui, sans-serif;
+    font-size: 9.1pt;
+    line-height: 1.4;
+    color: var(--body);
+    background: #fff;
+    -webkit-font-smoothing: antialiased;
+    font-variant-ligatures: none;
+  }
+
+  /* ---------- Cabeçalho ---------- */
+  header { border-bottom: 2px solid var(--ink); padding-bottom: 7px; margin-bottom: 10px; }
+
+  .name {
+    font-size: 22pt;
+    font-weight: 700;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    line-height: 1.1;
+  }
+
+  .headline {
+    font-size: 10.5pt;
+    font-weight: 600;
+    color: var(--accent);
+    margin-top: 2px;
+  }
+  .degree { font-size: 9.2pt; font-weight: 500; color: var(--body); margin-top: 1px; }
+
+  .contact {
+    margin-top: 7px;
+    font-size: 8.6pt;
+    color: var(--muted);
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2px 6px;
+  }
+  .contact a { color: var(--muted); text-decoration: none; }
+  .contact .sep { color: #d4d4d8; }
+  .contact strong { color: var(--body); font-weight: 500; }
+
+  /* ---------- Resumo ---------- */
+  .summary {
+    font-size: 9.2pt;
+    line-height: 1.5;
+    color: var(--body);
+    margin-bottom: 11px;
+  }
+  .summary strong { color: var(--ink); font-weight: 600; }
+
+  /* ---------- Seções ---------- */
+  h2 {
+    font-size: 8.4pt;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink);
+    padding-bottom: 3px;
+    margin-bottom: 7px;
+    border-bottom: 1px solid var(--line);
+  }
+  section { margin-bottom: 10px; }
+
+  /* ---------- Experiência ---------- */
+  .job { margin-bottom: 9px; }
+  .job:last-child { margin-bottom: 0; }
+  /* Evita que um cargo seja partido entre páginas (o bug do PDF antigo). */
+  .job, .edu-item { break-inside: avoid; page-break-inside: avoid; }
+
+  .job-head { display: flex; justify-content: space-between; align-items: baseline; gap: 12px; }
+
+  .job-role { font-size: 10pt; font-weight: 600; color: var(--ink); }
+
+  .job-co { font-size: 9.4pt; font-weight: 600; color: var(--accent); }
+
+  .job-meta {
+    font-size: 8.3pt;
+    color: var(--muted);
+    white-space: nowrap;
+    font-weight: 500;
+  }
+
+  .job-ctx {
+    font-size: 8.4pt;
+    color: var(--muted);
+    margin: 1px 0 4px;
+  }
+
+  /* "•" como texto (::before com content) aparece na extração do PDF e o ATS separa cada conquista;
+     marcador nativo e círculo desenhado não aparecem. */
+  ul { list-style: none; }
+
+  li {
+    position: relative;
+    padding-left: 11px;
+    margin-bottom: 1.5px;
+    font-size: 8.9pt;
+    line-height: 1.38;
+  }
+  li::before { content: '• '; position: absolute; left: 0; color: #a1a1aa; }
+  li strong { color: var(--ink); font-weight: 600; }
+
+  .stack-line {
+    font-size: 8.3pt;
+    color: var(--muted);
+    margin-top: 4px;
+    padding-left: 12px;
+  }
+  .stack-line span { color: var(--body); }
+
+  /* ---------- Skills ---------- */
+  .skills { display: grid; grid-template-columns: 1fr; gap: 1px; }
+
+  .skill-row { font-size: 8.8pt; line-height: 1.5; }
+
+  .skill-cat { font-weight: 600; color: var(--ink); }
+
+  /* ---------- Formação ---------- */
+  .edu-item { margin-bottom: 5px; }
+  .edu-item:last-child { margin-bottom: 0; }
+  .edu-deg { font-size: 9.4pt; font-weight: 600; color: var(--ink); }
+  .edu-sub { font-size: 8.8pt; color: var(--muted); }
+
+  .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 0 22px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="name">Elias Gomes da Silva</div>
+  <div class="headline">Senior Full Stack Developer · Backend Supervisor</div>
+  <div class="degree">Computer Engineer · Postgraduate degree in Software Quality, Testing and Development</div>
+  <div class="contact">
+    <span><strong>egds.dev@gmail.com</strong></span><span class="sep">|</span>
+    <span>+55 64 98147-6096</span><span class="sep">|</span>
+    <span>Goiânia, Brazil · On-site, hybrid or remote</span><span class="sep">|</span>
+    <a href="https://www.linkedin.com/in/egdsdev">https://www.linkedin.com/in/egdsdev</a><span class="sep">|</span>
+    <a href="https://github.com/egdsdev">https://github.com/egdsdev</a><span class="sep">|</span>
+    <a href="https://egdsdev.github.io/portfolio/en/">Portfolio: https://egdsdev.github.io/portfolio/en/</a>
+  </div>
+</header>
+
+<section>
+  <h2>Professional Summary</h2>
+  <p class="summary">
+    <strong>Senior Full Stack Developer</strong> and computer engineer with <strong>7+ years</strong> building
+    production systems, from the database and infrastructure to the user interface. I currently <strong>supervise the
+    backend team</strong> of a distributed platform of ~12 services in the automotive sector (ERP, BI and integrations), where I designed
+    the <strong>Data Warehouse</strong> and defined the release process every project follows. Specialist in
+    <strong>PHP/Laravel, Python and relational databases (PostgreSQL, SQL Server, MySQL)</strong>, with experience in
+    Vue.js/React, AWS (SQS, S3), Docker, CI/CD, messaging and Power BI. Focused on performance, asynchronous processing,
+    system integrations, code review and technical leadership.
+  </p>
+</section>
+
+<section>
+  <h2>Professional Experience</h2>
+
+  <div class="job">
+    <div class="job-head">
+      <div>
+        <div class="job-role">Senior Full Stack Developer · Backend Supervisor</div>
+        <div class="job-co">Dadus Fábrica de Software</div>
+      </div>
+      <div class="job-meta">2026 – Present · On-site · Goiânia, Brazil</div>
+    </div>
+    <div class="job-ctx">Software house for the automotive sector: ERP, BI and integrations for auto parts distributors and retailers</div>
+    <ul>
+      <li>Supervise the backend team of the auto parts ERP and its surrounding services (<strong>~12 services</strong>): SSO, Data Warehouse, reporting engine and a shared authentication SDK</li>
+      <li>Designed the <strong>Data Warehouse from scratch</strong>: star schema in PostgreSQL, Python ETL with watermark-based incremental loads, and BI queries served through an AWS SQS queue with Redis caching</li>
+      <li>Defined the <strong>release process</strong> every project follows: GitFlow with Release Candidates, weekly versioning and merge request automation in GitLab CI</li>
+      <li>Built the <strong>asynchronous reporting service</strong>: the API publishes to SQS, a Python worker generates PDF/CSV files on S3 and returns the result through Redis, without blocking the user request</li>
+      <li>Implemented <strong>centralized authentication (SSO)</strong> in Laravel and an in-house PHP SDK (JWT/JWKS, PSR-15) used by the other services</li>
+      <li>Lead <strong>code review</strong> and the integration of the team’s deliveries, and maintain the API documentation in OpenAPI</li>
+    </ul>
+    <div class="stack-line">Technologies: <span>PHP, Laravel, Python, Vue.js, PostgreSQL, Redis, AWS SQS, AWS S3, Docker, GitLab CI, OpenAPI</span></div>
+  </div>
+
+  <div class="job">
+    <div class="job-head">
+      <div>
+        <div class="job-role">Full Stack Developer</div>
+        <div class="job-co">ByToken</div>
+      </div>
+      <div class="job-meta">2026 · On-site · Goiânia, Brazil</div>
+    </div>
+    <div class="job-ctx">SaaS for governance of ICP-Brasil digital certificates, serving accounting firms</div>
+    <ul>
+      <li>Developed the <strong>multi-tenant SaaS platform</strong> that centralizes the use of digital certificates: each firm controls who can use which certificate, with an audit trail and without sharing files or passwords</li>
+      <li>Optimized the multi-tenant database with <strong>stored procedures, triggers, views and indexes</strong> for queries over per-client isolated databases</li>
+      <li>Asynchronous processing with <strong>Laravel Queues and Redis</strong>, scheduled jobs with Laravel Scheduler, real-time monitoring over <strong>WebSocket</strong> and integration with the Brazilian Federal Revenue API (e-CAC powers of attorney)</li>
+      <li>Automated risk analysis with <strong>AI (OpenAI and Gemini)</strong>, 2FA, multi-host OAuth, RBAC, push notifications (Firebase) and CI/CD with GitHub Actions</li>
+    </ul>
+    <div class="stack-line">Technologies: <span>PHP, Laravel, Vue.js, PostgreSQL, Redis, WebSocket, Firebase, GitHub Actions</span></div>
+  </div>
+
+  <div class="job">
+    <div class="job-head">
+      <div>
+        <div class="job-role">Backend / BI Developer</div>
+        <div class="job-co">EQ Seguros</div>
+      </div>
+      <div class="job-meta">2025 · On-site · Goiânia, Brazil</div>
+    </div>
+    <div class="job-ctx">Life insurance and pension company licensed by SUSEP, with digital distribution through partners</div>
+    <ul>
+      <li>Built <strong>Power BI</strong> dashboards on the insurance operation (policies, production by channel and partner network performance) used by the business team for commercial decisions</li>
+      <li><strong>Dimensional modeling (star schema)</strong> and complex SQL Server queries for reports over a high monthly sales volume</li>
+      <li><strong>DAX</strong> measures and calculated columns for industry metrics: conversion, policy churn and commissions</li>
+    </ul>
+    <div class="stack-line">Technologies: <span>SQL Server, Power BI, DAX, dimensional modeling, star schema</span></div>
+  </div>
+
+  <div class="job">
+    <div class="job-head">
+      <div>
+        <div class="job-role">Backend Developer</div>
+        <div class="job-co">Meeta Solutions</div>
+      </div>
+      <div class="job-meta">2022 – 2025 · Remote</div>
+    </div>
+    <div class="job-ctx">Software house for CX and data intelligence serving customer service operations across Latin America</div>
+    <ul>
+      <li><strong>Optimized slow queries</strong> through execution plan analysis, new indexes and refactoring of critical procedures on high-volume databases</li>
+      <li>Led the <strong>migration of database servers</strong> from Windows Server to Linux, rewriting procedures and adjusting collation</li>
+      <li>Stored procedures, triggers and views for business rules, with jobs scheduled through <strong>SQL Server Agent and cron</strong>; distributed systems with Python, <strong>Azure Functions</strong> (HTTP and Timer Triggers), React, React Native and MongoDB</li>
+      <li><strong>REST and SOAP</strong> APIs with authentication, versioning and documentation; Power BI dashboards with DAX metrics</li>
+    </ul>
+    <div class="stack-line">Technologies: <span>PHP, Laravel, SQL Server, PostgreSQL, Python, Azure Functions, React, React Native, MongoDB, Power BI</span></div>
+  </div>
+
+  <div class="job">
+    <div class="job-head">
+      <div>
+        <div class="job-role">Mid-level Full Stack Developer</div>
+        <div class="job-co">Dadus Fábrica de Software</div>
+      </div>
+      <div class="job-meta">2020 – 2023 · Remote</div>
+    </div>
+    <div class="job-ctx">Earlier stint at the same company, focused on industrial operations and internal systems</div>
+    <ul>
+      <li><strong>Modernized a legacy system</strong> for a footwear factory: migrated it to a full stack web application (PHP, Vue.js, Node.js) with a complete database redesign</li>
+      <li><strong>Pentaho ETL</strong> pipelines moving large data volumes between SQL Server and MySQL</li>
+      <li>Corporate <strong>Power BI</strong> dashboards with production, sales and inventory KPIs</li>
+      <li>Cross-platform desktop app for workstation authentication and monitoring built with <strong>Electron</strong></li>
+    </ul>
+    <div class="stack-line">Technologies: <span>PHP, Vue.js, Node.js, SQL Server, MySQL, Pentaho ETL, Power BI, Electron</span></div>
+  </div>
+
+  <div class="job">
+    <div class="job-head">
+      <div>
+        <div class="job-role">Full Stack Web Developer</div>
+        <div class="job-co">SalesFarm</div>
+      </div>
+      <div class="job-meta">2022 – 2023 · Remote</div>
+    </div>
+    <div class="job-ctx">Sales-as-a-Service startup connecting companies with outsourced sales reps and SDRs</div>
+    <ul>
+      <li>Refactored queries and stored procedures to <strong>reduce the response time</strong> of the sales performance reports used by managers</li>
+      <li><strong>Mentoring and technical onboarding</strong> of new developers, with code reviews, team standards and sprint planning (<strong>Scrum</strong>)</li>
+    </ul>
+    <div class="stack-line">Technologies: <span>PHP, Laravel, MySQL, Scrum</span></div>
+  </div>
+
+  <div class="job">
+    <div class="job-head">
+      <div>
+        <div class="job-role">Mid-level Full Stack Web Developer</div>
+        <div class="job-co">VirtuaMax Comunicação</div>
+      </div>
+      <div class="job-meta">2021 – 2022 · Remote</div>
+    </div>
+    <div class="job-ctx">Communications and web development agency with its own customer service product</div>
+    <ul>
+      <li>Full stack development of <strong>Deskkio</strong>, a help desk product: tickets, service history and operator dashboard</li>
+      <li><strong>Twilio chatbot</strong> integration for WhatsApp and SMS support, reducing the volume that reached human agents</li>
+    </ul>
+    <div class="stack-line">Technologies: <span>PHP, Laravel, Vue.js, MySQL, Twilio, Jira</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Technical Skills</h2>
+  <div class="skills">
+    <div class="skill-row"><span class="skill-cat">Languages:</span> <span>PHP (7 years), JavaScript (7 years), TypeScript (4 years), Python (3 years), SQL</span></div>
+    <div class="skill-row"><span class="skill-cat">Backend:</span> <span>Laravel (6 years), Node.js (5 years), REST APIs, SOAP, WebSocket, OpenAPI</span></div>
+    <div class="skill-row"><span class="skill-cat">Databases:</span> <span>MySQL (5 years), PostgreSQL (4 years), SQL Server (4 years), MongoDB, stored procedures, triggers, indexing</span></div>
+    <div class="skill-row"><span class="skill-cat">Architecture:</span> <span>Messaging (AWS SQS), Redis, multi-tenancy, SSO, JWT, asynchronous processing</span></div>
+    <div class="skill-row"><span class="skill-cat">Frontend:</span> <span>Vue.js (5 years), React (3 years), React Native, Angular, HTML5, CSS3, Tailwind CSS</span></div>
+    <div class="skill-row"><span class="skill-cat">BI and Data:</span> <span>Power BI, DAX, ETL (Pentaho, Python), Data Warehouse, dimensional modeling</span></div>
+    <div class="skill-row"><span class="skill-cat">DevOps and Cloud:</span> <span>Docker, Git, CI/CD, GitLab CI, GitHub Actions, AWS (S3, SQS), Azure Functions, Linux</span></div>
+    <div class="skill-row"><span class="skill-cat">Practices:</span> <span>Team supervision, code review, mentoring, GitFlow, SOLID, Clean Code, Scrum, Kanban</span></div>
+  </div>
+</section>
+
+<section>
+  <h2>Education</h2>
+  <div>
+    <div class="edu-item">
+      <div class="edu-deg">Postgraduate degree in Software Quality, Testing and Development · <span class="edu-sub">UNIMAIS · 2020 – 2022</span></div>
+    </div>
+    <div class="edu-item">
+      <div class="edu-deg">Bachelor’s degree in Computer Engineering · <span class="edu-sub">PUC Goiás · 2015 – 2019</span></div>
+      <div class="edu-sub">Final thesis in Information Security (IEEE 802.11 networks), awarded a certificate of merit and presented orally at the 5th Science and Technology Congress of PUC Goiás · Director of the student association</div>
+    </div>
+  </div>
+</section>
+
+<section>
+  <h2>Languages</h2>
+  <p class="skill-row"><span class="skill-cat">Portuguese:</span> native · <span class="skill-cat">English:</span> technical (reading documentation and written communication)</p>
+</section>
+
+</body>
+</html>

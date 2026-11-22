@@ -1,6 +1,8 @@
 import { AfterViewInit, Component, ElementRef, NgZone, OnDestroy, PLATFORM_ID, ViewChild, inject } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { AnalyticsService } from '../../core/services/analytics.service';
+import { LanguageService } from '../../core/i18n/language.service';
+import { LangSwitchComponent } from '../../shared/components/lang-switch/lang-switch.component';
 
 interface Particle {
   /** posição local no retrato da intro */
@@ -25,23 +27,29 @@ interface Particle {
 @Component({
   selector: 'app-intro',
   standalone: true,
+  imports: [LangSwitchComponent],
   template: `
-    <section id="intro" class="intro" #stage aria-label="Introdução">
+    <section id="intro" class="intro" #stage [attr.aria-label]="en() ? 'Introduction' : 'Introdução'">
       <div class="word" data-text="DEVELOPER" aria-hidden="true">DEVELOPER</div>
       <div class="portrait" #portrait aria-hidden="true"></div>
 
       <div class="caption">
         <div class="who">
           <p class="who-name">Elias Gomes da Silva</p>
-          <p class="who-role"><span class="role-prefix">Desenvolvedor </span>Full Stack Sênior <span>·</span> Engenheiro de Computação</p>
+          @if (en()) {
+            <p class="who-role">Senior Full Stack<span class="role-prefix"> Developer</span><span> ·</span> Computer Engineer</p>
+          } @else {
+            <p class="who-role"><span class="role-prefix">Desenvolvedor </span>Full Stack Sênior <span>·</span> Engenheiro de Computação</p>
+          }
         </div>
         <div class="actions">
-          <a class="cv-link" [href]="resumeUrl" download="Curriculo-Elias-Gomes-da-Silva.pdf" (click)="onResume()">Currículo ↓</a>
-          <button class="reveal" type="button" (click)="reveal('button')"><i></i><span>Revelar</span></button>
+          <a class="cv-link" [href]="i18n.resume().href" [attr.download]="i18n.resume().file" (click)="onResume()">{{ en() ? 'Résumé' : 'Currículo' }} ↓</a>
+          <button class="reveal" type="button" (click)="reveal('button')"><i></i><span>{{ en() ? 'Reveal' : 'Revelar' }}</span></button>
         </div>
       </div>
-      <span class="scroll-hint" aria-hidden="true">Role para revelar ↓</span>
-      <a class="cv-link cv-top" [href]="resumeUrl" download="Curriculo-Elias-Gomes-da-Silva.pdf" (click)="onResume()">Currículo ↓</a>
+      <app-lang-switch class="intro-lang" />
+      <span class="scroll-hint" aria-hidden="true">{{ en() ? 'Scroll to reveal' : 'Role para revelar' }} ↓</span>
+      <a class="cv-link cv-top" [href]="i18n.resume().href" [attr.download]="i18n.resume().file" (click)="onResume()">{{ en() ? 'Résumé' : 'Currículo' }} ↓</a>
     </section>
     <canvas #canvas class="dots" aria-hidden="true"></canvas>
   `,
@@ -144,6 +152,13 @@ interface Particle {
     .cv-link:hover, .cv-link:focus-visible { color: var(--fg); }
     .cv-top { display: none; }
 
+    .intro-lang {
+      position: absolute;
+      z-index: 41;
+      top: .75rem;
+      left: clamp(1rem, 4vw, 3rem);
+      opacity: var(--intro-ui, 1);
+    }
     .scroll-hint {
       position: absolute;
       z-index: 41;
@@ -160,7 +175,7 @@ interface Particle {
       .portrait { height: auto; width: 100vw; margin-top: 30svh; }
       .caption { position: relative; align-self: stretch; flex-direction: column; align-items: flex-start; padding-top: 0; }
       .word { top: 50svh; }
-      .scroll-hint { left: 1rem; right: auto; }
+      .scroll-hint { display: none; }
       .reveal { display: none; }
       .actions .cv-link { display: none; }
       .cv-top {
@@ -186,7 +201,8 @@ export class IntroComponent implements AfterViewInit, OnDestroy {
   @ViewChild('canvas') private canvasRef!: ElementRef<HTMLCanvasElement>;
   private zone = inject(NgZone);
   private analytics = inject(AnalyticsService);
-  readonly resumeUrl = 'curriculo-elias-gomes.pdf';
+  readonly i18n = inject(LanguageService);
+  readonly en = this.i18n.isEn;
 
   /** abaixo disso a flutuação seria < 1px: o ponto fica parado e entra no cache */
   private readonly WOBBLE_MIN = 0.15;

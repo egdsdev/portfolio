@@ -1,10 +1,26 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, inject, signal, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
+import { Component, CUSTOM_ELEMENTS_SCHEMA, computed, effect, inject, signal, untracked, OnInit, OnDestroy, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser } from '@angular/common';
 import { FontAwesomeModule } from '@fortawesome/angular-fontawesome';
 import { faGithub, faLinkedinIn, faWhatsapp } from '@fortawesome/free-brands-svg-icons';
 import { faEnvelope } from '@fortawesome/free-regular-svg-icons';
 import { TechMarqueeComponent } from '../../shared/components/tech-marquee/tech-marquee.component';
 import { AnalyticsService } from '../../core/services/analytics.service';
+import { LanguageService } from '../../core/i18n/language.service';
+
+const COPY = {
+  pt: {
+    status: 'Aberto a novas oportunidades', socials: 'Redes e contato',
+    degree: 'Engenheiro de Computação', post: 'Pós-Graduado', years: '7+ anos de experiência',
+    place: 'Goiânia, GO', contact: 'Entre em contato', cv: 'Currículo',
+    titles: ['Desenvolvedor Full Stack Sênior', 'Arquitetura, infraestrutura e banco de dados', 'Supervisor de Backend · PHP, Laravel, Python'],
+  },
+  en: {
+    status: 'Open to new opportunities', socials: 'Social and contact',
+    degree: 'Computer Engineer', post: 'Postgraduate', years: '7+ years of experience',
+    place: 'Goiânia, Brazil', contact: 'Get in touch', cv: 'Résumé',
+    titles: ['Senior Full Stack Developer', 'Architecture, infrastructure and databases', 'Backend Supervisor · PHP, Laravel, Python'],
+  },
+};
 
 @Component({
   selector: 'app-personal-details',
@@ -21,7 +37,7 @@ import { AnalyticsService } from '../../core/services/analytics.service';
             <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
             <span class="relative inline-flex rounded-full h-1.5 w-1.5 bg-emerald-400"></span>
           </span>
-          Aberto a novas oportunidades
+          {{ t().status }}
         </div>
 
         <!-- Retrato grande à esquerda; nome e cargo ocupam o resto da linha -->
@@ -30,7 +46,7 @@ import { AnalyticsService } from '../../core/services/analytics.service';
             <div class="hero-photo rounded-2xl overflow-hidden border border-zinc-800">
               <img src="profile.jpg" alt="Elias Gomes da Silva" class="w-full h-full object-cover">
             </div>
-            <ul class="flex items-center justify-center gap-1" aria-label="Redes e contato">
+            <ul class="flex items-center justify-center gap-1" [attr.aria-label]="t().socials">
               @for (s of socials; track s.label) {
                 <li>
                   <a [href]="s.href" [attr.target]="s.href.startsWith('http') ? '_blank' : null" rel="noopener noreferrer" class="social-link"
@@ -47,7 +63,7 @@ import { AnalyticsService } from '../../core/services/analytics.service';
               Elias Gomes da Silva
             </h1>
 
-            <p class="hero-degree mb-3">Engenheiro de Computação&nbsp;· <span class="whitespace-nowrap">Pós-Graduado</span></p>
+            <p class="hero-degree mb-3">{{ t().degree }}&nbsp;· <span class="whitespace-nowrap">{{ t().post }}</span></p>
 
             <!-- min-h evita o layout "pular" enquanto o typewriter troca de frase -->
             <p class="hero-title text-lg sm:text-xl md:text-2xl text-zinc-400 font-normal leading-snug
@@ -56,23 +72,23 @@ import { AnalyticsService } from '../../core/services/analytics.service';
             </p>
 
             <div class="hero-meta eyebrow leading-relaxed mt-5">
-              <span class="text-zinc-300 whitespace-nowrap">7+ anos de experiência</span>
+              <span class="text-zinc-300 whitespace-nowrap">{{ t().years }}</span>
               <span class="text-zinc-700 mx-2">·</span>
-              <span class="text-zinc-400 whitespace-nowrap">Goiânia, GO</span>
+              <span class="text-zinc-400 whitespace-nowrap">{{ t().place }}</span>
             </div>
 
             <div class="hero-ctas flex flex-wrap items-center gap-3 mt-8">
               <a href="#contato" (click)="onHeroContactClick()" class="btn-primary">
-                Entre em contato
+                {{ t().contact }}
               </a>
-              <a href="curriculo-elias-gomes.pdf"
-                 download="Curriculo-Elias-Gomes-da-Silva.pdf"
+              <a [href]="i18n.resume().href"
+                 [attr.download]="i18n.resume().file"
                  (click)="onResumeDownload($event)"
                  class="btn-ghost">
                 <svg xmlns="http://www.w3.org/2000/svg" class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
                   <path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                 </svg>
-                Currículo
+                {{ t().cv }}
               </a>
             </div>
           </div>
@@ -98,17 +114,28 @@ export class PersonalDetailsComponent implements OnInit, OnDestroy {
     { label: 'Email', href: 'mailto:egds.dev@gmail.com', icon: faEnvelope },
   ];
 
-  readonly titles = [
-    'Desenvolvedor Full Stack Sênior',
-    'Arquitetura, infraestrutura e banco de dados',
-    'Supervisor de Backend · PHP, Laravel, Python',
-  ];
+  readonly i18n = inject(LanguageService);
+  readonly t = computed(() => COPY[this.i18n.lang()]);
+  private get titles(): string[] { return this.t().titles; }
 
   displayTitle = signal(this.titles[0]);
   private titleIdx = 0;
   private charIdx = this.titles[0].length;
   private deleting = false;
   private timer?: ReturnType<typeof setTimeout>;
+
+  constructor() {
+    // troca de língua: recomeça o typewriter na 1ª frase do novo idioma
+    effect(() => {
+      const first = this.t().titles[0];
+      untracked(() => {
+        this.titleIdx = 0;
+        this.charIdx = first.length;
+        this.deleting = false;
+        this.displayTitle.set(first);
+      });
+    });
+  }
 
   ngOnInit(): void {
     if (!this.isBrowser) return;

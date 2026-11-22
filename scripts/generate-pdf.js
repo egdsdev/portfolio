@@ -21,7 +21,7 @@ const CANDIDATES = [
     process.exit(1);
   }
 
-  const htmlFile = path.resolve(__dirname, 'resume.html');
+  const htmlFile = path.resolve(__dirname, process.env.RESUME_IN || 'resume.html');
   const outputPdf = process.env.RESUME_OUT || path.resolve(__dirname, '..', 'public', 'curriculo-elias-gomes.pdf');
   const html = fs.readFileSync(htmlFile, 'utf-8');
 

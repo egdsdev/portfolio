@@ -3,6 +3,7 @@ import { Location, isPlatformBrowser } from '@angular/common';
 import { RouterOutlet, Router, NavigationEnd } from '@angular/router';
 import { filter } from 'rxjs';
 import { AnalyticsService } from './core/services/analytics.service';
+import { LanguageService } from './core/i18n/language.service';
 import { whenIdle } from './core/services/firebase.loader';
 import { HeaderComponent } from './features/header/header.component';
 import { IntroComponent } from './features/intro/intro.component';
@@ -67,13 +68,16 @@ import { RevealDirective } from './shared/directives/reveal.directive';
       <router-outlet></router-outlet>
     }
   `,
-  styleUrl: './app.css'
+  styleUrl: './app.css',
+  host: { '(document:click)': 'onDocumentClick($event)' },
 })
 export class App implements OnInit, OnDestroy {
   private router = inject(Router);
   private analytics = inject(AnalyticsService);
   private readonly isBrowser = isPlatformBrowser(inject(PLATFORM_ID));
   private visitTracked = false;
+  // instancia já no boot: define a língua e o SEO (título, lang, canonical) também na pré-renderização
+  private readonly i18n = inject(LanguageService);
 
   // Decide público × admin pela URL já na criação (servidor e navegador iguais no 1º quadro,
   // requisito da hidratação; esperar o 1º evento do router faria a página piscar).
@@ -103,6 +107,21 @@ export class App implements OnInit, OnDestroy {
       void this.analytics.trackVisit();
       void this.analytics.trackSitePresence();
     });
+  }
+
+  /**
+   * Links "#secao": rola na própria página. Com <base href="/portfolio/">, o comportamento
+   * padrão levaria quem está em /portfolio/en/ de volta para a versão em português.
+   */
+  onDocumentClick(event: MouseEvent): void {
+    if (event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey) return;
+    const link = (event.target as Element | null)?.closest?.('a[href^="#"]');
+    const id = link?.getAttribute('href')?.slice(1);
+    const target = id ? document.getElementById(id) : null;
+    if (!target) return;
+    event.preventDefault();
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    history.replaceState(history.state, '', `${location.pathname}${location.search}#${id}`);
   }
 
   ngOnDestroy() {

@@ -105,6 +105,8 @@ export function sourceFromReferrer(referrer?: string): string {
 export function ctaLabel(target: string): string {
   const labels: Record<string, string> = {
     hero_contact: 'Hero · Contato',
+    lang_pt: 'Idioma · Português',
+    lang_en: 'Idioma · Inglês',
     intro_reveal: 'Intro · Revelar',
     intro_resume: 'Intro · Currículo',
     case_portfolio_code: 'Cases · Código do portfólio',

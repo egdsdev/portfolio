@@ -1,26 +1,21 @@
 <section id="experiencia" class="py-16 sm:py-28 border-b border-zinc-900">
   <div class="wrap">
     <div class="mb-10 sm:mb-20 max-w-4xl">
-      <div class="eyebrow mb-5">01 — Experiência</div>
-      <h2 class="section-title mb-6">Onde eu já<br>entreguei software</h2>
-      <p class="section-lead">
-        Sete anos construindo sistemas que rodam em produção — varejo automotivo, seguros, certificação
-        digital e indústria. Do banco de dados e da infraestrutura à interface, hoje como desenvolvedor
-        sênior e supervisor do backend de uma plataforma de ERP e dados.
-      </p>
+      <div class="eyebrow mb-5">{{ t().eyebrow }}</div>
+      <h2 class="section-title mb-6">{{ t().title1 }}<br>{{ t().title2 }}</h2>
+      <p class="section-lead">{{ t().lead }}</p>
     </div>
 
     <div class="exp-list">
-      @for (entry of entries; track entry.company + entry.date; let first = $first, i = $index) {
+      @for (entry of entries(); track entry.company + entry.date; let first = $first, i = $index) {
         @if (i === OLDER_FROM) {
-          <p class="exp-earlier eyebrow">Experiências anteriores</p>
+          <p class="exp-earlier eyebrow">{{ t().earlier }}</p>
         }
         <article class="exp-row" [class.is-older]="i >= OLDER_FROM" [class.is-open]="opened().has(i)">
           <div class="exp-meta">
-            <!-- com o selo "Atual" ao lado, a data não repete a palavra -->
-            <div class="eyebrow">{{ first ? entry.date.replace(' Atual', '') : entry.date }}</div>
+            <div class="eyebrow">{{ dateLabel(entry.date, first) }}</div>
             @if (first) {
-              <div class="exp-now">Atual</div>
+              <div class="exp-now">{{ t().current }}</div>
             }
           </div>
 
@@ -32,7 +27,7 @@
             <!-- celular: cargos antigos ficam compactos até o toque -->
             @if (i >= OLDER_FROM) {
               <button type="button" class="exp-toggle" (click)="toggle(i, entry.company)" [attr.aria-expanded]="opened().has(i)">
-                {{ opened().has(i) ? 'Ocultar detalhes' : 'Ver detalhes' }}
+                {{ opened().has(i) ? t().hide : t().show }}
               </button>
             }
 
@@ -46,7 +41,7 @@
             @if (entry.bullets.length > 2) {
               <details class="experience-details" (toggle)="onExpand($event, entry.company)">
                 <summary class="experience-summary">
-                  Mais {{ entry.bullets.length - 2 }} entregas
+                  {{ t().more(entry.bullets.length - 2) }}
                 </summary>
                 <ul class="exp-highlights">
                   @for (bullet of entry.bullets.slice(2); track bullet) {

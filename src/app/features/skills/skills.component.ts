@@ -1,4 +1,5 @@
-import { Component, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
+import { LanguageService, Lang } from '../../core/i18n/language.service';
 
 interface SkillPill {
   name: string;
@@ -10,6 +11,22 @@ interface SkillGroup {
   pills: SkillPill[];
 }
 
+const COPY: Record<Lang, { eyebrow: string; title1: string; title2: string; lead: string; tabsAria: string }> = {
+  pt: { eyebrow: '03 — Stack', title1: 'O que eu uso', title2: 'no dia a dia', lead: 'Anos indicam tempo de uso em projetos reais, não em cursos.', tabsAria: 'Categorias de skills' },
+  en: { eyebrow: '03 — Stack', title1: 'What I use', title2: 'every day', lead: 'Years show time spent using it in real projects, not in courses.', tabsAria: 'Skill categories' },
+};
+
+/** só o que muda em inglês (o resto é nome de tecnologia, igual nas duas línguas) */
+const EN: Record<string, string> = {
+  'Banco de dados': 'Databases',
+  'BI & Dados': 'BI & Data',
+  'Liderança & Processo': 'Leadership & Process',
+  'Indexação': 'Indexing',
+  'Modelagem dimensional': 'Dimensional modeling',
+  'SQL analítico': 'Analytical SQL',
+  'Supervisão de equipe': 'Team supervision',
+};
+
 @Component({
   selector: 'app-skills',
   standalone: true,
@@ -17,20 +34,18 @@ interface SkillGroup {
     <section id="habilidades" class="py-16 sm:py-28 border-b border-zinc-900">
       <div class="wrap">
         <div class="mb-10 sm:mb-20 max-w-4xl">
-          <div class="eyebrow mb-5">03 — Stack</div>
-          <h2 class="section-title mb-6">O que eu uso<br>no dia a dia</h2>
-          <p class="section-lead">
-            Anos indicam tempo de uso em projetos reais, não em cursos.
-          </p>
+          <div class="eyebrow mb-5">{{ t().eyebrow }}</div>
+          <h2 class="section-title mb-6">{{ t().title1 }}<br>{{ t().title2 }}</h2>
+          <p class="section-lead">{{ t().lead }}</p>
         </div>
 
         <!-- celular: uma categoria por vez (as demais seguem no HTML para buscadores) -->
-        <div class="skill-tabs" role="tablist" aria-label="Categorias de skills">
+        <div class="skill-tabs" role="tablist" [attr.aria-label]="t().tabsAria">
           @for (group of groups; track group.title; let i = $index) {
             <button type="button" role="tab" class="skill-tab" [class.is-active]="active() === i"
                     [attr.aria-selected]="active() === i" [attr.aria-controls]="'skills-' + i"
                     (click)="active.set(i)">
-              {{ group.title }}
+              {{ tr(group.title) }}
             </button>
           }
         </div>
@@ -39,13 +54,13 @@ interface SkillGroup {
           @for (group of groups; track group.title; let i = $index) {
             <div class="skill-group py-8 border-t border-zinc-900" [id]="'skills-' + i" role="tabpanel"
                  [class.is-active]="active() === i">
-              <h3 class="text-zinc-100 font-medium mb-5 text-[0.9375rem]">{{ group.title }}</h3>
+              <h3 class="text-zinc-100 font-medium mb-5 text-[0.9375rem]">{{ tr(group.title) }}</h3>
               <div class="flex flex-wrap gap-2">
                 @for (pill of group.pills; track pill.name) {
                   <span class="pill">
-                    {{ pill.name }}
+                    {{ tr(pill.name) }}
                     @if (pill.years) {
-                      <span class="ml-1.5 text-zinc-500 font-mono text-[11px]">{{ pill.years }}</span>
+                      <span class="ml-1.5 text-zinc-500 font-mono text-[11px]">{{ years(pill.years) }}</span>
                     }
                   </span>
                 }
@@ -94,6 +109,17 @@ interface SkillGroup {
 })
 export class SkillsComponent {
   readonly active = signal(0);
+  private readonly i18n = inject(LanguageService);
+  readonly t = computed(() => COPY[this.i18n.lang()]);
+
+  tr(text: string): string {
+    return this.i18n.isEn() ? EN[text] ?? text : text;
+  }
+
+  /** "7a" (anos) vira "7y" em inglês */
+  years(value: string): string {
+    return this.i18n.isEn() ? value.replace(/a$/, 'y') : value;
+  }
 
   groups: SkillGroup[] = [
     {
